@@ -1,0 +1,86 @@
+<%
+    const selectedName = values.name !== undefined ? values.name : role.name;
+    const selectedDescription = values.description !== undefined ? values.description : role.description;
+    const isActiveChecked = values.isActive !== undefined ? values.isActive : role.isActive;
+%>
+
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Edit Role - CRM',
+    activeNav: 'company-roles'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Edit Role</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item">User Management</li>
+                                        <li class="breadcrumb-item"><a href="/company/roles">Roles</a></li>
+                                        <li class="breadcrumb-item active">Edit</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-10">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0"><%= role.name %></h4>
+                                </div>
+                                <div class="card-body">
+                                    <% if (error) { %>
+                                        <div class="alert alert-danger" role="alert"><%= error %></div>
+                                    <% } %>
+
+                                    <% if (role.isSystem && role.slug === 'administrator') { %>
+                                        <div class="alert alert-light border">
+                                            The Administrator system role is fully managed by the platform and cannot be edited.
+                                        </div>
+                                    <% } else if (role.isSystem) { %>
+                                        <div class="alert alert-light border">
+                                            This is a system role. You can adjust its feature permissions, but the name and status are fixed.
+                                        </div>
+                                    <% } %>
+
+                                    <form action="/company/roles/<%= role.id %>/edit" method="post">
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label">Role name</label>
+                                            <input type="text" class="form-control" id="name" name="name" value="<%= selectedName %>" <%= role.isSystem ? 'readonly' : '' %> required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">Description</label>
+                                            <input type="text" class="form-control" id="description" name="description" value="<%= selectedDescription || '' %>" <%= role.isSystem ? 'readonly' : '' %>>
+                                        </div>
+
+                                        <% if (!role.isSystem) { %>
+                                            <div class="mb-4 form-check">
+                                                <input type="checkbox" class="form-check-input" id="isActive" name="isActive" <%= isActiveChecked ? 'checked' : '' %>>
+                                                <label class="form-check-label" for="isActive">Active</label>
+                                                <% if (userCount > 0) { %>
+                                                    <div class="form-text"><%= userCount %> team member(s) currently use this role.</div>
+                                                <% } %>
+                                            </div>
+                                        <% } %>
+
+                                        <h5 class="mb-3">Feature Permissions</h5>
+                                        <p class="text-muted">Choose one access level per feature. Edit includes view access.</p>
+                                        <%- include('_permission-matrix', { role: role }) %>
+
+                                        <div class="d-flex gap-2 mt-4">
+                                            <% if (!(role.isSystem && role.slug === 'administrator')) { %>
+                                                <button class="btn btn-success" type="submit">Save Changes</button>
+                                            <% } %>
+                                            <a href="/company/roles" class="btn btn-light">Back</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('../partials/velzon/app-layout-close') %>

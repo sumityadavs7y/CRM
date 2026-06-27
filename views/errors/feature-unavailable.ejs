@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Feature Unavailable - CRM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/style/Admin/dist/default/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4 text-center">
+                        <h4 class="mb-3">Feature not available</h4>
+                        <p class="text-muted mb-0">This section is not included in your company's current subscription plan<% if (companyName) { %> (<%= companyName %>)<% } %>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+	"name": "CRM",
+	"build": {
+		"context": "..",
+		"dockerfile": "../DevDockerfile"
+	},
+	"forwardPorts": [3000, 80],
+	"postCreateCommand": "service postgresql start"
+}

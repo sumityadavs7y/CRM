@@ -1,0 +1,72 @@
+<form action="<%= formAction %>" method="post">
+    <div class="mb-3">
+        <label for="name" class="form-label">Plan name</label>
+        <input type="text" class="form-control" id="name" name="name" placeholder="Professional" value="<%= values.name || '' %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="2" placeholder="Best for growing sales teams"><%= values.description || '' %></textarea>
+    </div>
+
+    <hr class="my-4">
+    <h5 class="mb-3">Limits</h5>
+
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <label for="maxUsers" class="form-label">Max users</label>
+            <input type="number" class="form-control" id="maxUsers" name="maxUsers" min="1" value="<%= values.maxUsers != null ? values.maxUsers : '10' %>">
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="maxContacts" class="form-label">Max contacts</label>
+            <input type="number" class="form-control" id="maxContacts" name="maxContacts" min="1" value="<%= values.maxContacts != null ? values.maxContacts : '500' %>">
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="maxDeals" class="form-label">Max deals</label>
+            <input type="number" class="form-control" id="maxDeals" name="maxDeals" min="1" value="<%= values.maxDeals != null ? values.maxDeals : '100' %>">
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="maxStorageMb" class="form-label">Storage (MB)</label>
+            <input type="number" class="form-control" id="maxStorageMb" name="maxStorageMb" min="1" value="<%= values.maxStorageMb != null ? values.maxStorageMb : '2048' %>">
+        </div>
+    </div>
+
+    <hr class="my-4">
+    <h5 class="mb-3">Features</h5>
+
+    <% if (availableFeatures.length === 0) { %>
+        <p class="text-muted mb-0">No features are available yet. Plans can still be saved with limits only. When features are added to the platform, they will appear here as checkboxes.</p>
+    <% } else { %>
+        <div class="row">
+            <% availableFeatures.forEach(function(feature) { %>
+                <div class="col-md-6 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features" value="<%= feature.key %>" id="feature-<%= feature.key %>"
+                            <%= (values.features || []).includes(feature.key) ? 'checked' : '' %>>
+                        <label class="form-check-label" for="feature-<%= feature.key %>">
+                            <%= feature.label %>
+                            <% if (feature.description) { %>
+                                <small class="text-muted d-block"><%= feature.description %></small>
+                            <% } %>
+                        </label>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    <% } %>
+
+    <% if (typeof showIsActive !== 'undefined' && showIsActive) { %>
+        <hr class="my-4">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="isActive" name="isActive"
+                <%= values.isActive !== false ? 'checked' : '' %>>
+            <label class="form-check-label" for="isActive">Plan available for assignment</label>
+            <small class="text-muted d-block">Inactive plans cannot be assigned to companies.</small>
+        </div>
+    <% } %>
+
+    <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-success" type="submit"><%= submitLabel %></button>
+        <a href="/subscription-plans" class="btn btn-light">Cancel</a>
+    </div>
+</form>

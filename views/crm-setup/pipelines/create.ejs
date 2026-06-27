@@ -1,0 +1,56 @@
+<%- include('../../partials/velzon/app-layout-open', {
+    pageTitle: 'Create Pipeline - CRM Setup',
+    activeNav: 'crm-setup-pipelines'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Create Pipeline</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item">CRM Setup</li>
+                                        <li class="breadcrumb-item"><a href="/company/crm-setup/pipelines">Pipelines</a></li>
+                                        <li class="breadcrumb-item active">Create</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">New Pipeline</h4>
+                                </div>
+                                <div class="card-body">
+                                    <% if (error) { %>
+                                        <div class="alert alert-danger" role="alert"><%= error %></div>
+                                    <% } %>
+
+                                    <p class="text-muted">A new pipeline is created with default lead stages (New, In Progress, Won) and deal stages (Discovery, Proposal, Close). You can customize them after creation.</p>
+
+                                    <form action="/company/crm-setup/pipelines" method="post">
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label">Pipeline name</label>
+                                            <input type="text" class="form-control" id="name" name="name" value="<%= values.name || '' %>" required>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="description" class="form-label">Description</label>
+                                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Optional description for this pipeline"><%= values.description || '' %></textarea>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-success" type="submit">Create Pipeline</button>
+                                            <a href="/company/crm-setup/pipelines" class="btn btn-light">Cancel</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('../../partials/velzon/app-layout-close') %>

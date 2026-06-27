@@ -1,0 +1,201 @@
+<%
+    const subscription = company.subscription;
+    const selectedPlanId = values.subscriptionPlanId !== undefined
+        ? values.subscriptionPlanId
+        : (subscription ? subscription.subscriptionPlanId : '');
+    const defaultStartsAt = values.startsAt !== undefined
+        ? values.startsAt
+        : (subscription ? toDateInputValue(subscription.startsAt) : '');
+    const defaultExpiresAt = values.expiresAt !== undefined
+        ? values.expiresAt
+        : (subscription ? toDateInputValue(subscription.expiresAt) : '');
+    const primaryAdmin = getPrimaryAdmin(company.credentials);
+%>
+
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Edit Company - CRM',
+    activeNav: 'companies'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Edit Company</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item"><a href="/companies">Companies</a></li>
+                                        <li class="breadcrumb-item active">Edit</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (success) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-success" role="alert"><%= success %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-9">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0"><%= company.name %></h4>
+                                </div>
+                                <div class="card-body">
+                                    <% if (error) { %>
+                                        <div class="alert alert-danger" role="alert"><%= error %></div>
+                                    <% } %>
+
+                                    <% if (primaryAdmin) { %>
+                                        <p class="text-muted mb-4">Primary admin: <strong><%= primaryAdmin.adminName %></strong> (<%= primaryAdmin.email %>)</p>
+                                    <% } %>
+
+                                    <form action="/companies/<%= company.id %>/edit" method="post">
+                                        <div class="mb-3">
+                                            <label for="companyName" class="form-label">Company name</label>
+                                            <input type="text" class="form-control" id="companyName" name="companyName" value="<%= values.companyName || company.name %>" required>
+                                        </div>
+
+                                        <hr class="my-4">
+                                        <h5 class="mb-1">Subscription <span class="text-muted fw-normal fs-13">(optional)</span></h5>
+                                        <p class="text-muted mb-3">Assign a plan when ready. Companies without a plan cannot sign in until one is assigned.</p>
+
+                                        <% if (plans.length === 0) { %>
+                                            <div class="alert alert-light border mb-4">
+                                                No subscription plans available.
+                                                <a href="/subscription-plans/new" class="alert-link">Create a plan</a> to assign one later.
+                                            </div>
+                                        <% } else { %>
+                                            <div class="mb-3">
+                                                <label for="subscriptionPlanId" class="form-label">Subscription plan</label>
+                                                <select class="form-select" id="subscriptionPlanId" name="subscriptionPlanId">
+                                                    <option value="" <%= !selectedPlanId ? 'selected' : '' %>>No plan</option>
+                                                    <% plans.forEach(function(plan) { %>
+                                                        <option value="<%= plan.id %>" <%= String(selectedPlanId) === String(plan.id) ? 'selected' : '' %>>
+                                                            <%= plan.name %>
+                                                        </option>
+                                                    <% }); %>
+                                                </select>
+                                            </div>
+
+                                            <div id="subscription-dates">
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="startsAt" class="form-label">Start date <span class="text-muted fw-normal">(optional)</span></label>
+                                                        <input type="date" class="form-control" id="startsAt" name="startsAt" value="<%= defaultStartsAt %>">
+                                                        <small class="text-muted">Leave empty to start immediately.</small>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="expiresAt" class="form-label">Valid until</label>
+                                                        <input type="date" class="form-control" id="expiresAt" name="expiresAt" value="<%= defaultExpiresAt %>">
+                                                        <small class="text-muted">Required when a plan is selected.</small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card bg-light border-0 mb-4">
+                                                    <div class="card-body py-3">
+                                                        <p class="text-muted mb-2 small text-uppercase fw-medium">Plan details</p>
+                                                        <div id="plan-preview">
+                                                            <span class="text-muted">Select a plan to preview limits and features.</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <% } %>
+
+                                        <% if (subscription) { %>
+                                            <% const subStatus = formatSubscriptionStatus(subscription); %>
+                                            <div class="alert alert-light border mb-4">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <small class="text-muted">Current period: <%= new Date(subscription.startsAt).toLocaleDateString() %> → <%= new Date(subscription.expiresAt).toLocaleDateString() %></small>
+                                                    <span class="badge <%= subStatus.className %>"><%= subStatus.label %></span>
+                                                </div>
+                                                <small class="text-muted d-block mt-1">Status is calculated automatically from the start and valid until dates.</small>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="alert alert-light border mb-4">
+                                                <span class="badge bg-secondary-subtle text-secondary">No Plan</span>
+                                                <small class="text-muted d-block mt-2">This company has no subscription assigned yet.</small>
+                                            </div>
+                                        <% } %>
+
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-success" type="submit">Save Company</button>
+                                            <a href="/companies" class="btn btn-light">Back to Companies</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (plans.length > 0) { %>
+                    <script>
+                        (function () {
+                            const plans = <%- JSON.stringify(plans.map(function(plan) {
+                                return {
+                                    id: plan.id,
+                                    name: plan.name,
+                                    maxUsers: plan.maxUsers,
+                                    maxContacts: plan.maxContacts,
+                                    maxDeals: plan.maxDeals,
+                                    maxStorageMb: plan.maxStorageMb,
+                                    features: (plan.features || []).map(function(key) {
+                                        return { key: key, label: getFeatureLabel(key) };
+                                    })
+                                };
+                            })) %>;
+                            const select = document.getElementById('subscriptionPlanId');
+                            const preview = document.getElementById('plan-preview');
+                            const datesSection = document.getElementById('subscription-dates');
+                            const startsAtInput = document.getElementById('startsAt');
+                            const expiresAtInput = document.getElementById('expiresAt');
+
+                            function toggleSubscriptionFields() {
+                                const hasPlan = !!select.value;
+                                datesSection.style.display = hasPlan ? 'block' : 'none';
+                                startsAtInput.disabled = !hasPlan;
+                                expiresAtInput.disabled = !hasPlan;
+                                if (!hasPlan) {
+                                    expiresAtInput.removeAttribute('required');
+                                } else {
+                                    expiresAtInput.setAttribute('required', 'required');
+                                }
+                            }
+
+                            function renderPreview(planId) {
+                                const plan = plans.find(function (item) { return String(item.id) === String(planId); });
+                                if (!plan) {
+                                    preview.innerHTML = '<span class="text-muted">Select a plan to preview limits and features.</span>';
+                                    return;
+                                }
+
+                                const features = plan.features.length
+                                    ? plan.features.map(function (feature) {
+                                        return '<span class="badge bg-primary-subtle text-primary me-1 mb-1">' + feature.label + '</span>';
+                                    }).join('')
+                                    : '<span class="text-muted">No features enabled</span>';
+
+                                preview.innerHTML =
+                                    '<div class="mb-2"><strong>' + plan.name + '</strong></div>' +
+                                    '<div class="small text-muted mb-2">Users: ' + plan.maxUsers + ' · Contacts: ' + plan.maxContacts + ' · Deals: ' + plan.maxDeals + ' · Storage: ' + plan.maxStorageMb + ' MB</div>' +
+                                    '<div>' + features + '</div>';
+                            }
+
+                            select.addEventListener('change', function () {
+                                toggleSubscriptionFields();
+                                renderPreview(select.value);
+                            });
+
+                            toggleSubscriptionFields();
+                            renderPreview(select.value);
+                        })();
+                    </script>
+                    <% } %>
+
+<%- include('../partials/velzon/app-layout-close') %>

@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en" <%- htmlAttrs %>>
+<head>
+    <%- include('head', { title: pageTitle }) %>
+</head>
+<body>
+    <div id="layout-wrapper">
+        <%- include('app-topbar') %>
+        <%- include('app-sidebar') %>
+
+        <div class="main-content">
+            <div class="page-content">
+                <div class="container-fluid">

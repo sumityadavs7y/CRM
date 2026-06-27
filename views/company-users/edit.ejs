@@ -1,0 +1,87 @@
+<%
+    const selectedRoleId = values.companyRoleId !== undefined ? values.companyRoleId : credential.companyRoleId;
+    const isActiveChecked = values.isActive !== undefined ? values.isActive : credential.isActive;
+%>
+
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Edit Team Member - CRM',
+    activeNav: 'company-users'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Edit Team Member</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item">User Management</li>
+                                        <li class="breadcrumb-item"><a href="/company/users">Users</a></li>
+                                        <li class="breadcrumb-item active">Edit</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0"><%= credential.adminName %></h4>
+                                </div>
+                                <div class="card-body">
+                                    <% if (error) { %>
+                                        <div class="alert alert-danger" role="alert"><%= error %></div>
+                                    <% } %>
+
+                                    <form action="/company/users/<%= credential.id %>/edit" method="post">
+                                        <div class="mb-3">
+                                            <label for="adminName" class="form-label">Name</label>
+                                            <input type="text" class="form-control" id="adminName" name="adminName" value="<%= values.adminName || credential.adminName %>" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Login email</label>
+                                            <input type="email" class="form-control" value="<%= credential.email %>" disabled>
+                                            <div class="form-text">Email cannot be changed.</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="companyRoleId" class="form-label">Role</label>
+                                            <select class="form-select" id="companyRoleId" name="companyRoleId" required>
+                                                <% roles.forEach(function(roleOption) { %>
+                                                    <option value="<%= roleOption.id %>" <%= String(selectedRoleId) === String(roleOption.id) ? 'selected' : '' %>><%= roleOption.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3 form-check">
+                                            <input type="checkbox" class="form-check-input" id="isActive" name="isActive" <%= isActiveChecked ? 'checked' : '' %>>
+                                            <label class="form-check-label" for="isActive">Active</label>
+                                        </div>
+
+                                        <hr class="my-4">
+                                        <h5 class="mb-3">Reset Password (optional)</h5>
+
+                                        <div class="mb-3">
+                                            <label class="form-label" for="password-input">New password</label>
+                                            <input type="password" class="form-control" id="password-input" name="password" placeholder="Leave blank to keep current password">
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label" for="confirm-password-input">Confirm new password</label>
+                                            <input type="password" class="form-control" id="confirm-password-input" name="confirmPassword" placeholder="Repeat new password">
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-success" type="submit">Save Changes</button>
+                                            <a href="/company/users" class="btn btn-light">Cancel</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('../partials/velzon/app-layout-close') %>

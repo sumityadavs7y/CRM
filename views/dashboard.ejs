@@ -1,0 +1,204 @@
+<%- include('partials/velzon/app-layout-open', {
+    pageTitle: 'Dashboard - CRM',
+    activeNav: 'dashboard'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Dashboard</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item active">Dashboard</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
+                                <div class="flex-grow-1">
+                                    <h4 class="fs-16 mb-1">Welcome back, <%= user.name %>!</h4>
+                                    <p class="text-muted mb-0">
+                                        <% if (user.authType === 'company') { %>
+                                            You're signed in to <strong><%= user.companyName %></strong> as <strong><%= user.roleName %></strong>.
+                                        <% } else { %>
+                                            Here's your account overview for today.
+                                        <% } %>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xl-12">
+                            <div class="card crm-widget">
+                                <div class="card-body p-0">
+                                    <div class="row row-cols-xxl-3 row-cols-md-3 row-cols-1 g-0">
+                                        <div class="col">
+                                            <div class="py-4 px-3">
+                                                <h5 class="text-muted text-uppercase fs-13">Signed in as</h5>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <i class="ri-user-3-line display-6 text-muted"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1 ms-3">
+                                                        <h2 class="mb-0 fs-22"><%= user.name %></h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="mt-3 mt-md-0 py-4 px-3">
+                                                <h5 class="text-muted text-uppercase fs-13">Email</h5>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <i class="ri-mail-line display-6 text-muted"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1 ms-3">
+                                                        <h2 class="mb-0 fs-16 text-truncate"><%= user.email %></h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="mt-3 mt-lg-0 py-4 px-3">
+                                                <h5 class="text-muted text-uppercase fs-13"><%= user.authType === 'company' ? 'Company' : 'Role' %></h5>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <i class="<%= user.authType === 'company' ? 'ri-building-line' : 'ri-shield-user-line' %> display-6 text-muted"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1 ms-3">
+                                                        <h2 class="mb-0 fs-22"><%= user.authType === 'company' ? user.companyName : user.role %></h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card card-animate">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Account Status</p>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <span class="badge bg-success-subtle text-success">Active</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-end justify-content-between mt-4">
+                                        <div>
+                                            <h4 class="fs-22 fw-semibold ff-secondary mb-4">Signed In</h4>
+                                            <p class="text-muted mb-0">Your session is active.</p>
+                                        </div>
+                                        <div class="avatar-sm flex-shrink-0">
+                                            <span class="avatar-title bg-success-subtle rounded fs-3">
+                                                <i class="ri-checkbox-circle-line text-success"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card card-animate">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Access Level</p>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <span class="badge bg-primary-subtle text-primary"><%= user.roleName || user.role %></span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-end justify-content-between mt-4">
+                                        <div>
+                                            <h4 class="fs-22 fw-semibold ff-secondary mb-4"><%= user.authType === 'company' ? (user.roleName || user.role) : (user.isSuperAdmin ? 'Full' : 'Standard') %></h4>
+                                            <p class="text-muted mb-0">
+                                                <% if (user.authType === 'company') { %>
+                                                    Role for <strong><%= user.companyName %></strong>.
+                                                <% } else { %>
+                                                    Super Admin: <strong><%= user.isSuperAdmin ? 'Yes' : 'No' %></strong>
+                                                <% } %>
+                                            </p>
+                                        </div>
+                                        <div class="avatar-sm flex-shrink-0">
+                                            <span class="avatar-title bg-primary-subtle rounded fs-3">
+                                                <i class="ri-vip-crown-line text-primary"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card card-animate">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Theme</p>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <span class="badge bg-info-subtle text-info"><%= themeLabel %></span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-end justify-content-between mt-4">
+                                        <div>
+                                            <h4 class="fs-22 fw-semibold ff-secondary mb-4"><%= themeLabel %></h4>
+                                            <p class="text-muted mb-0">Change theme from the profile menu.</p>
+                                        </div>
+                                        <div class="avatar-sm flex-shrink-0">
+                                            <span class="avatar-title bg-info-subtle rounded fs-3">
+                                                <i class="ri-palette-line text-info"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1">Account Overview</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted mb-2">Welcome back, <strong><%= user.name %></strong>. You are signed in as <strong><%= user.roleName || user.role %></strong><% if (user.authType === 'company') { %> for <strong><%= user.companyName %></strong><% } %>.</p>
+                                    <p class="text-muted mb-0">Email: <strong><%= user.email %></strong></p>
+                                    <% if (user.isSuperAdmin) { %>
+                                        <div class="mt-3">
+                                            <a href="/subscription-plans" class="btn btn-soft-primary btn-sm me-2">Subscription Plans</a>
+                                            <a href="/companies" class="btn btn-soft-success btn-sm me-2">Manage Companies</a>
+                                            <a href="/companies/new" class="btn btn-success btn-sm">Create Company Login</a>
+                                        </div>
+                                    <% } else if (user.authType === 'company') { %>
+                                        <div class="mt-3">
+                                            <% if (user.can && user.can('access_demo', 'view')) { %>
+                                                <a href="/access-demo" class="btn btn-soft-primary btn-sm me-2">Access Demo</a>
+                                            <% } %>
+                                            <% if (user.can && user.can('user_management', 'view')) { %>
+                                                <a href="/company/users" class="btn btn-success btn-sm me-2">Users</a>
+                                            <% } %>
+                                            <% if (user.can && user.can('role_management', 'view')) { %>
+                                                <a href="/company/roles" class="btn btn-soft-success btn-sm">Roles</a>
+                                            <% } %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('partials/velzon/app-layout-close') %>

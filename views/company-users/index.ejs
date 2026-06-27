@@ -1,0 +1,92 @@
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Users - CRM',
+    activeNav: 'company-users'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Users</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item">User Management</li>
+                                        <li class="breadcrumb-item active">Users</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (success) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-success" role="alert"><%= success %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1">Company Team Members</h4>
+                                    <% if (user.can('user_management', 'edit')) { %>
+                                        <div class="flex-shrink-0">
+                                            <a href="/company/users/new" class="btn btn-success btn-sm">
+                                                <i class="ri-add-line align-middle me-1"></i> Add Team Member
+                                            </a>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <div class="card-body">
+                                    <% if (maxUsers) { %>
+                                        <p class="text-muted mb-3">Active users: <strong><%= activeUserCount %></strong> / <%= maxUsers %></p>
+                                    <% } %>
+
+                                    <% if (credentials.length === 0) { %>
+                                        <p class="text-muted mb-0">No team members yet.</p>
+                                    <% } else { %>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Email</th>
+                                                        <th>Role</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% credentials.forEach(function(member) { %>
+                                                        <tr>
+                                                            <td class="fw-medium"><%= member.adminName %></td>
+                                                            <td><%= member.email %></td>
+                                                            <td><span class="badge bg-primary-subtle text-primary"><%= member.companyRole ? member.companyRole.name : '—' %></span></td>
+                                                            <td>
+                                                                <% if (member.isActive) { %>
+                                                                    <span class="badge bg-success-subtle text-success">Active</span>
+                                                                <% } else { %>
+                                                                    <span class="badge bg-danger-subtle text-danger">Inactive</span>
+                                                                <% } %>
+                                                            </td>
+                                                            <td>
+                                                                <% if (user.can('user_management', 'edit')) { %>
+                                                                    <a href="/company/users/<%= member.id %>/edit" class="btn btn-soft-primary btn-sm">Edit</a>
+                                                                <% } else { %>
+                                                                    <span class="text-muted small">View only</span>
+                                                                <% } %>
+                                                            </td>
+                                                        </tr>
+                                                    <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('../partials/velzon/app-layout-close') %>

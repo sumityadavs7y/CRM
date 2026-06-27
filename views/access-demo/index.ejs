@@ -1,0 +1,155 @@
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Access Demo - CRM',
+    activeNav: 'access-demo'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Access Demo</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item active">Access Demo</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (success) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-success" role="alert"><%= success %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Signed In As</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-1"><strong><%= user.name %></strong></p>
+                                    <p class="text-muted mb-1"><%= user.email %></p>
+                                    <p class="mb-1">Company: <strong><%= user.companyName %></strong></p>
+                                    <p class="mb-0">Role: <strong><%= user.roleName %></strong></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">RBAC Breakdown</h4>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="mb-3">Plan Features</h5>
+                                    <% if (planFeatures.length) { %>
+                                        <% planFeatures.forEach(function(featureKey) { %>
+                                            <span class="badge bg-primary-subtle text-primary me-1 mb-1"><%= getFeatureLabel(featureKey) %></span>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <p class="text-muted">No features enabled on the current company plan.</p>
+                                    <% } %>
+
+                                    <hr class="my-4">
+                                    <h5 class="mb-3">Role Permissions (assigned)</h5>
+                                    <% const rawKeys = Object.keys(rawRolePermissions); %>
+                                    <% if (rawKeys.length) { %>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Feature</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% rawKeys.forEach(function(featureKey) { %>
+                                                        <tr>
+                                                            <td><%= getFeatureLabel(featureKey) %></td>
+                                                            <td><%= (rawRolePermissions[featureKey] || []).join(', ') || '—' %></td>
+                                                        </tr>
+                                                    <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <% } else { %>
+                                        <p class="text-muted">No feature permissions assigned to this role.</p>
+                                    <% } %>
+
+                                    <hr class="my-4">
+                                    <h5 class="mb-3">Effective Access (plan ∩ role)</h5>
+                                    <% const effectiveKeys = Object.keys(effectivePermissions); %>
+                                    <% if (effectiveKeys.length) { %>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Feature</th>
+                                                        <% permissionActions.forEach(function(action) { %>
+                                                            <th class="text-center text-capitalize"><%= action %></th>
+                                                        <% }); %>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% effectiveKeys.forEach(function(featureKey) { %>
+                                                        <tr>
+                                                            <td><%= getFeatureLabel(featureKey) %></td>
+                                                            <% permissionActions.forEach(function(action) { %>
+                                                                <td class="text-center">
+                                                                    <% if ((effectivePermissions[featureKey] || []).includes(action)) { %>
+                                                                        <span class="badge bg-success-subtle text-success">Yes</span>
+                                                                    <% } else { %>
+                                                                        <span class="badge bg-light text-muted">No</span>
+                                                                    <% } %>
+                                                                </td>
+                                                            <% }); %>
+                                                        </tr>
+                                                    <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <% } else { %>
+                                        <p class="text-muted">No effective feature access for this user.</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success-subtle">
+                                    <h4 class="card-title mb-0 text-success">View Access</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted mb-0">You can see this page because your effective permissions include <strong>view</strong> for Access Demo.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card <%= user.can('access_demo', 'edit') ? 'border-primary' : 'border-light' %>">
+                                <div class="card-header <%= user.can('access_demo', 'edit') ? 'bg-primary-subtle' : 'bg-light' %>">
+                                    <h4 class="card-title mb-0">Edit Access</h4>
+                                </div>
+                                <div class="card-body">
+                                    <% if (user.can('access_demo', 'edit')) { %>
+                                        <p class="text-muted">Your role grants <strong>edit</strong> access. Use the button below to simulate a protected edit action.</p>
+                                        <form action="/access-demo/edit" method="post">
+                                            <button type="submit" class="btn btn-primary btn-sm">Simulate Edit</button>
+                                        </form>
+                                    <% } else { %>
+                                        <p class="text-muted mb-0">No edit permission. The simulate edit action is disabled for your role.</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('../partials/velzon/app-layout-close') %>

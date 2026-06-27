@@ -1,0 +1,163 @@
+<%
+    const subscription = company.subscription;
+    const subStatus = formatSubscriptionStatus(subscription);
+    const plan = subscription && subscription.plan ? subscription.plan : null;
+    const primaryAdmin = getPrimaryAdmin(company.credentials);
+%>
+
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: company.name + ' - CRM',
+    activeNav: 'companies'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0"><%= company.name %></h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item"><a href="/companies">Companies</a></li>
+                                        <li class="breadcrumb-item active">View</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (success) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-success" role="alert"><%= success %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-9">
+                            <div class="card">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1">Company Details</h4>
+                                    <div class="flex-shrink-0 d-flex gap-2">
+                                        <a href="/companies/<%= company.id %>/edit" class="btn btn-success btn-sm">Edit</a>
+                                        <a href="/companies" class="btn btn-light btn-sm">Back</a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="mb-3">General</h5>
+                                    <div class="table-responsive mb-4">
+                                        <table class="table table-borderless mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <th class="ps-0 text-muted fw-normal" style="width: 180px;">Company name</th>
+                                                    <td class="fw-medium"><%= company.name %></td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="ps-0 text-muted fw-normal">Status</th>
+                                                    <td>
+                                                        <% if (company.isActive) { %>
+                                                            <span class="badge bg-success-subtle text-success">Active</span>
+                                                        <% } else { %>
+                                                            <span class="badge bg-danger-subtle text-danger">Inactive</span>
+                                                        <% } %>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="ps-0 text-muted fw-normal">Created</th>
+                                                    <td><%= new Date(company.createdAt).toLocaleString() %></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <hr class="my-4">
+                                    <h5 class="mb-3">Primary Admin Login</h5>
+                                    <% if (primaryAdmin) { %>
+                                        <div class="table-responsive mb-4">
+                                            <table class="table table-borderless mb-0">
+                                                <tbody>
+                                                    <tr>
+                                                        <th class="ps-0 text-muted fw-normal" style="width: 180px;">Admin name</th>
+                                                        <td><%= primaryAdmin.adminName %></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="ps-0 text-muted fw-normal">Login email</th>
+                                                        <td><%= primaryAdmin.email %></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="ps-0 text-muted fw-normal">Role</th>
+                                                        <td><%= primaryAdmin.companyRole ? primaryAdmin.companyRole.name : (primaryAdmin.role || '—') %></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="ps-0 text-muted fw-normal">Credential status</th>
+                                                        <td>
+                                                            <% if (primaryAdmin.isActive) { %>
+                                                                <span class="badge bg-success-subtle text-success">Active</span>
+                                                            <% } else { %>
+                                                                <span class="badge bg-danger-subtle text-danger">Inactive</span>
+                                                            <% } %>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <% } else { %>
+                                        <p class="text-muted mb-4">No login credentials configured.</p>
+                                    <% } %>
+
+                                    <hr class="my-4">
+                                    <h5 class="mb-3">Subscription</h5>
+                                    <% if (subscription && plan) { %>
+                                        <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <div>
+                                                <a href="/subscription-plans/<%= plan.id %>" class="fw-medium"><%= plan.name %></a>
+                                                <% if (plan.description) { %>
+                                                    <div class="text-muted small"><%= plan.description %></div>
+                                                <% } %>
+                                            </div>
+                                            <span class="badge <%= subStatus.className %>"><%= subStatus.label %></span>
+                                        </div>
+
+                                        <div class="table-responsive mb-3">
+                                            <table class="table table-borderless mb-0">
+                                                <tbody>
+                                                    <tr>
+                                                        <th class="ps-0 text-muted fw-normal" style="width: 180px;">Start date</th>
+                                                        <td><%= new Date(subscription.startsAt).toLocaleDateString() %></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="ps-0 text-muted fw-normal">Valid until</th>
+                                                        <td><%= new Date(subscription.expiresAt).toLocaleDateString() %></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div class="card bg-light border-0">
+                                            <div class="card-body py-3">
+                                                <p class="text-muted mb-2 small text-uppercase fw-medium">Plan limits</p>
+                                                <div class="small text-muted mb-2">
+                                                    Users: <%= plan.maxUsers %> · Contacts: <%= plan.maxContacts %> · Deals: <%= plan.maxDeals %> · Storage: <%= plan.maxStorageMb %> MB
+                                                </div>
+                                                <p class="text-muted mb-2 small text-uppercase fw-medium">Features</p>
+                                                <% if (plan.features && plan.features.length) { %>
+                                                    <% plan.features.forEach(function(featureKey) { %>
+                                                        <span class="badge bg-primary-subtle text-primary me-1 mb-1"><%= getFeatureLabel(featureKey) %></span>
+                                                    <% }); %>
+                                                <% } else { %>
+                                                    <span class="text-muted">No features enabled</span>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="alert alert-light border mb-0">
+                                            <span class="badge bg-secondary-subtle text-secondary">No Plan</span>
+                                            <small class="text-muted d-block mt-2">This company has no subscription assigned yet.</small>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('../partials/velzon/app-layout-close') %>

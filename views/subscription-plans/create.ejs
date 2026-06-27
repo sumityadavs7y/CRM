@@ -1,0 +1,43 @@
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Create Subscription Plan - CRM',
+    activeNav: 'subscription-plans'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Create Subscription Plan</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item"><a href="/subscription-plans">Subscription Plans</a></li>
+                                        <li class="breadcrumb-item active">Create</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-9">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Plan Details</h4>
+                                </div>
+                                <div class="card-body">
+                                    <% if (error) { %>
+                                        <div class="alert alert-danger" role="alert"><%= error %></div>
+                                    <% } %>
+
+                                    <%- include('./_form', {
+                                        formAction: '/subscription-plans',
+                                        submitLabel: 'Create Plan',
+                                        values: values,
+                                        availableFeatures: availableFeatures
+                                    }) %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('../partials/velzon/app-layout-close') %>

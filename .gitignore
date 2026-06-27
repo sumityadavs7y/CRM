@@ -1,0 +1,17 @@
+node_modules/
+.env
+.DS_Store
+database/
+uploads/
+*.log
+logs/
+dist/
+build/
+
+cgi-bin/
+tmp/
+stdrerr.log
+.htaccess
+
+temp/
+public/style/

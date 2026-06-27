@@ -1,0 +1,109 @@
+<%- include('../../partials/velzon/app-layout-open', {
+    pageTitle: 'Pipelines - CRM Setup',
+    activeNav: 'crm-setup-pipelines'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Pipelines</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item">CRM Setup</li>
+                                        <li class="breadcrumb-item active">Pipelines</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (success) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-success" role="alert"><%= success %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (error) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-danger" role="alert"><%= error %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1">Company Pipelines</h4>
+                                    <% if (user.can('crm_setup', 'edit')) { %>
+                                        <div class="flex-shrink-0">
+                                            <a href="/company/crm-setup/pipelines/new" class="btn btn-success btn-sm">
+                                                <i class="ri-add-line align-middle me-1"></i> Create Pipeline
+                                            </a>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">Each pipeline defines lead and deal stages used across your CRM.</p>
+                                    <% if (pipelines.length === 0) { %>
+                                        <p class="text-muted mb-0">No pipelines configured.</p>
+                                    <% } else { %>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Lead Stages</th>
+                                                        <th>Deal Stages</th>
+                                                        <th>Type</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% pipelines.forEach(function(pipeline) { %>
+                                                        <tr>
+                                                            <td class="fw-medium">
+                                                                <%= pipeline.name %>
+                                                                <% if (pipeline.description) { %>
+                                                                    <i class="ri-information-line text-muted ms-1"
+                                                                       data-bs-toggle="tooltip"
+                                                                       data-bs-placement="top"
+                                                                       title="<%= pipeline.description.replace(/"/g, '&quot;') %>"></i>
+                                                                <% } %>
+                                                            </td>
+                                                            <td><span class="badge bg-soft-primary text-primary"><%= pipeline.leadStageCount %></span></td>
+                                                            <td><span class="badge bg-soft-success text-success"><%= pipeline.dealStageCount %></span></td>
+                                                            <td>
+                                                                <% if (pipeline.isSystem) { %>
+                                                                    <span class="badge bg-secondary">Default</span>
+                                                                <% } else { %>
+                                                                    <span class="badge bg-light text-body">Custom</span>
+                                                                <% } %>
+                                                            </td>
+                                                            <td>
+                                                                <div class="d-flex gap-1 flex-wrap">
+                                                                    <a href="/company/crm-setup/pipelines/<%= pipeline.id %>" class="btn btn-sm btn-soft-primary">View</a>
+                                                                    <% if (user.can('crm_setup', 'edit')) { %>
+                                                                        <a href="/company/crm-setup/pipelines/<%= pipeline.id %>/edit" class="btn btn-sm btn-soft-secondary">Edit</a>
+                                                                        <form action="/company/crm-setup/pipelines/<%= pipeline.id %>/delete" method="post" class="d-inline" onsubmit="return confirm('Delete this pipeline and all its stages? This cannot be undone.');">
+                                                                            <button type="submit" class="btn btn-sm btn-soft-danger">Delete</button>
+                                                                        </form>
+                                                                    <% } %>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('../../partials/velzon/app-layout-close') %>
