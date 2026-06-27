@@ -1,0 +1,82 @@
+<%
+    function formatPostedAt(value) {
+        if (!value) {
+            return '—';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return '—';
+        }
+        return date.toLocaleString();
+    }
+
+    function truncateText(text, maxLength) {
+        if (!text) {
+            return '—';
+        }
+        if (text.length <= maxLength) {
+            return text;
+        }
+        return text.slice(0, maxLength) + '…';
+    }
+
+    const discussions = lead.discussions || [];
+%>
+
+<div class="card border mt-2">
+    <div class="card-header align-items-center d-flex">
+        <h5 class="card-title mb-0 flex-grow-1">Discussion</h5>
+        <% if (canEdit) { %>
+            <button type="button" class="btn btn-soft-primary btn-sm" id="leadDiscussionAddBtn" data-bs-toggle="modal" data-bs-target="#leadDiscussionModal">
+                <i class="ri-add-line align-middle me-1"></i> Add discussion
+            </button>
+        <% } %>
+    </div>
+    <div class="card-body" id="leadDiscussionsList">
+        <% if (discussions.length === 0) { %>
+            <p class="text-muted mb-0">No discussion entries yet.</p>
+        <% } else { %>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>User</th>
+                            <th>Time</th>
+                            <th>Message</th>
+                            <% if (canEdit) { %>
+                                <th>Actions</th>
+                            <% } %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% discussions.forEach(function(item) { %>
+                            <tr data-discussion-id="<%= item.id %>">
+                                <td><%= item.user ? item.user.adminName : '—' %></td>
+                                <td><%= formatPostedAt(item.postedAt) %></td>
+                                <td><%= truncateText(item.message, 120) %></td>
+                                <% if (canEdit) { %>
+                                    <td class="text-nowrap">
+                                        <button
+                                            type="button"
+                                            class="btn btn-soft-primary btn-sm lead-discussion-edit me-1"
+                                            data-discussion-id="<%= item.id %>"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-soft-danger btn-sm lead-discussion-delete"
+                                            data-delete-url="/company/leads/<%= lead.id %>/discussions/<%= item.id %>/delete"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                <% } %>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+</div>

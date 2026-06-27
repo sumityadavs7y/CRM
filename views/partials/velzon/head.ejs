@@ -3,6 +3,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta content="CRM Platform" name="description" />
 <link rel="shortcut icon" href="<%= assetBase %>/assets/images/favicon.ico">
+<script>
+(function () {
+  var match = document.cookie.match(/crm_color_mode=([^;]+)/);
+  if (!match) {
+    return;
+  }
+
+  var colorMode = decodeURIComponent(match[1]);
+  if (colorMode === 'light' || colorMode === 'dark') {
+    sessionStorage.setItem('data-bs-theme', colorMode);
+  }
+})();
+</script>
 <script src="<%= assetBase %>/assets/js/layout.js"></script>
 <link href="<%= assetBase %>/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
 <link href="<%= assetBase %>/assets/css/icons.min.css" rel="stylesheet" type="text/css" />

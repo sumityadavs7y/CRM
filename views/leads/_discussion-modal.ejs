@@ -1,0 +1,39 @@
+<div class="modal fade" id="leadDiscussionModal" tabindex="-1" aria-labelledby="leadDiscussionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="leadDiscussionModalLabel">Add Discussion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="leadDiscussionForm">
+                <input type="hidden" id="leadDiscussionId" value="">
+                <div class="modal-body">
+                    <div id="leadDiscussionFormError" class="alert alert-danger d-none" role="alert"></div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modalDiscussionUserId" class="form-label">User <span class="text-danger">*</span></label>
+                            <select class="form-select" id="modalDiscussionUserId" name="userId" required>
+                                <option value="">Select user</option>
+                                <% assignees.forEach(function(assignee) { %>
+                                    <option value="<%= assignee.id %>"><%= assignee.adminName %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modalDiscussionPostedAt" class="form-label">Time <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="modalDiscussionPostedAt" name="postedAt" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalDiscussionMessage" class="form-label">Message <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="modalDiscussionMessage" name="message" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="leadDiscussionSubmit">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

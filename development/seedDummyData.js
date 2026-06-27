@@ -23,7 +23,7 @@ const DUMMY_PLANS = [
     maxContacts: 100,
     maxDeals: 25,
     maxStorageMb: 512,
-    features: ['user_management', 'access_demo', 'crm_setup'],
+    features: ['user_management', 'access_demo', 'crm_setup', 'leads'],
   },
   {
     name: 'Professional',
@@ -32,7 +32,7 @@ const DUMMY_PLANS = [
     maxContacts: 1000,
     maxDeals: 250,
     maxStorageMb: 4096,
-    features: ['user_management', 'role_management', 'access_demo', 'crm_setup'],
+    features: ['user_management', 'role_management', 'access_demo', 'crm_setup', 'leads'],
   },
 ];
 

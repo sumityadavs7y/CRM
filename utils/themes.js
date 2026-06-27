@@ -67,6 +67,9 @@ const THEMES = [
 const DEFAULT_THEME_ID = 'default';
 const THEME_STORAGE_KEY = 'crm-theme';
 const THEME_COOKIE_NAME = 'crm_theme';
+const COLOR_MODE_STORAGE_KEY = 'crm-color-mode';
+const COLOR_MODE_COOKIE_NAME = 'crm_color_mode';
+const VALID_COLOR_MODES = new Set(['light', 'dark']);
 
 const themeMap = new Map(THEMES.map((theme) => [theme.id, theme]));
 
@@ -97,26 +100,65 @@ function resolveThemeId(req) {
   return themeMap.has(candidate) ? candidate : DEFAULT_THEME_ID;
 }
 
-function buildThemeLocals(themeId) {
+function parseColorModeCookie(req) {
+  const cookies = req?.headers?.cookie;
+  if (!cookies) {
+    return null;
+  }
+
+  const match = cookies
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${COLOR_MODE_COOKIE_NAME}=`));
+
+  if (!match) {
+    return null;
+  }
+
+  return decodeURIComponent(match.slice(COLOR_MODE_COOKIE_NAME.length + 1));
+}
+
+function resolveColorMode(req) {
+  const candidate = parseColorModeCookie(req);
+  return VALID_COLOR_MODES.has(candidate) ? candidate : null;
+}
+
+function upsertHtmlAttr(htmlAttrs, attrName, attrValue) {
+  const pattern = new RegExp(`${attrName}="[^"]*"`);
+  if (pattern.test(htmlAttrs)) {
+    return htmlAttrs.replace(pattern, `${attrName}="${attrValue}"`);
+  }
+  return `${htmlAttrs} ${attrName}="${attrValue}"`;
+}
+
+function applyColorModeToHtmlAttrs(htmlAttrs, colorMode) {
+  if (!colorMode) {
+    return htmlAttrs;
+  }
+  return upsertHtmlAttr(htmlAttrs, 'data-bs-theme', colorMode);
+}
+
+function buildThemeLocals(themeId, req) {
   const theme = getTheme(themeId);
+  const colorMode = req ? resolveColorMode(req) : null;
 
   return {
     theme: theme.id,
     themeLabel: theme.label,
     themes: THEMES,
     assetBase: `/style/Admin/dist/${theme.id}`,
-    htmlAttrs: theme.htmlAttrs,
+    htmlAttrs: applyColorModeToHtmlAttrs(theme.htmlAttrs, colorMode),
     showAuthParticles: theme.showAuthParticles,
     authCardClass: theme.authCardClass,
   };
 }
 
-function getDefaultThemeLocals() {
-  return buildThemeLocals(DEFAULT_THEME_ID);
+function getDefaultThemeLocals(req) {
+  return buildThemeLocals(DEFAULT_THEME_ID, req);
 }
 
 function getThemeLocals(req) {
-  return buildThemeLocals(resolveThemeId(req));
+  return buildThemeLocals(resolveThemeId(req), req);
 }
 
 function withTheme(req, data = {}) {
@@ -128,8 +170,11 @@ module.exports = {
   DEFAULT_THEME_ID,
   THEME_STORAGE_KEY,
   THEME_COOKIE_NAME,
+  COLOR_MODE_STORAGE_KEY,
+  COLOR_MODE_COOKIE_NAME,
   getTheme,
   resolveThemeId,
+  resolveColorMode,
   getDefaultThemeLocals,
   getThemeLocals,
   withTheme,

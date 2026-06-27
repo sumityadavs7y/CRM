@@ -21,6 +21,11 @@ const AVAILABLE_PLAN_FEATURES = [
     label: 'CRM Setup',
     description: 'Configure pipelines, lead stages, deal stages, and lead sources',
   },
+  {
+    key: 'leads',
+    label: 'Leads',
+    description: 'View and manage customer leads',
+  },
 ];
 
 function getAvailablePlanFeatures() {

@@ -1,0 +1,127 @@
+<div class="lead-editable-panel mb-4">
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="lead-field-grid">
+                <div class="lead-field-label">Customer name</div>
+                <div class="lead-field-value<%= canEdit ? ' is-editable' : '' %>" data-field="customerName" data-type="text">
+                    <span class="inline-field-display"><%= lead.customerName %></span>
+                </div>
+
+                <div class="lead-field-label">Email</div>
+                <div class="lead-field-value<%= canEdit ? ' is-editable' : '' %>" data-field="email" data-type="text">
+                    <span class="inline-field-display"><%= lead.email %></span>
+                </div>
+
+                <div class="lead-field-label">Subject</div>
+                <div class="lead-field-value<%= canEdit ? ' is-editable' : '' %>" data-field="subject" data-type="text">
+                    <span class="inline-field-display"><%= lead.subject %></span>
+                </div>
+
+                <div class="lead-field-label">Assignee</div>
+                <div class="lead-field-value<%= canEdit ? ' is-editable' : '' %>" data-field="assigneeId" data-type="select" data-display="<%= lead.assignee ? lead.assignee.adminName : '—' %>">
+                    <span class="inline-field-display"><%= lead.assignee ? lead.assignee.adminName : '—' %></span>
+                </div>
+
+                <div class="lead-field-label">Phone</div>
+                <div class="lead-field-value<%= canEdit ? ' is-editable' : '' %>" data-field="phone" data-type="text" data-empty="—">
+                    <span class="inline-field-display"><%= lead.phone || '—' %></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="lead-field-grid">
+                <div class="lead-field-label">Follow-up date</div>
+                <div class="lead-field-value<%= canEdit ? ' is-editable' : '' %>" data-field="followUpDate" data-type="date" data-empty="—">
+                    <span class="inline-field-display"><%= lead.followUpDate || '—' %></span>
+                </div>
+
+                <div class="lead-field-label">Pipeline</div>
+                <div class="lead-field-value<%= canEdit ? ' is-editable' : '' %>" data-field="pipelineId" data-type="pipeline" data-display="<%= lead.pipeline ? lead.pipeline.name : '—' %>">
+                    <span class="inline-field-display"><%= lead.pipeline ? lead.pipeline.name : '—' %></span>
+                </div>
+
+                <div class="lead-field-label">Stage</div>
+                <div class="lead-field-value<%= canEdit ? ' is-editable' : '' %>" data-field="stageId" data-type="stage" data-display="<%= lead.stage ? lead.stage.name : '—' %>">
+                    <span class="inline-field-display"><%= lead.stage ? lead.stage.name : '—' %></span>
+                </div>
+
+                <div class="lead-field-label">Sources</div>
+                <div class="lead-field-value lead-sources-field<%= canEdit ? ' is-editable' : '' %>" data-field="sourceIds" data-type="sources">
+                    <span class="inline-field-display<%= !(lead.sources && lead.sources.length) ? ' is-empty' : '' %>">
+                        <% if (lead.sources && lead.sources.length) { %>
+                            <% lead.sources.forEach(function(source) { %>
+                                <span class="badge bg-secondary-subtle text-secondary me-1"><%= source.name %></span>
+                            <% }); %>
+                        <% } %>
+                    </span>
+                    <% if (!canEdit && (!lead.sources || !lead.sources.length)) { %>
+                        —
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="lead-field-grid lead-notes-full-width">
+                <div class="lead-field-label">Notes</div>
+                <div class="lead-field-value<%= canEdit ? ' is-editable' : '' %>" data-field="notes" data-type="notes">
+                    <% if (canEdit) { %>
+                        <div class="inline-field-display lead-notes-readonly"><%- notesHtml || '' %></div>
+                        <div class="inline-field-editor d-none">
+                            <div id="leadNotesEditor" class="lead-notes-editor"></div>
+                        </div>
+                    <% } else { %>
+                        <div class="lead-notes-readonly"><%- notesHtml || '' %></div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('./_communications-section') %>
+
+<%- include('./_discussions-section') %>
+
+<script type="application/json" id="lead-detail-data"><%- JSON.stringify({
+    canEdit: !!canEdit,
+    patchUrl: '/company/leads/' + lead.id,
+    commUrl: '/company/leads/' + lead.id + '/communications',
+    discussionUrl: '/company/leads/' + lead.id + '/discussions',
+    lead: {
+        id: lead.id,
+        customerName: lead.customerName,
+        email: lead.email,
+        subject: lead.subject,
+        assigneeId: lead.assigneeId,
+        phone: lead.phone || '',
+        followUpDate: lead.followUpDate || '',
+        pipelineId: lead.pipelineId || '',
+        stageId: lead.stageId || '',
+        sourceIds: (lead.sources || []).map(function(s) { return s.id; }),
+        notes: lead.notes || ''
+    },
+    assignees: assignees.map(function(a) { return { id: a.id, adminName: a.adminName }; }),
+    pipelines: pipelines.map(function(p) { return { id: p.id, name: p.name }; }),
+    sources: sources.map(function(s) { return { id: s.id, name: s.name }; }),
+    pipelineStageMap: pipelineStageMap,
+    communications: (lead.communications || []).map(function(c) {
+        return {
+            id: c.id,
+            itemType: c.itemType,
+            sentAt: c.sentAt,
+            toAddress: c.toAddress,
+            subject: c.subject,
+            description: c.description || ''
+        };
+    }),
+    discussions: (lead.discussions || []).map(function(d) {
+        return {
+            id: d.id,
+            userId: d.userId,
+            postedAt: d.postedAt,
+            message: d.message || ''
+        };
+    })
+}) %></script>

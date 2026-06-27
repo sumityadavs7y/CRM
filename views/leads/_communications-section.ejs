@@ -1,0 +1,92 @@
+<%
+    function formatSentAt(value) {
+        if (!value) {
+            return '—';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return '—';
+        }
+        return date.toLocaleString();
+    }
+
+    function truncateText(text, maxLength) {
+        if (!text) {
+            return '—';
+        }
+        if (text.length <= maxLength) {
+            return text;
+        }
+        return text.slice(0, maxLength) + '…';
+    }
+
+    const communications = lead.communications || [];
+%>
+
+<div class="card border mt-2">
+    <div class="card-header align-items-center d-flex">
+        <h5 class="card-title mb-0 flex-grow-1">Emails / Messages</h5>
+        <% if (canEdit) { %>
+            <button type="button" class="btn btn-soft-primary btn-sm" id="leadCommunicationAddBtn" data-bs-toggle="modal" data-bs-target="#leadCommunicationModal">
+                <i class="ri-add-line align-middle me-1"></i> Add email/message
+            </button>
+        <% } %>
+    </div>
+    <div class="card-body" id="leadCommunicationsList">
+        <% if (communications.length === 0) { %>
+            <p class="text-muted mb-0">No emails or messages recorded yet.</p>
+        <% } else { %>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Type</th>
+                            <th>Sent</th>
+                            <th>To</th>
+                            <th>Subject</th>
+                            <th>Description</th>
+                            <% if (canEdit) { %>
+                                <th>Actions</th>
+                            <% } %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% communications.forEach(function(item) { %>
+                            <tr data-comm-id="<%= item.id %>">
+                                <td>
+                                    <% if (item.itemType === 'email') { %>
+                                        <span class="badge bg-primary-subtle text-primary">Email</span>
+                                    <% } else { %>
+                                        <span class="badge bg-info-subtle text-info">Message</span>
+                                    <% } %>
+                                </td>
+                                <td><%= formatSentAt(item.sentAt) %></td>
+                                <td><%= item.toAddress %></td>
+                                <td><%= item.subject %></td>
+                                <td><%= truncateText(item.description, 80) %></td>
+                                <% if (canEdit) { %>
+                                    <td class="text-nowrap">
+                                        <button
+                                            type="button"
+                                            class="btn btn-soft-primary btn-sm lead-comm-edit me-1"
+                                            data-comm-id="<%= item.id %>"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-soft-danger btn-sm lead-comm-delete"
+                                            data-delete-url="/company/leads/<%= lead.id %>/communications/<%= item.id %>/delete"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                <% } %>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+</div>

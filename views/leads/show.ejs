@@ -1,0 +1,67 @@
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: lead.customerName + ' - Lead - CRM',
+    activeNav: 'leads'
+}) %>
+
+<link href="/vendor/tom-select/tom-select.bootstrap5.min.css" rel="stylesheet">
+<link href="/vendor/quill/quill.snow.css" rel="stylesheet">
+<link href="/css/lead-detail.css?v=7" rel="stylesheet">
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0"><%= lead.customerName %></h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item"><a href="/company/leads">Leads</a></li>
+                                        <li class="breadcrumb-item active">View</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (typeof success !== 'undefined' && success) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-success" role="alert"><%= success %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (typeof error !== 'undefined' && error) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-danger" role="alert"><%= error %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div class="row mb-3">
+                        <div class="col-12 d-flex gap-2">
+                            <a href="/company/leads" class="btn btn-light btn-sm">Back to Leads</a>
+                            <% if (canEdit) { %>
+                                <form action="/company/leads/<%= lead.id %>/delete" method="post" class="d-inline" onsubmit="return confirm('Delete this lead? This cannot be undone.');">
+                                    <button type="submit" class="btn btn-soft-danger btn-sm">Delete</button>
+                                </form>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <%- include('./_lead-tabs') %>
+                        </div>
+                    </div>
+
+                    <% if (canEdit) { %>
+                        <%- include('./_communication-modal') %>
+                        <%- include('./_discussion-modal') %>
+                    <% } %>
+
+<script src="/vendor/tom-select/tom-select.complete.min.js"></script>
+<script src="/vendor/quill/quill.js"></script>
+<script src="/js/lead-detail.js?v=5"></script>
+
+<%- include('../partials/velzon/app-layout-close') %>

@@ -1,0 +1,48 @@
+<%
+    const tabPaneId = function(key) {
+        return 'lead-pane-' + key;
+    };
+    const tabButtonId = function(key) {
+        return 'lead-tab-' + key;
+    };
+%>
+
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            <% leadTabs.forEach(function(tab) { %>
+                <% const isActive = activeTab === tab.key; %>
+                <li class="nav-item" role="presentation">
+                    <button
+                        class="nav-link<%= isActive ? ' active' : '' %>"
+                        id="<%= tabButtonId(tab.key) %>"
+                        data-bs-toggle="tab"
+                        data-bs-target="#<%= tabPaneId(tab.key) %>"
+                        type="button"
+                        role="tab"
+                        aria-controls="<%= tabPaneId(tab.key) %>"
+                        aria-selected="<%= isActive %>"
+                    >
+                        <%= tab.label %>
+                    </button>
+                </li>
+            <% }); %>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content">
+            <% leadTabs.forEach(function(tab) { %>
+                <% const isActive = activeTab === tab.key; %>
+                <% const panePartial = tab.key === 'general' ? '_tab-general' : '_tab-' + tab.key; %>
+                <div
+                    class="tab-pane fade<%= isActive ? ' show active' : '' %>"
+                    id="<%= tabPaneId(tab.key) %>"
+                    role="tabpanel"
+                    aria-labelledby="<%= tabButtonId(tab.key) %>"
+                >
+                    <%- include('./' + panePartial) %>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</div>

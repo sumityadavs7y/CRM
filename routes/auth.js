@@ -7,8 +7,8 @@ const { resolveCredentialAccess } = require('../services/companyRbacService');
 const { applyAccessToSession, clearAccessSession } = require('../utils/sessionUser');
 const router = express.Router();
 
-function withDefaultTheme(data = {}) {
-  return { ...getDefaultThemeLocals(), ...data };
+function withDefaultTheme(req, data = {}) {
+  return { ...getDefaultThemeLocals(req), ...data };
 }
 
 function clearAuthSession(req) {
@@ -29,7 +29,7 @@ router.get('/login', (req, res) => {
     return res.redirect('/dashboard');
   }
 
-  res.render('login', withDefaultTheme({ error: null, email: '' }));
+  res.render('login', withDefaultTheme(req, { error: null, email: '' }));
 });
 
 router.post('/login', async (req, res) => {
@@ -37,7 +37,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.render('login', withDefaultTheme({
+      return res.render('login', withDefaultTheme(req, {
         error: 'Email and password are required.',
         email: email || '',
       }));
@@ -45,7 +45,7 @@ router.post('/login', async (req, res) => {
 
     const user = await User.findOne({ where: { email: email.toLowerCase() } });
     if (!user || !user.isActive) {
-      return res.render('login', withDefaultTheme({
+      return res.render('login', withDefaultTheme(req, {
         error: 'Invalid email or password.',
         email,
       }));
@@ -53,7 +53,7 @@ router.post('/login', async (req, res) => {
 
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) {
-      return res.render('login', withDefaultTheme({
+      return res.render('login', withDefaultTheme(req, {
         error: 'Invalid email or password.',
         email,
       }));
@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
     res.redirect('/dashboard');
   } catch (error) {
     console.error('Login error:', error);
-    res.render('login', withDefaultTheme({
+    res.render('login', withDefaultTheme(req, {
       error: 'Unable to log in. Please try again.',
       email: req.body.email || '',
     }));
@@ -82,7 +82,7 @@ router.get('/company/login', (req, res) => {
     return res.redirect('/dashboard');
   }
 
-  res.render('login-company', withDefaultTheme({ error: null, email: '' }));
+  res.render('login-company', withDefaultTheme(req, { error: null, email: '' }));
 });
 
 router.post('/company/login', async (req, res) => {
@@ -90,7 +90,7 @@ router.post('/company/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.render('login-company', withDefaultTheme({
+      return res.render('login-company', withDefaultTheme(req, {
         error: 'Email and password are required.',
         email: email || '',
       }));
@@ -113,7 +113,7 @@ router.post('/company/login', async (req, res) => {
     });
 
     if (!credential || !credential.isActive || !credential.company || !credential.company.isActive) {
-      return res.render('login-company', withDefaultTheme({
+      return res.render('login-company', withDefaultTheme(req, {
         error: 'Invalid email or password.',
         email,
       }));
@@ -121,7 +121,7 @@ router.post('/company/login', async (req, res) => {
 
     if (!isSubscriptionValid(credential.company.subscription)) {
       const hasSubscription = !!credential.company.subscription;
-      return res.render('login-company', withDefaultTheme({
+      return res.render('login-company', withDefaultTheme(req, {
         error: hasSubscription
           ? 'Company subscription is inactive or expired. Contact the platform administrator.'
           : 'No subscription plan assigned yet. Contact the platform administrator.',
@@ -131,7 +131,7 @@ router.post('/company/login', async (req, res) => {
 
     const passwordMatches = await bcrypt.compare(password, credential.password);
     if (!passwordMatches) {
-      return res.render('login-company', withDefaultTheme({
+      return res.render('login-company', withDefaultTheme(req, {
         error: 'Invalid email or password.',
         email,
       }));
@@ -156,7 +156,7 @@ router.post('/company/login', async (req, res) => {
     res.redirect('/dashboard');
   } catch (error) {
     console.error('Company login error:', error);
-    res.render('login-company', withDefaultTheme({
+    res.render('login-company', withDefaultTheme(req, {
       error: 'Unable to log in. Please try again.',
       email: req.body.email || '',
     }));
@@ -183,7 +183,7 @@ router.get('/register', async (req, res) => {
     return res.redirect('/auth/login');
   }
 
-  res.render('register', withDefaultTheme({ error: null, values: {} }));
+  res.render('register', withDefaultTheme(req, { error: null, values: {} }));
 });
 
 router.post('/register', async (req, res) => {
@@ -192,14 +192,14 @@ router.post('/register', async (req, res) => {
     const values = { name, email };
 
     if (!name || !email || !password || !confirmPassword) {
-      return res.render('register', withDefaultTheme({
+      return res.render('register', withDefaultTheme(req, {
         error: 'All fields are required.',
         values,
       }));
     }
 
     if (password !== confirmPassword) {
-      return res.render('register', withDefaultTheme({
+      return res.render('register', withDefaultTheme(req, {
         error: 'Passwords do not match.',
         values,
       }));
@@ -207,7 +207,7 @@ router.post('/register', async (req, res) => {
 
     const existingUser = await User.findOne({ where: { email: email.toLowerCase() } });
     if (existingUser) {
-      return res.render('register', withDefaultTheme({
+      return res.render('register', withDefaultTheme(req, {
         error: 'A user with that email already exists.',
         values,
       }));
@@ -224,7 +224,7 @@ router.post('/register', async (req, res) => {
     res.redirect('/auth/login');
   } catch (error) {
     console.error('Registration error:', error);
-    res.render('register', withDefaultTheme({
+    res.render('register', withDefaultTheme(req, {
       error: 'Unable to create account.',
       values: req.body,
     }));

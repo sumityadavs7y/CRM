@@ -55,6 +55,14 @@
                     </li>
                 <% } %>
                 <% const canViewCrmSetup = user && user.can && user.can('crm_setup', 'view'); %>
+                <% const canViewLeads = user && user.can && user.can('leads', 'view'); %>
+                <% if (canViewLeads) { %>
+                    <li class="nav-item">
+                        <a class="nav-link menu-link<%= activeNav === 'leads' ? ' active' : '' %>" href="/company/leads">
+                            <i class="ri-user-search-line"></i> <span>Leads</span>
+                        </a>
+                    </li>
+                <% } %>
                 <% const isCrmSetupActive = activeNav === 'crm-setup-pipelines' || activeNav === 'crm-setup-sources'; %>
                 <% if (canViewCrmSetup) { %>
                     <li class="nav-item">
