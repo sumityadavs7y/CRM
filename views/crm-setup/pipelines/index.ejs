@@ -48,7 +48,7 @@
                                     <% } %>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted">Each pipeline defines lead and deal stages used across your CRM.</p>
+                                    <p class="text-muted">Each pipeline defines lead stages, deal stages, and labels used across your CRM.</p>
                                     <% if (pipelines.length === 0) { %>
                                         <p class="text-muted mb-0">No pipelines configured.</p>
                                     <% } else { %>
@@ -59,6 +59,7 @@
                                                         <th>Name</th>
                                                         <th>Lead Stages</th>
                                                         <th>Deal Stages</th>
+                                                        <th>Labels</th>
                                                         <th>Type</th>
                                                         <th>Actions</th>
                                                     </tr>
@@ -66,31 +67,37 @@
                                                 <tbody>
                                                     <% pipelines.forEach(function(pipeline) { %>
                                                         <tr>
-                                                            <td class="fw-medium">
-                                                                <%= pipeline.name %>
+                                                            <td>
+                                                                <span class="fw-medium"><%= pipeline.name %></span>
                                                                 <% if (pipeline.description) { %>
-                                                                    <i class="ri-information-line text-muted ms-1"
-                                                                       data-bs-toggle="tooltip"
-                                                                       data-bs-placement="top"
-                                                                       title="<%= pipeline.description.replace(/"/g, '&quot;') %>"></i>
+                                                                    <button type="button"
+                                                                            class="btn btn-sm py-0 px-1 btn-light ms-1 align-baseline"
+                                                                            data-bs-toggle="tooltip"
+                                                                            data-bs-placement="top"
+                                                                            data-bs-trigger="hover focus"
+                                                                            title="<%= pipeline.description %>"
+                                                                            aria-label="Pipeline description">
+                                                                        <i class="ri-information-line text-muted align-middle"></i>
+                                                                    </button>
                                                                 <% } %>
                                                             </td>
-                                                            <td><span class="badge bg-soft-primary text-primary"><%= pipeline.leadStageCount %></span></td>
-                                                            <td><span class="badge bg-soft-success text-success"><%= pipeline.dealStageCount %></span></td>
+                                                            <td><span class="badge bg-primary-subtle text-primary"><%= pipeline.leadStageCount %></span></td>
+                                                            <td><span class="badge bg-success-subtle text-success"><%= pipeline.dealStageCount %></span></td>
+                                                            <td><span class="badge bg-warning-subtle text-warning"><%= pipeline.labelCount %></span></td>
                                                             <td>
                                                                 <% if (pipeline.isSystem) { %>
-                                                                    <span class="badge bg-secondary">Default</span>
+                                                                    <span class="badge bg-secondary-subtle text-secondary">Default</span>
                                                                 <% } else { %>
-                                                                    <span class="badge bg-light text-body">Custom</span>
+                                                                    <span class="badge bg-info-subtle text-info">Custom</span>
                                                                 <% } %>
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex gap-1 flex-wrap">
-                                                                    <a href="/company/crm-setup/pipelines/<%= pipeline.id %>" class="btn btn-sm btn-soft-primary">View</a>
+                                                                    <a href="/company/crm-setup/pipelines/<%= pipeline.id %>" class="btn btn-soft-primary btn-sm">View</a>
                                                                     <% if (user.can('crm_setup', 'edit')) { %>
-                                                                        <a href="/company/crm-setup/pipelines/<%= pipeline.id %>/edit" class="btn btn-sm btn-soft-secondary">Edit</a>
+                                                                        <a href="/company/crm-setup/pipelines/<%= pipeline.id %>/edit" class="btn btn-soft-secondary btn-sm">Edit</a>
                                                                         <form action="/company/crm-setup/pipelines/<%= pipeline.id %>/delete" method="post" class="d-inline" onsubmit="return confirm('Delete this pipeline and all its stages? This cannot be undone.');">
-                                                                            <button type="submit" class="btn btn-sm btn-soft-danger">Delete</button>
+                                                                            <button type="submit" class="btn btn-soft-danger btn-sm">Delete</button>
                                                                         </form>
                                                                     <% } %>
                                                                 </div>

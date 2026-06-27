@@ -1,0 +1,64 @@
+<%
+    const tabLeadActive = activeTab === 'lead' ? 'active' : '';
+    const tabDealActive = activeTab === 'deal' ? 'active' : '';
+    const tabLabelsActive = activeTab === 'labels' ? 'active' : '';
+    const paneLeadActive = activeTab === 'lead' ? 'show active' : '';
+    const paneDealActive = activeTab === 'deal' ? 'show active' : '';
+    const paneLabelsActive = activeTab === 'labels' ? 'show active' : '';
+%>
+
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link <%= tabLeadActive %>" id="pipeline-tab-lead" data-bs-toggle="tab" data-bs-target="#pipeline-pane-lead" type="button" role="tab" aria-controls="pipeline-pane-lead" aria-selected="<%= activeTab === 'lead' %>">
+                    Lead Stages <span class="badge bg-primary-subtle text-primary ms-1"><%= leadStages.length %></span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link <%= tabDealActive %>" id="pipeline-tab-deal" data-bs-toggle="tab" data-bs-target="#pipeline-pane-deal" type="button" role="tab" aria-controls="pipeline-pane-deal" aria-selected="<%= activeTab === 'deal' %>">
+                    Deal Stages <span class="badge bg-success-subtle text-success ms-1"><%= dealStages.length %></span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link <%= tabLabelsActive %>" id="pipeline-tab-labels" data-bs-toggle="tab" data-bs-target="#pipeline-pane-labels" type="button" role="tab" aria-controls="pipeline-pane-labels" aria-selected="<%= activeTab === 'labels' %>">
+                    Labels <span class="badge bg-warning-subtle text-warning ms-1"><%= labels.length %></span>
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content">
+            <div class="tab-pane fade <%= paneLeadActive %>" id="pipeline-pane-lead" role="tabpanel" aria-labelledby="pipeline-tab-lead">
+                <%- include('_stage-list', {
+                    stages: leadStages,
+                    pipelineId: pipeline.id,
+                    stageType: 'lead',
+                    canEdit: canEdit,
+                    activeTab: 'lead'
+                }) %>
+            </div>
+            <div class="tab-pane fade <%= paneDealActive %>" id="pipeline-pane-deal" role="tabpanel" aria-labelledby="pipeline-tab-deal">
+                <%- include('_stage-list', {
+                    stages: dealStages,
+                    pipelineId: pipeline.id,
+                    stageType: 'deal',
+                    canEdit: canEdit,
+                    activeTab: 'deal'
+                }) %>
+            </div>
+            <div class="tab-pane fade <%= paneLabelsActive %>" id="pipeline-pane-labels" role="tabpanel" aria-labelledby="pipeline-tab-labels">
+                <%- include('_label-list', {
+                    labels: labels,
+                    pipelineId: pipeline.id,
+                    canEdit: canEdit,
+                    defaultLabelColor: defaultLabelColor
+                }) %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% if (canEdit) { %>
+    <script src="/js/pipeline-config-editor.js"></script>
+<% } %>

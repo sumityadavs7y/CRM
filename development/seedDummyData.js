@@ -11,6 +11,7 @@ const {
 } = require('../models');
 const { seedDefaultRoles, MEMBER_SLUG } = require('../services/companyRbacService');
 const { seedDefaultPipelines } = require('../services/pipelineService');
+const { seedDefaultSources } = require('../services/sourceService');
 const { isDevEnvMode } = require('../utils/helpers');
 const { DUMMY_PASSWORD, DUMMY_ACCOUNTS } = require('./dummyAccounts');
 
@@ -108,6 +109,7 @@ async function seedCompany(companyData, plansByName) {
     );
     const { adminRole } = await seedDefaultRoles(createdCompany.id, transaction);
     await seedDefaultPipelines(createdCompany.id, transaction);
+    await seedDefaultSources(createdCompany.id, transaction);
 
     await CompanyCredential.create(
       {
@@ -201,6 +203,7 @@ async function seedDummyData() {
       const existingCompany = await Company.findOne({ where: { name: companyData.name } });
       if (existingCompany) {
         await seedDefaultPipelines(existingCompany.id);
+        await seedDefaultSources(existingCompany.id);
       }
       continue;
     }

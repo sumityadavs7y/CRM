@@ -15,3 +15,52 @@ body {
     max-height: 16rem;
     overflow-y: auto;
 }
+
+.pipeline-config-table {
+    width: auto;
+    max-width: 100%;
+}
+
+.pipeline-config-table td {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.pipeline-field-input {
+    width: 240px;
+    max-width: 100%;
+}
+
+.color-preview {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    vertical-align: middle;
+}
+
+button.color-picker-trigger {
+    padding: 0;
+    cursor: pointer;
+}
+
+button.color-picker-trigger:hover {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(64, 81, 137, 0.35);
+}
+
+.label-color-popup {
+    position: fixed;
+    z-index: 1080;
+}
+
+.label-color-popup__panel {
+    background: #fff;
+    border: 1px solid #e9ebec;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.label-color-popup .IroColorPicker {
+    margin: 0;
+}

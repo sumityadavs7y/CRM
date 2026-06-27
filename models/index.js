@@ -7,6 +7,8 @@ const SubscriptionPlanModel = require('./SubscriptionPlan');
 const CompanySubscriptionModel = require('./CompanySubscription');
 const PipelineModel = require('./Pipeline');
 const PipelineStageModel = require('./PipelineStage');
+const PipelineLabelModel = require('./PipelineLabel');
+const SourceModel = require('./Source');
 
 const User = UserModel(sequelize, Sequelize.DataTypes);
 const Company = CompanyModel(sequelize, Sequelize.DataTypes);
@@ -16,6 +18,8 @@ const SubscriptionPlan = SubscriptionPlanModel(sequelize, Sequelize.DataTypes);
 const CompanySubscription = CompanySubscriptionModel(sequelize, Sequelize.DataTypes);
 const Pipeline = PipelineModel(sequelize, Sequelize.DataTypes);
 const PipelineStage = PipelineStageModel(sequelize, Sequelize.DataTypes);
+const PipelineLabel = PipelineLabelModel(sequelize, Sequelize.DataTypes);
+const Source = SourceModel(sequelize, Sequelize.DataTypes);
 
 Company.hasMany(CompanyCredential, { foreignKey: 'companyId', as: 'credentials' });
 CompanyCredential.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
@@ -38,6 +42,12 @@ Pipeline.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
 Pipeline.hasMany(PipelineStage, { foreignKey: 'pipelineId', as: 'stages' });
 PipelineStage.belongsTo(Pipeline, { foreignKey: 'pipelineId', as: 'pipeline' });
 
+Pipeline.hasMany(PipelineLabel, { foreignKey: 'pipelineId', as: 'labels' });
+PipelineLabel.belongsTo(Pipeline, { foreignKey: 'pipelineId', as: 'pipeline' });
+
+Company.hasMany(Source, { foreignKey: 'companyId', as: 'sources' });
+Source.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -50,4 +60,6 @@ module.exports = {
   CompanySubscription,
   Pipeline,
   PipelineStage,
+  PipelineLabel,
+  Source,
 };

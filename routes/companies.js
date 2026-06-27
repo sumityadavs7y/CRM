@@ -17,6 +17,7 @@ const { getPrimaryAdmin } = require('../utils/companyCredential');
 const { buildUserContext } = require('../utils/sessionUser');
 const { seedDefaultRoles, trimRolesToPlan } = require('../services/companyRbacService');
 const { seedDefaultPipelines } = require('../services/pipelineService');
+const { seedDefaultSources } = require('../services/sourceService');
 const router = express.Router();
 
 router.get('/', isSuperAdmin, async (req, res) => {
@@ -86,6 +87,7 @@ router.post('/', isSuperAdmin, async (req, res) => {
       const createdCompany = await Company.create({ name: companyName.trim() }, { transaction });
       const { adminRole } = await seedDefaultRoles(createdCompany.id, transaction);
       await seedDefaultPipelines(createdCompany.id, transaction);
+      await seedDefaultSources(createdCompany.id, transaction);
       await CompanyCredential.create({
         companyId: createdCompany.id,
         companyRoleId: adminRole.id,

@@ -1,0 +1,135 @@
+<%- include('../../partials/velzon/app-layout-open', {
+    pageTitle: 'Edit Sources - CRM Setup',
+    activeNav: 'crm-setup-sources'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Edit Sources</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item">CRM Setup</li>
+                                        <li class="breadcrumb-item"><a href="/company/crm-setup/sources">Sources</a></li>
+                                        <li class="breadcrumb-item active">Edit</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (success) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-success" role="alert"><%= success %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (error) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-danger" role="alert"><%= error %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <a href="/company/crm-setup/sources" class="btn btn-light btn-sm">Back to Sources</a>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Lead Sources</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">Add, rename, reorder, or remove sources for your company.</p>
+
+                                    <form method="post"
+                                          action="/company/crm-setup/sources/sync"
+                                          class="source-list-form"
+                                          data-tab-type="source">
+
+                                        <div class="table-responsive">
+                                            <table class="table table-sm align-middle mb-3">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th style="width: 48px;">#</th>
+                                                        <th>Name</th>
+                                                        <th style="width: 100px;">Type</th>
+                                                        <th style="width: 80px;">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody data-row-container>
+                                                    <% if (sources.length === 0) { %>
+                                                        <tr class="source-empty-row">
+                                                            <td colspan="4" class="text-muted">No sources yet. Add one below.</td>
+                                                        </tr>
+                                                    <% } else { %>
+                                                        <% sources.forEach(function(source, index) { %>
+                                                            <tr data-row data-row-id="<%= source.id %>">
+                                                                <td class="row-index"><%= index + 1 %></td>
+                                                                <td>
+                                                                    <input type="hidden" name="sources[<%= index %>][id]" value="<%= source.id %>">
+                                                                    <input type="text"
+                                                                           class="form-control form-control-sm"
+                                                                           name="sources[<%= index %>][name]"
+                                                                           value="<%= source.name %>"
+                                                                           required>
+                                                                </td>
+                                                                <td>
+                                                                    <% if (source.isSystem) { %>
+                                                                        <span class="badge bg-soft-secondary text-secondary">Default</span>
+                                                                    <% } else { %>
+                                                                        <span class="badge bg-soft-primary text-primary">Custom</span>
+                                                                    <% } %>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button" class="btn btn-soft-danger btn-sm btn-delete-row">Delete</button>
+                                                                </td>
+                                                            </tr>
+                                                        <% }); %>
+                                                    <% } %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <template data-row-template>
+                                            <tr data-row data-row-id="">
+                                                <td class="row-index"></td>
+                                                <td>
+                                                    <input type="hidden" name="sources[__index__][id]" value="">
+                                                    <input type="text"
+                                                           class="form-control form-control-sm"
+                                                           name="sources[__index__][name]"
+                                                           placeholder="New source name"
+                                                           required>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-soft-primary text-primary">Custom</span>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-soft-danger btn-sm btn-delete-row">Delete</button>
+                                                </td>
+                                            </tr>
+                                        </template>
+
+                                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-add-row">Add Source</button>
+                                            <button type="submit" class="btn btn-sm btn-success">Save Sources</button>
+                                            <a href="/company/crm-setup/sources" class="btn btn-sm btn-light">Cancel</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script src="/js/source-list-editor.js"></script>
+
+<%- include('../../partials/velzon/app-layout-close') %>

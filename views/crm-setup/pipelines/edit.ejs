@@ -50,8 +50,8 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Pipeline Details</h5>
+                                <div class="card-header align-items-center d-flex">
+                                    <h5 class="card-title mb-0 flex-grow-1">Pipeline Details</h5>
                                 </div>
                                 <div class="card-body">
                                     <form action="/company/crm-setup/pipelines/<%= pipeline.id %>/edit" method="post">
@@ -73,35 +73,16 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Lead Stages</h5>
-                                </div>
-                                <div class="card-body">
-                                    <%- include('_stage-list', {
-                                        stages: leadStages,
-                                        pipelineId: pipeline.id,
-                                        stageType: 'lead',
-                                        canEdit: true
-                                    }) %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Deal Stages</h5>
-                                </div>
-                                <div class="card-body">
-                                    <%- include('_stage-list', {
-                                        stages: dealStages,
-                                        pipelineId: pipeline.id,
-                                        stageType: 'deal',
-                                        canEdit: true
-                                    }) %>
-                                </div>
-                            </div>
+                        <div class="col-12">
+                            <%- include('_pipeline-config-tabs', {
+                                pipeline: pipeline,
+                                leadStages: leadStages,
+                                dealStages: dealStages,
+                                labels: labels,
+                                canEdit: true,
+                                activeTab: activeTab,
+                                defaultLabelColor: defaultLabelColor
+                            }) %>
                         </div>
                     </div>
 

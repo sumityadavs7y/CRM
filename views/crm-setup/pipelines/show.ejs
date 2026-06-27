@@ -34,35 +34,16 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Lead Stages</h5>
-                                </div>
-                                <div class="card-body">
-                                    <%- include('_stage-list', {
-                                        stages: leadStages,
-                                        pipelineId: pipeline.id,
-                                        stageType: 'lead',
-                                        canEdit: false
-                                    }) %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Deal Stages</h5>
-                                </div>
-                                <div class="card-body">
-                                    <%- include('_stage-list', {
-                                        stages: dealStages,
-                                        pipelineId: pipeline.id,
-                                        stageType: 'deal',
-                                        canEdit: false
-                                    }) %>
-                                </div>
-                            </div>
+                        <div class="col-12">
+                            <%- include('_pipeline-config-tabs', {
+                                pipeline: pipeline,
+                                leadStages: leadStages,
+                                dealStages: dealStages,
+                                labels: labels,
+                                canEdit: false,
+                                activeTab: activeTab,
+                                defaultLabelColor: defaultLabelColor
+                            }) %>
                         </div>
                     </div>
 
