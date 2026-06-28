@@ -64,6 +64,9 @@ const {
   formatLeadListCount,
   formatLeadListSources,
 } = require('../utils/leadListView');
+const { LEAD_REPORT_PERIOD_OPTIONS } = require('../constants/leadReports');
+const { parseLeadReportFilters } = require('../utils/leadReportFilters');
+const { getLeadReportData } = require('../services/leadReportService');
 
 const router = express.Router();
 
@@ -221,6 +224,32 @@ router.post('/', isCompanyAuthenticated, requirePermission('leads', 'edit'), asy
       values: buildFormValues(req.body),
     });
   }
+});
+
+router.get('/reports/data', isCompanyAuthenticated, requirePermission('leads', 'view'), async (req, res) => {
+  try {
+    const filters = parseLeadReportFilters(req.query);
+    const data = await getLeadReportData(req.session.companyId, filters);
+
+    res.json({
+      filters,
+      ...data,
+    });
+  } catch (error) {
+    console.error('Lead report data failed:', error);
+    res.status(500).json({ error: 'Failed to load report data.' });
+  }
+});
+
+router.get('/reports', isCompanyAuthenticated, requirePermission('leads', 'view'), async (req, res) => {
+  const filters = parseLeadReportFilters(req.query);
+
+  res.render('leads/reports', withTheme(req, {
+    user: buildUserContext(req),
+    filters,
+    periodOptions: LEAD_REPORT_PERIOD_OPTIONS,
+    activeNav: 'leads-reports',
+  }));
 });
 
 router.get('/:id/history', isCompanyAuthenticated, requirePermission('leads', 'view'), async (req, res) => {

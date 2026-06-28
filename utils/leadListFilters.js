@@ -146,4 +146,6 @@ module.exports = {
   hasActiveLeadListFilters,
   buildLeadListFilterQuery,
   escapeIlikePattern,
+  parseOptionalDate,
+  normalizeDateRange,
 };

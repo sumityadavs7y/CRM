@@ -1,0 +1,187 @@
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Lead Reports - CRM',
+    activeNav: 'leads-reports'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Lead Reports</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item"><a href="/company/leads">Leads</a></li>
+                                        <li class="breadcrumb-item active">Reports</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card lead-report-filter-card">
+                                <div class="card-body">
+                                    <form id="leadReportFilters" class="lead-report-filters mb-0">
+                                        <div class="lead-report-toolbar">
+                                            <div class="lead-report-toolbar__main">
+                                                <div class="lead-report-period-group">
+                                                    <span class="lead-report-toolbar__label">Time range</span>
+                                                    <div class="lead-report-period-pills" role="group" aria-label="Time range">
+                                                        <% periodOptions.forEach(function(option) { %>
+                                                            <input
+                                                                type="radio"
+                                                                class="lead-report-period-input"
+                                                                name="period"
+                                                                id="leadReportPeriod-<%= option.value %>"
+                                                                value="<%= option.value %>"
+                                                                autocomplete="off"
+                                                                <%= filters.period === option.value ? 'checked' : '' %>
+                                                            >
+                                                            <label
+                                                                class="lead-report-period-pill"
+                                                                for="leadReportPeriod-<%= option.value %>"
+                                                                title="<%= option.label %>"
+                                                            ><%= option.shortLabel %></label>
+                                                        <% }); %>
+                                                    </div>
+                                                </div>
+                                                <div class="lead-report-active-range" id="leadReportPeriodHint" aria-live="polite"></div>
+                                            </div>
+
+                                            <div class="lead-report-custom-range<%= filters.period === 'custom' ? ' is-visible' : '' %>" id="leadReportCustomRange">
+                                                <div class="row">
+                                                    <div class="col-auto mb-3 lead-report-date-field">
+                                                        <label for="leadReportFrom" class="form-label">From date</label>
+                                                        <input
+                                                            type="date"
+                                                            class="form-control"
+                                                            id="leadReportFrom"
+                                                            name="from"
+                                                            value="<%= filters.from || '' %>"
+                                                            <%= filters.period !== 'custom' ? 'disabled' : '' %>
+                                                        >
+                                                    </div>
+                                                    <div class="col-auto mb-3 lead-report-date-field">
+                                                        <label for="leadReportTo" class="form-label">To date</label>
+                                                        <input
+                                                            type="date"
+                                                            class="form-control"
+                                                            id="leadReportTo"
+                                                            name="to"
+                                                            value="<%= filters.to || '' %>"
+                                                            <%= filters.period !== 'custom' ? 'disabled' : '' %>
+                                                        >
+                                                    </div>
+                                                    <div class="col-md-auto mb-3 d-flex align-items-end">
+                                                        <button type="submit" class="btn btn-primary" id="leadReportApplyBtn">Apply</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row lead-report-summary" id="leadReportSummary">
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card card-animate">
+                                <div class="card-body">
+                                    <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Total Leads</p>
+                                    <h4 class="fs-22 fw-semibold ff-secondary mb-0" data-summary="totalLeads">—</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card card-animate">
+                                <div class="card-body">
+                                    <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Avg Score</p>
+                                    <h4 class="fs-22 fw-semibold ff-secondary mb-0" data-summary="avgScore">—</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card card-animate">
+                                <div class="card-body">
+                                    <p class="text-uppercase fw-medium text-muted text-truncate mb-0">High Quality</p>
+                                    <h4 class="fs-22 fw-semibold ff-secondary mb-0" data-summary="highQualityCount">—</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card card-animate">
+                                <div class="card-body">
+                                    <p class="text-uppercase fw-medium text-muted text-truncate mb-0">High Quality %</p>
+                                    <h4 class="fs-22 fw-semibold ff-secondary mb-0" data-summary="highQualityPct">—</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row d-none" id="leadReportEmpty">
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0" role="alert">No leads found for the selected time range.</div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="leadReportCharts">
+                        <div class="col-xl-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Leads by Assignee</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chart-by-assignee" class="lead-report-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Leads by Source</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chart-by-source" class="lead-report-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Leads by Quality</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chart-by-quality" class="lead-report-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Leads by Stage</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chart-by-stage" class="lead-report-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Leads Over Time</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chart-over-time" class="lead-report-chart lead-report-chart--wide"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script type="application/json" id="lead-report-initial-filters"><%- JSON.stringify(filters) %></script>
+
+                    <script src="<%= assetBase %>/assets/libs/apexcharts/apexcharts.min.js"></script>
+                    <script src="/js/lead-reports.js"></script>
+
+<%- include('../partials/velzon/app-layout-close') %>

@@ -27,10 +27,10 @@ app.use(session({
 // Development only (uncomment ONE block to enable):
 // const { devAutoLogin } = require('./development/devAutoLogin');
 // app.use(devAutoLogin);
-// const { devAutoLoginCompanyAdmin } = require('./development/devAutoLoginCompanyAdmin');
-// app.use(devAutoLoginCompanyAdmin);
-const { devAutoLoginCompanyMember } = require('./development/devAutoLoginCompanyMember');
-app.use(devAutoLoginCompanyMember);
+const { devAutoLoginCompanyAdmin } = require('./development/devAutoLoginCompanyAdmin');
+app.use(devAutoLoginCompanyAdmin);
+// const { devAutoLoginCompanyMember } = require('./development/devAutoLoginCompanyMember');
+// app.use(devAutoLoginCompanyMember);
 
 const { refreshCompanyAccess } = require('./middleware/refreshCompanyAccess');
 app.use(refreshCompanyAccess);
