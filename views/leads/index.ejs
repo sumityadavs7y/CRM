@@ -39,45 +39,44 @@
                                     <% } %>
                                 </div>
                                 <div class="card-body">
-                                    <% if (leads.length === 0) { %>
+                                    <% if (pagination.total === 0) { %>
                                         <p class="text-muted mb-0">No leads yet.</p>
                                     <% } else { %>
+                                        <%- include('../partials/pagination-bar', { position: 'top' }) %>
                                         <div class="table-responsive">
-                                            <table class="table table-hover align-middle mb-0 table-sortable" data-leads-table>
+                                            <table class="table table-hover align-middle mb-0 table-sortable">
                                                 <thead class="table-light">
                                                     <tr>
-                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Customer<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
-                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Email<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
-                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Subject<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
-                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Assignee<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
-                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Phone<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
-                                                        <th data-sortable data-sort-type="date" scope="col" tabindex="0" aria-sort="none">Follow-up<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
-                                                        <th data-sortable data-sort-type="number" scope="col" tabindex="0" aria-sort="none">Score<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
-                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Quality<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
-                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Pipeline<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
-                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Stage<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <% listColumns.forEach(function(column) {
+                                                            const isSortable = leadListSortColumns.has(column.key);
+                                                            const isActive = pagination.sort === column.key;
+                                                            const nextDir = isActive && pagination.dir === 'asc' ? 'desc' : 'asc';
+                                                            const sortHref = buildLeadsListUrl({ page: 1, sort: column.key, dir: nextDir });
+                                                            const ariaSort = isActive ? (pagination.dir === 'asc' ? 'ascending' : 'descending') : 'none';
+                                                            const sortIcon = isActive
+                                                                ? (pagination.dir === 'asc' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line')
+                                                                : 'ri-arrow-up-down-line';
+                                                        %>
+                                                            <th scope="col" data-lead-column="<%= column.key %>" aria-sort="<%= isSortable ? ariaSort : 'none' %>">
+                                                                <% if (isSortable) { %>
+                                                                    <a href="<%= sortHref %>" class="text-body text-decoration-none d-inline-flex align-items-center">
+                                                                        <%= column.label %>
+                                                                        <i class="sort-indicator <%= sortIcon %>" aria-hidden="true"></i>
+                                                                    </a>
+                                                                <% } else { %>
+                                                                    <%= column.label %>
+                                                                <% } %>
+                                                            </th>
+                                                        <% }); %>
                                                         <th scope="col">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <% leads.forEach(function(lead) { %>
                                                         <tr>
-                                                            <td class="fw-medium" data-sort-value="<%= lead.customerName %>"><%= lead.customerName %></td>
-                                                            <td data-sort-value="<%= lead.email %>"><%= lead.email %></td>
-                                                            <td data-sort-value="<%= lead.subject %>"><%= lead.subject %></td>
-                                                            <td data-sort-value="<%= lead.assignee ? lead.assignee.adminName : '' %>"><%= lead.assignee ? lead.assignee.adminName : '—' %></td>
-                                                            <td data-sort-value="<%= lead.phone || '' %>"><%= lead.phone || '—' %></td>
-                                                            <td data-sort-value="<%= lead.followUpDate || '' %>"><%= lead.followUpDate || '—' %></td>
-                                                            <td data-sort-value="<%= lead.score ?? '' %>"><%= lead.score ?? '—' %></td>
-                                                            <td data-sort-value="<%= lead.quality || '' %>">
-                                                                <% if (lead.quality) { %>
-                                                                    <span class="badge <%= getLeadQualityBadgeClass(lead.quality) %>"><%= formatLeadQuality(lead.quality) %></span>
-                                                                <% } else { %>
-                                                                    —
-                                                                <% } %>
-                                                            </td>
-                                                            <td data-sort-value="<%= lead.pipeline ? lead.pipeline.name : '' %>"><%= lead.pipeline ? lead.pipeline.name : '—' %></td>
-                                                            <td data-sort-value="<%= lead.stage ? lead.stage.name : '' %>"><%= lead.stage ? lead.stage.name : '—' %></td>
+                                                            <% listColumns.forEach(function(column) { %>
+                                                                <%- include('./_list-cell', { lead, column }) %>
+                                                            <% }); %>
                                                             <td>
                                                                 <a href="/company/leads/<%= lead.id %>" class="btn btn-soft-primary btn-sm">View</a>
                                                             </td>
@@ -86,6 +85,7 @@
                                                 </tbody>
                                             </table>
                                         </div>
+                                        <%- include('../partials/pagination-bar', { position: 'bottom' }) %>
                                     <% } %>
                                 </div>
                             </div>

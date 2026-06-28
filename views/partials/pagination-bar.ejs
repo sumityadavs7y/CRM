@@ -1,0 +1,74 @@
+<% if (typeof position === 'undefined' || position === 'top') { %>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <label class="d-inline-flex align-items-center gap-2 text-muted mb-0">
+            Show
+            <select class="form-select form-select-sm" style="width: auto;" data-leads-page-size aria-label="Entries per page">
+                <% pageSizes.forEach(function(size) { %>
+                    <option value="<%= size %>"<%= pagination.pageSize === size ? ' selected' : '' %>><%= size %></option>
+                <% }); %>
+            </select>
+            entries
+        </label>
+        <% if (typeof listColumns !== 'undefined' && listColumns.length > 0) { %>
+            <div class="dropdown leads-column-picker" data-leads-column-picker data-storage-key="<%= leadListColumnsStorageKey %>" data-default-visible-columns="<%= JSON.stringify(leadListDefaultVisibleColumns) %>">
+                <button type="button" class="btn btn-soft-secondary btn-sm" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Show columns">
+                    <i class="ri-eye-line align-middle"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-2 leads-column-picker__menu">
+                    <div class="px-2 pb-2 mb-1 border-bottom">
+                        <span class="text-muted fs-12 text-uppercase fw-medium">Columns</span>
+                    </div>
+                    <% listColumns.forEach(function(column) { %>
+                        <label class="leads-column-picker__item" for="lead-column-<%= column.key %>">
+                            <input class="form-check-input" type="checkbox" value="<%= column.key %>" id="lead-column-<%= column.key %>" data-lead-column-toggle="<%= column.key %>"<%= column.defaultVisible !== false ? ' checked' : '' %>>
+                            <span class="leads-column-picker__label"><%= column.label %></span>
+                        </label>
+                    <% }); %>
+                </div>
+            </div>
+        <% } %>
+    </div>
+<% } %>
+
+<% if (typeof position === 'undefined' || position === 'bottom') { %>
+    <div class="align-items-center mt-3 row g-3 text-center text-sm-start">
+        <div class="col-sm">
+            <div class="text-muted">
+                Showing <span class="fw-semibold"><%= pagination.start %></span> to
+                <span class="fw-semibold"><%= pagination.end %></span> of
+                <span class="fw-semibold"><%= pagination.total %></span> entries
+            </div>
+        </div>
+        <% if (pagination.totalPages > 1) { %>
+            <div class="col-sm-auto">
+                <ul class="pagination pagination-separated pagination-sm justify-content-center justify-content-sm-start mb-0">
+                    <li class="page-item<%= pagination.hasPrev ? '' : ' disabled' %>">
+                        <% if (pagination.hasPrev) { %>
+                            <a href="<%= buildLeadsListUrl({ page: pagination.page - 1 }) %>" class="page-link" aria-label="Previous page">←</a>
+                        <% } else { %>
+                            <span class="page-link">←</span>
+                        <% } %>
+                    </li>
+                    <% pageNumbers.forEach(function(pageNumber) { %>
+                        <% if (pageNumber === '…') { %>
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item<%= pagination.page === pageNumber ? ' active' : '' %>">
+                                <a href="<%= buildLeadsListUrl({ page: pageNumber }) %>" class="page-link"><%= pageNumber %></a>
+                            </li>
+                        <% } %>
+                    <% }); %>
+                    <li class="page-item<%= pagination.hasNext ? '' : ' disabled' %>">
+                        <% if (pagination.hasNext) { %>
+                            <a href="<%= buildLeadsListUrl({ page: pagination.page + 1 }) %>" class="page-link" aria-label="Next page">→</a>
+                        <% } else { %>
+                            <span class="page-link">→</span>
+                        <% } %>
+                    </li>
+                </ul>
+            </div>
+        <% } %>
+    </div>
+<% } %>

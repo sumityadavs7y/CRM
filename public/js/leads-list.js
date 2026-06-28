@@ -1,118 +1,140 @@
 (function () {
-  const table = document.querySelector('[data-leads-table]');
-  if (!table) {
-    return;
-  }
+  const DEFAULT_STORAGE_KEY = 'crm.leads-list.visible-columns';
 
-  const tbody = table.querySelector('tbody');
-  const headers = table.querySelectorAll('th[data-sortable]');
-  let currentSort = { column: null, direction: 'asc' };
-
-  function isEmptyValue(value) {
-    return value === '' || value === null || value === undefined;
-  }
-
-  function parseSortValue(value, type) {
-    if (isEmptyValue(value)) {
-      return null;
+  function initPageSizeSelect() {
+    const pageSizeSelect = document.querySelector('[data-leads-page-size]');
+    if (!pageSizeSelect) {
+      return;
     }
 
-    if (type === 'number') {
-      const parsed = Number(value);
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-
-    if (type === 'date') {
-      const parsed = Date.parse(value);
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-
-    return String(value).toLowerCase();
-  }
-
-  function getCellSortValue(row, columnIndex, sortType) {
-    const cell = row.children[columnIndex];
-    if (!cell) {
-      return null;
-    }
-
-    const rawValue = cell.dataset.sortValue !== undefined
-      ? cell.dataset.sortValue
-      : cell.textContent.trim();
-
-    return parseSortValue(rawValue, sortType);
-  }
-
-  function compareValues(a, b) {
-    if (a === null && b === null) {
-      return 0;
-    }
-    if (a === null) {
-      return 1;
-    }
-    if (b === null) {
-      return -1;
-    }
-
-    if (typeof a === 'number' && typeof b === 'number') {
-      return a - b;
-    }
-
-    return String(a).localeCompare(String(b));
-  }
-
-  function updateSortIndicators() {
-    headers.forEach((header, index) => {
-      const icon = header.querySelector('.sort-indicator');
-      if (!icon) {
-        return;
-      }
-
-      icon.classList.remove('ri-arrow-up-s-line', 'ri-arrow-down-s-line', 'ri-arrow-up-down-line');
-
-      if (currentSort.column === index) {
-        icon.classList.add(currentSort.direction === 'asc' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line');
-        header.setAttribute('aria-sort', currentSort.direction === 'asc' ? 'ascending' : 'descending');
-      } else {
-        icon.classList.add('ri-arrow-up-down-line');
-        header.setAttribute('aria-sort', 'none');
-      }
+    pageSizeSelect.addEventListener('change', () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('pageSize', pageSizeSelect.value);
+      url.searchParams.set('page', '1');
+      window.location.href = url.toString();
     });
   }
 
-  function sortByColumn(header) {
-    const columnIndex = Array.from(header.parentNode.children).indexOf(header);
-    const sortType = header.dataset.sortType || 'text';
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-
-    if (currentSort.column === columnIndex) {
-      currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-    } else {
-      currentSort.column = columnIndex;
-      currentSort.direction = 'asc';
-    }
-
-    rows.sort((rowA, rowB) => {
-      const valueA = getCellSortValue(rowA, columnIndex, sortType);
-      const valueB = getCellSortValue(rowB, columnIndex, sortType);
-      const result = compareValues(valueA, valueB);
-
-      return currentSort.direction === 'asc' ? result : -result;
-    });
-
-    rows.forEach((row) => tbody.appendChild(row));
-    updateSortIndicators();
+  function getKnownColumnKeys() {
+    return Array.from(document.querySelectorAll('[data-lead-column-toggle]'))
+      .map((input) => input.dataset.leadColumnToggle)
+      .filter(Boolean);
   }
 
-  headers.forEach((header) => {
-    header.addEventListener('click', () => sortByColumn(header));
-    header.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        sortByColumn(header);
-      }
-    });
-  });
+  function getStorageKey() {
+    const picker = document.querySelector('[data-leads-column-picker]');
+    return picker?.dataset.storageKey || DEFAULT_STORAGE_KEY;
+  }
 
-  updateSortIndicators();
+  function getDefaultVisibleColumns() {
+    const picker = document.querySelector('[data-leads-column-picker]');
+    if (!picker?.dataset.defaultVisibleColumns) {
+      return getKnownColumnKeys();
+    }
+
+    try {
+      const parsed = JSON.parse(picker.dataset.defaultVisibleColumns);
+      return Array.isArray(parsed) ? parsed : getKnownColumnKeys();
+    } catch {
+      return getKnownColumnKeys();
+    }
+  }
+
+  function normalizeVisibleColumns(stored, known, defaultVisible) {
+    const defaultSet = new Set(defaultVisible);
+
+    if (!Array.isArray(stored) || stored.length === 0) {
+      return known.filter((key) => defaultSet.has(key));
+    }
+
+    const valid = stored.filter((key) => known.includes(key));
+    const newColumns = known.filter((key) => !stored.includes(key));
+    const merged = [
+      ...valid,
+      ...newColumns.filter((key) => defaultSet.has(key)),
+    ];
+
+    if (merged.length === 0) {
+      return [known[0]];
+    }
+
+    return merged;
+  }
+
+  function loadVisibleColumns() {
+    const known = getKnownColumnKeys();
+    const defaultVisible = getDefaultVisibleColumns();
+
+    if (known.length === 0) {
+      return [];
+    }
+
+    try {
+      const raw = localStorage.getItem(getStorageKey());
+      if (!raw) {
+        return known.filter((key) => defaultVisible.includes(key));
+      }
+
+      const stored = JSON.parse(raw);
+      return normalizeVisibleColumns(stored, known, defaultVisible);
+    } catch {
+      return known.filter((key) => defaultVisible.includes(key));
+    }
+  }
+
+  function saveVisibleColumns(keys) {
+    localStorage.setItem(getStorageKey(), JSON.stringify(keys));
+  }
+
+  function applyColumnVisibility(visibleKeys) {
+    const visibleSet = new Set(visibleKeys);
+
+    document.querySelectorAll('[data-lead-column]').forEach((cell) => {
+      const columnKey = cell.dataset.leadColumn;
+      cell.classList.toggle('d-none', !visibleSet.has(columnKey));
+    });
+  }
+
+  function syncCheckboxes(visibleKeys) {
+    const visibleSet = new Set(visibleKeys);
+
+    document.querySelectorAll('[data-lead-column-toggle]').forEach((input) => {
+      input.checked = visibleSet.has(input.dataset.leadColumnToggle);
+    });
+  }
+
+  function initColumnPicker() {
+    const picker = document.querySelector('[data-leads-column-picker]');
+    if (!picker) {
+      return;
+    }
+
+    const known = getKnownColumnKeys();
+    if (known.length === 0) {
+      return;
+    }
+
+    let visibleColumns = loadVisibleColumns();
+    applyColumnVisibility(visibleColumns);
+    syncCheckboxes(visibleColumns);
+
+    picker.querySelectorAll('[data-lead-column-toggle]').forEach((input) => {
+      input.addEventListener('change', () => {
+        const selected = Array.from(picker.querySelectorAll('[data-lead-column-toggle]:checked'))
+          .map((checkbox) => checkbox.dataset.leadColumnToggle);
+
+        if (selected.length === 0) {
+          input.checked = true;
+          return;
+        }
+
+        visibleColumns = selected;
+        applyColumnVisibility(visibleColumns);
+        saveVisibleColumns(visibleColumns);
+      });
+    });
+  }
+
+  initPageSizeSelect();
+  initColumnPicker();
 })();

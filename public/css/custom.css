@@ -65,14 +65,16 @@ button.color-picker-trigger:hover {
     margin: 0;
 }
 
-.table-sortable th[data-sortable] {
+.table-sortable th[data-sortable],
+.table-sortable th a {
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
 }
 
-.table-sortable th[data-sortable]:hover {
-    background-color: var(--vz-light);
+.table-sortable th[data-sortable]:hover,
+.table-sortable th a:hover {
+    color: var(--vz-primary) !important;
 }
 
 .table-sortable .sort-indicator {
@@ -82,7 +84,31 @@ button.color-picker-trigger:hover {
     vertical-align: middle;
 }
 
-.table-sortable th[data-sortable][aria-sort="ascending"] .sort-indicator,
-.table-sortable th[data-sortable][aria-sort="descending"] .sort-indicator {
+.table-sortable th[aria-sort="ascending"] .sort-indicator,
+.table-sortable th[aria-sort="descending"] .sort-indicator {
     opacity: 1;
+}
+
+.leads-column-picker__menu {
+    min-width: 11rem;
+}
+
+.leads-column-picker__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    margin-bottom: 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.leads-column-picker__item .form-check-input {
+    margin: 0;
+    float: none;
+    flex-shrink: 0;
+}
+
+.leads-column-picker__label {
+    line-height: 1.4;
 }

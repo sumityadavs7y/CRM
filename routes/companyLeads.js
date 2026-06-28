@@ -16,7 +16,7 @@ const {
 const { sanitizeNotesHtml } = require('../utils/sanitizeHtml');
 const {
   findCompanyLead,
-  listCompanyLeads,
+  listCompanyLeadsPaginated,
   getLeadFormOptions,
   normalizeLeadInput,
   createLead,
@@ -39,6 +39,23 @@ const {
   updateLeadTask,
   deleteLeadTask,
 } = require('../services/leadTaskService');
+const {
+  LEAD_LIST_PAGE_SIZES,
+  DEFAULT_LEAD_LIST_PAGE_SIZE,
+  DEFAULT_LEAD_LIST_SORT,
+  DEFAULT_LEAD_LIST_DIR,
+  LEAD_LIST_SORT_COLUMNS,
+  LEAD_LIST_COLUMNS,
+  LEAD_LIST_DEFAULT_VISIBLE_COLUMNS,
+  LEAD_LIST_COLUMNS_STORAGE_KEY,
+} = require('../constants/leadList');
+const { parsePaginationQuery, buildQueryString, buildPageNumbers } = require('../utils/pagination');
+const {
+  formatLeadListNotesPreview,
+  formatLeadListDate,
+  formatLeadListCount,
+  formatLeadListSources,
+} = require('../utils/leadListView');
 
 const router = express.Router();
 
@@ -120,11 +137,40 @@ async function renderCreateForm(req, res, { error, values }) {
 }
 
 router.get('/', isCompanyAuthenticated, requirePermission('leads', 'view'), async (req, res) => {
-  const leads = await listCompanyLeads(req.session.companyId);
+  const paginationParams = parsePaginationQuery(req.query, {
+    defaultPageSize: DEFAULT_LEAD_LIST_PAGE_SIZE,
+    allowedPageSizes: LEAD_LIST_PAGE_SIZES,
+    defaultSort: DEFAULT_LEAD_LIST_SORT,
+    allowedSortColumns: LEAD_LIST_SORT_COLUMNS,
+    defaultDir: DEFAULT_LEAD_LIST_DIR,
+  });
+
+  const pagination = await listCompanyLeadsPaginated(req.session.companyId, paginationParams);
+
+  const listQuery = {
+    pageSize: pagination.pageSize,
+    sort: pagination.sort,
+    dir: pagination.dir,
+    success: req.query.success || null,
+  };
+
+  const buildLeadsListUrl = (overrides = {}) => `/company/leads${buildQueryString(listQuery, overrides)}`;
 
   res.render('leads/index', withTheme(req, {
     user: buildUserContext(req),
-    leads,
+    leads: pagination.rows,
+    pagination,
+    pageSizes: LEAD_LIST_PAGE_SIZES,
+    pageNumbers: buildPageNumbers(pagination.page, pagination.totalPages),
+    buildLeadsListUrl,
+    listColumns: LEAD_LIST_COLUMNS,
+    leadListDefaultVisibleColumns: LEAD_LIST_DEFAULT_VISIBLE_COLUMNS,
+    leadListSortColumns: LEAD_LIST_SORT_COLUMNS,
+    leadListColumnsStorageKey: LEAD_LIST_COLUMNS_STORAGE_KEY,
+    formatLeadListNotesPreview,
+    formatLeadListDate,
+    formatLeadListCount,
+    formatLeadListSources,
     success: req.query.success || null,
     formatLeadQuality,
     getLeadQualityBadgeClass,

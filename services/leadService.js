@@ -12,6 +12,26 @@ const {
 const { sanitizeNotesHtml } = require('../utils/sanitizeHtml');
 const { PATCHABLE_FIELDS, leadToPatchBase, serializeLeadForJson } = require('../utils/leadHelpers');
 const { LEAD_QUALITY_OPTIONS, VALID_LEAD_QUALITIES } = require('../constants/leadQuality');
+const { buildPaginationMeta } = require('../utils/pagination');
+
+const LEAD_LIST_INCLUDES = [
+  { model: CompanyCredential, as: 'assignee', attributes: ['id', 'adminName'] },
+  { model: Pipeline, as: 'pipeline', attributes: ['id', 'name'] },
+  { model: PipelineStage, as: 'stage', attributes: ['id', 'name'] },
+];
+
+const LEAD_LIST_SOURCE_INCLUDE = {
+  model: Source,
+  as: 'sources',
+  attributes: ['id', 'name'],
+  through: { attributes: [] },
+};
+
+const LEAD_LIST_COUNT_ATTRIBUTES = {
+  communicationCount: sequelize.literal('(SELECT COUNT(*) FROM "LeadCommunications" AS lc WHERE lc."leadId" = "Lead"."id")'),
+  taskCount: sequelize.literal('(SELECT COUNT(*) FROM "LeadTasks" AS lt WHERE lt."leadId" = "Lead"."id")'),
+  discussionCount: sequelize.literal('(SELECT COUNT(*) FROM "LeadDiscussions" AS ld WHERE ld."leadId" = "Lead"."id")'),
+};
 
 const LEAD_INCLUDES = [
   { model: CompanyCredential, as: 'assignee', attributes: ['id', 'adminName', 'email'] },
@@ -105,12 +125,85 @@ async function findCompanyLead(companyId, leadId, options = {}) {
   });
 }
 
-async function listCompanyLeads(companyId) {
-  return Lead.findAll({
-    where: { companyId },
-    include: LEAD_INCLUDES,
-    order: [['createdAt', 'DESC']],
+async function attachSourcesToLeads(leads) {
+  if (!leads.length) {
+    return leads;
+  }
+
+  const leadIds = leads.map((lead) => lead.id);
+  const leadsWithSources = await Lead.findAll({
+    where: { id: leadIds },
+    include: [LEAD_LIST_SOURCE_INCLUDE],
   });
+
+  const sourcesByLeadId = new Map(
+    leadsWithSources.map((lead) => [lead.id, lead.sources || []]),
+  );
+
+  leads.forEach((lead) => {
+    lead.setDataValue('sources', sourcesByLeadId.get(lead.id) || []);
+  });
+
+  return leads;
+}
+
+async function listCompanyLeadsPaginated(companyId, { page, pageSize, sort, dir }) {
+  const direction = dir === 'asc' ? 'ASC' : 'DESC';
+
+  const sortOrderMap = {
+    customerName: [['customerName', direction]],
+    email: [['email', direction]],
+    subject: [['subject', direction]],
+    assignee: [[{ model: CompanyCredential, as: 'assignee' }, 'adminName', direction]],
+    phone: [['phone', direction]],
+    followUpDate: [['followUpDate', direction]],
+    score: [['score', direction]],
+    quality: [['quality', direction]],
+    pipeline: [[{ model: Pipeline, as: 'pipeline' }, 'name', direction]],
+    stage: [[{ model: PipelineStage, as: 'stage' }, 'name', direction]],
+    notes: [['notes', direction]],
+    createdAt: [['createdAt', direction]],
+    updatedAt: [['updatedAt', direction]],
+    communicationCount: [[LEAD_LIST_COUNT_ATTRIBUTES.communicationCount, direction]],
+    taskCount: [[LEAD_LIST_COUNT_ATTRIBUTES.taskCount, direction]],
+    discussionCount: [[LEAD_LIST_COUNT_ATTRIBUTES.discussionCount, direction]],
+  };
+
+  const order = sortOrderMap[sort] || sortOrderMap.createdAt;
+  const total = await Lead.count({ where: { companyId } });
+  const meta = buildPaginationMeta({ page, pageSize, total });
+
+  const rows = total === 0
+    ? []
+    : await attachSourcesToLeads(await Lead.findAll({
+      where: { companyId },
+      include: LEAD_LIST_INCLUDES,
+      attributes: {
+        include: [
+          [LEAD_LIST_COUNT_ATTRIBUTES.communicationCount, 'communicationCount'],
+          [LEAD_LIST_COUNT_ATTRIBUTES.taskCount, 'taskCount'],
+          [LEAD_LIST_COUNT_ATTRIBUTES.discussionCount, 'discussionCount'],
+        ],
+      },
+      limit: meta.pageSize,
+      offset: meta.offset,
+      order,
+    }));
+
+  return {
+    rows,
+    total,
+    page: meta.page,
+    pageSize: meta.pageSize,
+    sort,
+    dir,
+    totalPages: meta.totalPages,
+    offset: meta.offset,
+    start: meta.start,
+    end: meta.end,
+    hasPrev: meta.hasPrev,
+    hasNext: meta.hasNext,
+  };
 }
 
 async function getLeadFormOptions(companyId) {
@@ -332,7 +425,7 @@ async function patchLead(companyId, leadId, partialData) {
 
 module.exports = {
   findCompanyLead,
-  listCompanyLeads,
+  listCompanyLeadsPaginated,
   getLeadFormOptions,
   validateLeadPayload,
   normalizeLeadInput,
