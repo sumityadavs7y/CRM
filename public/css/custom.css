@@ -112,3 +112,31 @@ button.color-picker-trigger:hover {
 .leads-column-picker__label {
     line-height: 1.4;
 }
+
+.leads-list-filters {
+    margin-bottom: 0.75rem;
+}
+
+.leads-list-filters:not(:has(.collapse.show)) {
+    margin-bottom: 0;
+}
+
+.leads-list-filters__toggle[aria-expanded="true"] .leads-list-filters__chevron {
+    transform: rotate(180deg);
+}
+
+.leads-list-filters__chevron {
+    transition: transform 0.2s ease;
+}
+
+.leads-list-filters__form {
+    padding: 0.75rem;
+    border: 1px solid var(--vz-border-color);
+    border-radius: var(--vz-border-radius, 0.25rem);
+    background: var(--vz-secondary-bg);
+}
+
+.leads-list-filters .form-label {
+    font-size: 0.75rem;
+    color: var(--vz-secondary-color);
+}

@@ -30,17 +30,24 @@
                             <div class="card">
                                 <div class="card-header align-items-center d-flex">
                                     <h4 class="card-title mb-0 flex-grow-1">Lead List</h4>
-                                    <% if (user.can('leads', 'edit')) { %>
-                                        <div class="flex-shrink-0">
+                                    <div class="flex-shrink-0 d-flex gap-2 align-items-center">
+                                        <%- include('./_list-filters-toggle') %>
+                                        <% if (user.can('leads', 'edit')) { %>
                                             <a href="/company/leads/new" class="btn btn-success btn-sm">
                                                 <i class="ri-add-line align-middle me-1"></i> Add Lead
                                             </a>
-                                        </div>
-                                    <% } %>
+                                        <% } %>
+                                    </div>
                                 </div>
                                 <div class="card-body">
+                                    <%- include('./_list-filters') %>
+
                                     <% if (pagination.total === 0) { %>
-                                        <p class="text-muted mb-0">No leads yet.</p>
+                                        <% if (hasActiveFilters) { %>
+                                            <p class="text-muted mb-0">No leads match your filters.</p>
+                                        <% } else { %>
+                                            <p class="text-muted mb-0">No leads yet.</p>
+                                        <% } %>
                                     <% } else { %>
                                         <%- include('../partials/pagination-bar', { position: 'top' }) %>
                                         <div class="table-responsive">

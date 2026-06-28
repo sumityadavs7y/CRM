@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const {
   Lead,
   LeadCommunication,
@@ -9,6 +10,7 @@ const {
   Source,
   sequelize,
 } = require('../models');
+const { escapeIlikePattern } = require('../utils/leadListFilters');
 const { sanitizeNotesHtml } = require('../utils/sanitizeHtml');
 const { PATCHABLE_FIELDS, leadToPatchBase, serializeLeadForJson } = require('../utils/leadHelpers');
 const { LEAD_QUALITY_OPTIONS, VALID_LEAD_QUALITIES } = require('../constants/leadQuality');
@@ -154,8 +156,139 @@ async function attachSourcesToLeads(leads) {
   return leads;
 }
 
-async function listCompanyLeadsPaginated(companyId, { page, pageSize, sort, dir }) {
+async function validateLeadListFilters(companyId, filters) {
+  const validated = { ...filters };
+
+  if (validated.assigneeId) {
+    const assignee = await CompanyCredential.findOne({
+      where: { id: validated.assigneeId, companyId, isActive: true },
+    });
+    if (!assignee) {
+      validated.assigneeId = null;
+    }
+  }
+
+  if (validated.pipelineId) {
+    const pipeline = await Pipeline.findOne({
+      where: { id: validated.pipelineId, companyId, isActive: true },
+    });
+    if (!pipeline) {
+      validated.pipelineId = null;
+      validated.stageId = null;
+    }
+  } else {
+    validated.stageId = null;
+  }
+
+  if (validated.stageId && validated.pipelineId) {
+    const stage = await PipelineStage.findOne({
+      where: {
+        id: validated.stageId,
+        pipelineId: validated.pipelineId,
+        isActive: true,
+      },
+    });
+    if (!stage) {
+      validated.stageId = null;
+    }
+  }
+
+  if (validated.sourceId) {
+    const source = await Source.findOne({
+      where: { id: validated.sourceId, companyId, isActive: true },
+    });
+    if (!source) {
+      validated.sourceId = null;
+    }
+  }
+
+  return validated;
+}
+
+function buildLeadListWhere(companyId, filters) {
+  const conditions = [{ companyId }];
+
+  if (filters.q) {
+    const pattern = `%${escapeIlikePattern(filters.q)}%`;
+    conditions.push({
+      [Op.or]: [
+        { customerName: { [Op.iLike]: pattern } },
+        { email: { [Op.iLike]: pattern } },
+        { subject: { [Op.iLike]: pattern } },
+        { phone: { [Op.iLike]: pattern } },
+        { notes: { [Op.iLike]: pattern } },
+      ],
+    });
+  }
+
+  if (filters.assigneeId) {
+    conditions.push({ assigneeId: filters.assigneeId });
+  }
+  if (filters.pipelineId) {
+    conditions.push({ pipelineId: filters.pipelineId });
+  }
+  if (filters.stageId) {
+    conditions.push({ stageId: filters.stageId });
+  }
+  if (filters.quality) {
+    conditions.push({ quality: filters.quality });
+  }
+
+  if (filters.scoreMin !== null || filters.scoreMax !== null) {
+    const scoreCondition = {};
+    if (filters.scoreMin !== null) {
+      scoreCondition[Op.gte] = filters.scoreMin;
+    }
+    if (filters.scoreMax !== null) {
+      scoreCondition[Op.lte] = filters.scoreMax;
+    }
+    conditions.push({ score: scoreCondition });
+  }
+
+  if (filters.followUpFrom || filters.followUpTo) {
+    const followUpCondition = {};
+    if (filters.followUpFrom) {
+      followUpCondition[Op.gte] = filters.followUpFrom;
+    }
+    if (filters.followUpTo) {
+      followUpCondition[Op.lte] = filters.followUpTo;
+    }
+    conditions.push({ followUpDate: followUpCondition });
+  }
+
+  if (filters.createdFrom || filters.createdTo) {
+    const createdCondition = {};
+    if (filters.createdFrom) {
+      createdCondition[Op.gte] = new Date(`${filters.createdFrom}T00:00:00.000Z`);
+    }
+    if (filters.createdTo) {
+      createdCondition[Op.lte] = new Date(`${filters.createdTo}T23:59:59.999Z`);
+    }
+    conditions.push({ createdAt: createdCondition });
+  }
+
+  return conditions.length === 1 ? conditions[0] : { [Op.and]: conditions };
+}
+
+function buildLeadListQueryIncludes(filters) {
+  const includes = [...LEAD_LIST_INCLUDES];
+
+  if (filters.sourceId) {
+    includes.push({
+      ...LEAD_LIST_SOURCE_INCLUDE,
+      required: true,
+      where: { id: filters.sourceId },
+    });
+  }
+
+  return includes;
+}
+
+async function listCompanyLeadsPaginated(companyId, { page, pageSize, sort, dir, filters = {} }) {
   const direction = dir === 'asc' ? 'ASC' : 'DESC';
+  const validatedFilters = await validateLeadListFilters(companyId, filters);
+  const where = buildLeadListWhere(companyId, validatedFilters);
+  const includes = buildLeadListQueryIncludes(validatedFilters);
 
   const sortOrderMap = {
     customerName: [['customerName', direction]],
@@ -177,14 +310,17 @@ async function listCompanyLeadsPaginated(companyId, { page, pageSize, sort, dir 
   };
 
   const order = sortOrderMap[sort] || sortOrderMap.createdAt;
-  const total = await Lead.count({ where: { companyId } });
+  const countOptions = validatedFilters.sourceId
+    ? { where, include: includes, distinct: true, col: 'id' }
+    : { where };
+  const total = await Lead.count(countOptions);
   const meta = buildPaginationMeta({ page, pageSize, total });
 
   const rows = total === 0
     ? []
     : await attachSourcesToLeads(await Lead.findAll({
-      where: { companyId },
-      include: LEAD_LIST_INCLUDES,
+      where,
+      include: includes,
       attributes: {
         include: [
           [LEAD_LIST_COUNT_ATTRIBUTES.communicationCount, 'communicationCount'],

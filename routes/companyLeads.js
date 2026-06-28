@@ -53,6 +53,11 @@ const {
 } = require('../constants/leadList');
 const { parsePaginationQuery, buildQueryString, buildPageNumbers } = require('../utils/pagination');
 const {
+  parseLeadListFilters,
+  hasActiveLeadListFilters,
+  buildLeadListFilterQuery,
+} = require('../utils/leadListFilters');
+const {
   formatLeadListNotesPreview,
   formatLeadListDate,
   formatLeadListCount,
@@ -151,9 +156,18 @@ router.get('/', isCompanyAuthenticated, requirePermission('leads', 'view'), asyn
     defaultDir: DEFAULT_LEAD_LIST_DIR,
   });
 
-  const pagination = await listCompanyLeadsPaginated(req.session.companyId, paginationParams);
+  const filters = parseLeadListFilters(req.query);
+
+  const [pagination, filterOptions] = await Promise.all([
+    listCompanyLeadsPaginated(req.session.companyId, {
+      ...paginationParams,
+      filters,
+    }),
+    getLeadFormOptions(req.session.companyId),
+  ]);
 
   const listQuery = {
+    ...buildLeadListFilterQuery(filters),
     pageSize: pagination.pageSize,
     sort: pagination.sort,
     dir: pagination.dir,
@@ -161,11 +175,15 @@ router.get('/', isCompanyAuthenticated, requirePermission('leads', 'view'), asyn
   };
 
   const buildLeadsListUrl = (overrides = {}) => `/company/leads${buildQueryString(listQuery, overrides)}`;
+  const hasActiveFilters = hasActiveLeadListFilters(filters);
 
   res.render('leads/index', withTheme(req, {
     user: buildUserContext(req),
     leads: pagination.rows,
     pagination,
+    filters,
+    filterOptions,
+    hasActiveFilters,
     pageSizes: LEAD_LIST_PAGE_SIZES,
     pageNumbers: buildPageNumbers(pagination.page, pagination.totalPages),
     buildLeadsListUrl,
