@@ -152,4 +152,52 @@
                         </div>
                     </div>
 
+                    <% if (user.can('media_library', 'view')) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title mb-0">Media Library Picker Demo</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted">Open the reusable media picker popup and choose a file from your company library.</p>
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-4">
+                                                <label for="accessDemoMediaId" class="form-label">Selected file ID</label>
+                                                <input type="text" class="form-control" id="accessDemoMediaId" readonly placeholder="None selected">
+                                            </div>
+                                            <div class="col-md-5">
+                                                <label for="accessDemoMediaName" class="form-label">Selected file name</label>
+                                                <input type="text" class="form-control" id="accessDemoMediaName" readonly placeholder="None selected">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="button" class="btn btn-success w-100" id="accessDemoMediaPickerBtn">
+                                                    <i class="ri-gallery-line me-1"></i> Choose from Media Library
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const pickerBtn = document.getElementById('accessDemoMediaPickerBtn');
+                                if (!pickerBtn || !window.MediaPicker) return;
+
+                                pickerBtn.addEventListener('click', function () {
+                                    window.MediaPicker.open({
+                                        onSelect: function (files) {
+                                            const file = files[0];
+                                            if (!file) return;
+                                            document.getElementById('accessDemoMediaId').value = String(file.id);
+                                            document.getElementById('accessDemoMediaName').value = file.originalName;
+                                        },
+                                    });
+                                });
+                            });
+                        </script>
+                    <% } %>
+
 <%- include('../partials/velzon/app-layout-close') %>

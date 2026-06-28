@@ -82,6 +82,14 @@
                         </a>
                     </li>
                 <% } %>
+                <% const canViewMedia = user && user.can && user.can('media_library', 'view'); %>
+                <% if (canViewMedia) { %>
+                    <li class="nav-item">
+                        <a class="nav-link menu-link<%= activeNav === 'media-library' ? ' active' : '' %>" href="/company/media">
+                            <i class="ri-gallery-line"></i> <span>Media Library</span>
+                        </a>
+                    </li>
+                <% } %>
                 <% const isCrmSetupActive = activeNav === 'crm-setup-pipelines' || activeNav === 'crm-setup-sources'; %>
                 <% if (canViewCrmSetup) { %>
                     <li class="nav-item">

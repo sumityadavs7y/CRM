@@ -1,0 +1,23 @@
+<div class="modal fade" id="mediaFolderModal" tabindex="-1" aria-labelledby="mediaFolderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mediaFolderModalLabel">Create Folder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="mediaFolderForm">
+                <div class="modal-body">
+                    <div id="mediaFolderFormError" class="alert alert-danger d-none"></div>
+                    <div class="mb-3">
+                        <label for="mediaFolderName" class="form-label">Folder name</label>
+                        <input type="text" class="form-control" id="mediaFolderName" name="name" required maxlength="80" autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="mediaFolderSubmitBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

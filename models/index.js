@@ -20,6 +20,8 @@ const ProjectBlockModel = require('./ProjectBlock');
 const ProjectFloorModel = require('./ProjectFloor');
 const ProjectUnitModel = require('./ProjectUnit');
 const ProjectReraRegistrationModel = require('./ProjectReraRegistration');
+const MediaFolderModel = require('./MediaFolder');
+const MediaFileModel = require('./MediaFile');
 
 const User = UserModel(sequelize, Sequelize.DataTypes);
 const Company = CompanyModel(sequelize, Sequelize.DataTypes);
@@ -42,6 +44,8 @@ const ProjectBlock = ProjectBlockModel(sequelize, Sequelize.DataTypes);
 const ProjectFloor = ProjectFloorModel(sequelize, Sequelize.DataTypes);
 const ProjectUnit = ProjectUnitModel(sequelize, Sequelize.DataTypes);
 const ProjectReraRegistration = ProjectReraRegistrationModel(sequelize, Sequelize.DataTypes);
+const MediaFolder = MediaFolderModel(sequelize, Sequelize.DataTypes);
+const MediaFile = MediaFileModel(sequelize, Sequelize.DataTypes);
 
 Company.hasMany(CompanyCredential, { foreignKey: 'companyId', as: 'credentials' });
 CompanyCredential.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
@@ -131,6 +135,16 @@ ProjectUnit.belongsTo(ProjectFloor, { foreignKey: 'floorId', as: 'floor' });
 Project.hasMany(ProjectReraRegistration, { foreignKey: 'projectId', as: 'reraRegistrations' });
 ProjectReraRegistration.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
 
+Company.hasMany(MediaFolder, { foreignKey: 'companyId', as: 'mediaFolders' });
+MediaFolder.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+
+Company.hasMany(MediaFile, { foreignKey: 'companyId', as: 'mediaFiles' });
+MediaFile.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+MediaFile.belongsTo(MediaFolder, { foreignKey: 'folderId', as: 'folder' });
+MediaFolder.hasMany(MediaFile, { foreignKey: 'folderId', as: 'files' });
+MediaFile.belongsTo(CompanyCredential, { foreignKey: 'uploadedById', as: 'uploadedBy' });
+CompanyCredential.hasMany(MediaFile, { foreignKey: 'uploadedById', as: 'uploadedMediaFiles' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -156,4 +170,6 @@ module.exports = {
   ProjectFloor,
   ProjectUnit,
   ProjectReraRegistration,
+  MediaFolder,
+  MediaFile,
 };

@@ -31,6 +31,11 @@ const AVAILABLE_PLAN_FEATURES = [
     label: 'Project Management',
     description: 'Manage real estate projects, inventory, and RERA registrations',
   },
+  {
+    key: 'media_library',
+    label: 'Media Library',
+    description: 'Upload and manage company files and images',
+  },
 ];
 
 function getAvailablePlanFeatures() {

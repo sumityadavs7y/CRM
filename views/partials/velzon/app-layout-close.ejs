@@ -26,5 +26,12 @@
     <script src="<%= assetBase %>/assets/js/plugins.js"></script>
     <script src="<%= assetBase %>/assets/js/app.js"></script>
     <script src="/js/theme.js"></script>
+    <% if (typeof user !== 'undefined' && user && user.authType === 'company' && user.can && user.can('media_library', 'view')) { %>
+        <%- include('../media/_media-picker-modal', {
+            canEdit: user.can('media_library', 'edit')
+        }) %>
+        <script src="/js/media-library.js"></script>
+        <script src="/js/media-picker.js"></script>
+    <% } %>
 </body>
 </html>
