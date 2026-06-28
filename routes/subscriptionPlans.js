@@ -2,6 +2,7 @@ const express = require('express');
 const { SubscriptionPlan } = require('../models');
 const { isSuperAdmin } = require('../middleware/auth');
 const { withTheme } = require('../utils/themes');
+const { buildUserContext } = require('../utils/sessionUser');
 const {
   getAvailablePlanFeatures,
   getFeatureLabel,
@@ -172,19 +173,6 @@ function renderEdit(req, res, plan, error, values) {
     values,
     activeNav: 'subscription-plans',
   }));
-}
-
-function buildUserContext(req) {
-  return {
-    id: req.session.userId || req.session.credentialId,
-    name: req.session.userName,
-    email: req.session.userEmail,
-    role: req.session.userRole,
-    isSuperAdmin: req.session.isSuperAdmin,
-    authType: req.session.authType,
-    companyId: req.session.companyId || null,
-    companyName: req.session.companyName || null,
-  };
 }
 
 module.exports = router;

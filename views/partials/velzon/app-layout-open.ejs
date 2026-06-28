@@ -3,7 +3,7 @@
 <head>
     <%- include('head', { title: pageTitle }) %>
 </head>
-<body>
+<body<% if (typeof user !== 'undefined' && user) { %> data-nav-brand-short="<%= user.navBrandShortLabel %>" data-nav-brand-full="<%= user.navBrandLabel %>"<% } %>>
     <div id="layout-wrapper">
         <%- include('app-topbar') %>
         <%- include('app-sidebar') %>

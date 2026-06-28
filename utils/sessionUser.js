@@ -2,6 +2,49 @@ const { hasCapability } = require('./capabilities');
 const { roleHasPermission } = require('./planFeatures');
 const { getUserInitials, getInitialsColorClass } = require('./userInitials');
 
+function getCompanyAcronym(companyName) {
+  const words = String(companyName || '').trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) {
+    return 'CRM';
+  }
+
+  if (words.length === 1) {
+    return words[0].replace(/[^a-zA-Z0-9]/g, '').slice(0, 3).toUpperCase();
+  }
+
+  const chars = [];
+  const firstWord = words[0].replace(/[^a-zA-Z0-9]/g, '');
+  if (firstWord[0]) {
+    chars.push(firstWord[0]);
+  }
+  if (firstWord[1] && chars.length < 3) {
+    chars.push(firstWord[1]);
+  }
+
+  for (let i = 1; i < words.length && chars.length < 3; i += 1) {
+    const letter = words[i].replace(/[^a-zA-Z0-9]/g, '')[0];
+    if (letter) {
+      chars.push(letter);
+    }
+  }
+
+  return chars.join('').slice(0, 3).toUpperCase();
+}
+
+function getNavBrandLabel(session) {
+  if (session?.authType === 'company' && session.companyName) {
+    return `${session.companyName}'s CRM`;
+  }
+  return 'CRM';
+}
+
+function getNavBrandShortLabel(session) {
+  if (session?.authType === 'company' && session.companyName) {
+    return getCompanyAcronym(session.companyName);
+  }
+  return 'CRM';
+}
+
 function buildUserContext(req) {
   const permissions = req.session?.permissions || {};
   const capabilities = req.session?.capabilities || [];
@@ -19,6 +62,8 @@ function buildUserContext(req) {
     authType: req.session.authType,
     companyId: req.session.companyId || null,
     companyName: req.session.companyName || null,
+    navBrandLabel: getNavBrandLabel(req.session),
+    navBrandShortLabel: getNavBrandShortLabel(req.session),
     avatarUrl: req.session.avatarUrl || null,
     initials: getUserInitials(req.session.userName),
     initialsColorClass: getInitialsColorClass(req.session.userName),
@@ -62,6 +107,9 @@ function clearAccessSession(req) {
 
 module.exports = {
   buildUserContext,
+  getCompanyAcronym,
+  getNavBrandLabel,
+  getNavBrandShortLabel,
   applyAccessToSession,
   applyProfileToSession,
   clearAccessSession,

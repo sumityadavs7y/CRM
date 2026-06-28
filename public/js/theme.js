@@ -4,6 +4,7 @@
   const COLOR_MODE_STORAGE_KEY = 'crm-color-mode';
   const COLOR_MODE_COOKIE_NAME = 'crm_color_mode';
   const DEFAULT_THEME = 'default';
+  const REMOVED_THEMES = new Set(['creative']);
   const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
   function getCookieValue(cookieName) {
@@ -51,6 +52,18 @@
     return true;
   }
 
+  function migrateRemovedThemes() {
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    const cookieTheme = getCookieValue(THEME_COOKIE_NAME);
+
+    if ((storedTheme && REMOVED_THEMES.has(storedTheme))
+      || (cookieTheme && REMOVED_THEMES.has(cookieTheme))) {
+      localStorage.setItem(THEME_STORAGE_KEY, DEFAULT_THEME);
+      setCookie(THEME_COOKIE_NAME, DEFAULT_THEME);
+      window.location.reload();
+    }
+  }
+
   function syncPreferencesFromStorage() {
     const themeChanged = syncCookieFromStorage(THEME_STORAGE_KEY, THEME_COOKIE_NAME);
     const colorModeChanged = syncCookieFromStorage(COLOR_MODE_STORAGE_KEY, COLOR_MODE_COOKIE_NAME);
@@ -85,5 +98,6 @@
     });
   });
 
+  migrateRemovedThemes();
   syncPreferencesFromStorage();
 })();
