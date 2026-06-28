@@ -13,6 +13,13 @@ const { sanitizeNotesHtml } = require('../utils/sanitizeHtml');
 const { PATCHABLE_FIELDS, leadToPatchBase, serializeLeadForJson } = require('../utils/leadHelpers');
 const { LEAD_QUALITY_OPTIONS, VALID_LEAD_QUALITIES } = require('../constants/leadQuality');
 const { buildPaginationMeta } = require('../utils/pagination');
+const {
+  recordLeadHistoryEvent,
+  buildLeadHistoryContext,
+  buildLeadChanges,
+  LEAD_HISTORY_ACTIONS,
+  LEAD_HISTORY_ENTITY_TYPES,
+} = require('./leadHistoryService');
 
 const LEAD_LIST_INCLUDES = [
   { model: CompanyCredential, as: 'assignee', attributes: ['id', 'adminName'] },
@@ -333,7 +340,7 @@ async function syncLeadSources(lead, sourceIds, transaction) {
   await lead.setSources(sourceIds, { transaction });
 }
 
-async function createLead(companyId, data) {
+async function createLead(companyId, data, { actorId } = {}) {
   const validation = await validateLeadPayload(companyId, data);
   if (!validation.ok) {
     throw new Error(validation.errors.join(' '));
@@ -359,11 +366,21 @@ async function createLead(companyId, data) {
 
     await syncLeadSources(lead, input.sourceIds, transaction);
 
+    await recordLeadHistoryEvent({
+      leadId: lead.id,
+      companyId,
+      userId: actorId || null,
+      action: LEAD_HISTORY_ACTIONS.CREATED,
+      entityType: LEAD_HISTORY_ENTITY_TYPES.LEAD,
+      entityId: lead.id,
+      summary: 'Lead created',
+    }, transaction);
+
     return findCompanyLead(companyId, lead.id, { transaction });
   });
 }
 
-async function updateLead(companyId, leadId, data) {
+async function updateLead(companyId, leadId, data, { actorId } = {}) {
   const lead = await findCompanyLead(companyId, leadId);
   if (!lead) {
     throw new Error('Lead not found.');
@@ -375,6 +392,22 @@ async function updateLead(companyId, leadId, data) {
   }
 
   const { input } = validation;
+  const historyContext = await buildLeadHistoryContext(companyId, lead);
+  const afterState = {
+    customerName: input.customerName,
+    email: input.email,
+    subject: input.subject,
+    assigneeId: input.assigneeId,
+    phone: input.phone || '',
+    followUpDate: input.followUpDate || '',
+    score: input.score ?? '',
+    quality: input.quality || '',
+    pipelineId: input.pipelineId || '',
+    stageId: input.stageId || '',
+    notes: input.notes || '',
+    sourceIds: input.sourceIds,
+  };
+  const changes = buildLeadChanges(historyContext.before, afterState, historyContext);
 
   return sequelize.transaction(async (transaction) => {
     await lead.update({
@@ -393,6 +426,19 @@ async function updateLead(companyId, leadId, data) {
 
     await syncLeadSources(lead, input.sourceIds, transaction);
 
+    if (Object.keys(changes).length > 0) {
+      await recordLeadHistoryEvent({
+        leadId: lead.id,
+        companyId,
+        userId: actorId || null,
+        action: LEAD_HISTORY_ACTIONS.UPDATED,
+        entityType: LEAD_HISTORY_ENTITY_TYPES.LEAD,
+        entityId: lead.id,
+        summary: 'Lead updated',
+        changes,
+      }, transaction);
+    }
+
     return findCompanyLead(companyId, lead.id, { transaction });
   });
 }
@@ -406,7 +452,7 @@ async function deleteLead(companyId, leadId) {
   await lead.destroy();
 }
 
-async function patchLead(companyId, leadId, partialData) {
+async function patchLead(companyId, leadId, partialData, options = {}) {
   const lead = await findCompanyLead(companyId, leadId);
   if (!lead) {
     throw new Error('Lead not found.');
@@ -420,7 +466,7 @@ async function patchLead(companyId, leadId, partialData) {
     }
   });
 
-  return updateLead(companyId, leadId, merged);
+  return updateLead(companyId, leadId, merged, options);
 }
 
 module.exports = {

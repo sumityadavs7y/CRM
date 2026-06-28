@@ -103,6 +103,7 @@
 <script type="application/json" id="lead-detail-data"><%- JSON.stringify({
     canEdit: !!canEdit,
     patchUrl: '/company/leads/' + lead.id,
+    historyUrl: '/company/leads/' + lead.id + '/history',
     commUrl: '/company/leads/' + lead.id + '/communications',
     discussionUrl: '/company/leads/' + lead.id + '/discussions',
     lead: {

@@ -1,0 +1,19 @@
+<div class="card border">
+    <div class="card-header align-items-center d-flex">
+        <h5 class="card-title mb-0 flex-grow-1">History</h5>
+    </div>
+    <div class="card-body" id="leadHistoryPanel">
+        <div id="leadHistoryLoading" class="lead-history-state text-center py-4 d-none">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mb-0 mt-2">Loading history…</p>
+        </div>
+        <div id="leadHistoryError" class="lead-history-state alert alert-danger d-none mb-0" role="alert"></div>
+        <div id="leadHistoryEmpty" class="lead-history-state text-muted mb-0 d-none">No history yet.</div>
+        <div id="leadHistoryList" class="lead-history-list"></div>
+        <div id="leadHistoryLoadMoreWrap" class="text-center mt-3 d-none">
+            <button type="button" class="btn btn-soft-primary btn-sm" id="leadHistoryLoadMoreBtn">Load more</button>
+        </div>
+    </div>
+</div>

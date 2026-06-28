@@ -15,6 +15,17 @@
   let activeEditContainer = null;
   let notesQuill = null;
   let sourcesSelect = null;
+  const historyState = {
+    loaded: false,
+    loading: false,
+    dirty: false,
+    page: 1,
+    hasNext: false,
+  };
+
+  function markHistoryDirty() {
+    historyState.dirty = true;
+  }
 
   function displayValue(value, emptyLabel) {
     if (value === null || value === undefined || value === '') {
@@ -85,6 +96,7 @@
     if (result.lead.sources) {
       state.sourceIds = result.lead.sources.map((source) => source.id);
     }
+    markHistoryDirty();
     return result.lead;
   }
 
@@ -108,6 +120,7 @@
     if (result.lead.sources) {
       state.sourceIds = result.lead.sources.map((source) => source.id);
     }
+    markHistoryDirty();
     return result.lead;
   }
 
@@ -1067,6 +1080,12 @@
           return;
         }
 
+        if (tabKey === 'history') {
+          if (!historyState.loaded || historyState.dirty) {
+            loadLeadHistory({ reset: true });
+          }
+        }
+
         const url = new URL(window.location.href);
         if (tabKey === 'general') {
           url.searchParams.delete('tab');
@@ -1080,8 +1099,165 @@
     });
   }
 
+  function formatHistoryDate(value) {
+    if (!value) {
+      return '—';
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '—';
+    }
+    return date.toLocaleString();
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderHistoryChanges(changes) {
+    if (!changes || Object.keys(changes).length === 0) {
+      return '';
+    }
+
+    const items = Object.values(changes).map((change) => (
+      `<li><strong>${escapeHtml(change.label)}:</strong> `
+      + `<span class="change-from">${escapeHtml(change.from)}</span> → `
+      + `<span class="change-to">${escapeHtml(change.to)}</span></li>`
+    )).join('');
+
+    return `<ul class="lead-history-changes">${items}</ul>`;
+  }
+
+  function renderHistoryEvent(event) {
+    const actorName = event.user?.adminName || 'System';
+    return (
+      `<article class="lead-history-item">`
+      + `<div class="lead-history-meta">`
+      + `<time datetime="${escapeHtml(event.createdAt)}">${escapeHtml(formatHistoryDate(event.createdAt))}</time>`
+      + `<span>${escapeHtml(actorName)}</span>`
+      + `</div>`
+      + `<div class="lead-history-summary">${escapeHtml(event.summary)}</div>`
+      + `${renderHistoryChanges(event.changes)}`
+      + `</article>`
+    );
+  }
+
+  function setHistoryStateVisibility({ loading, error, empty }) {
+    const loadingEl = document.getElementById('leadHistoryLoading');
+    const errorEl = document.getElementById('leadHistoryError');
+    const emptyEl = document.getElementById('leadHistoryEmpty');
+    const loadMoreWrap = document.getElementById('leadHistoryLoadMoreWrap');
+
+    if (loadingEl) {
+      loadingEl.classList.toggle('d-none', !loading);
+    }
+    if (errorEl) {
+      errorEl.classList.toggle('d-none', !error);
+      if (error) {
+        errorEl.textContent = error;
+      }
+    }
+    if (emptyEl) {
+      emptyEl.classList.toggle('d-none', !empty);
+    }
+    if (loadMoreWrap) {
+      loadMoreWrap.classList.toggle('d-none', !historyState.hasNext);
+    }
+  }
+
+  async function loadLeadHistory({ reset = false, append = false } = {}) {
+    if (!config.historyUrl || historyState.loading) {
+      return;
+    }
+
+    const listEl = document.getElementById('leadHistoryList');
+    const loadMoreBtn = document.getElementById('leadHistoryLoadMoreBtn');
+    if (!listEl) {
+      return;
+    }
+
+    const page = reset ? 1 : historyState.page;
+
+    historyState.loading = true;
+    setHistoryStateVisibility({
+      loading: reset || !append,
+      error: null,
+      empty: false,
+    });
+
+    if (reset) {
+      listEl.innerHTML = '';
+    }
+
+    try {
+      const response = await fetch(`${config.historyUrl}?page=${page}`, {
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'fetch',
+        },
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || 'Unable to load history.');
+      }
+
+      const events = result.events || [];
+      if (reset && events.length === 0) {
+        setHistoryStateVisibility({ loading: false, error: null, empty: true });
+      } else {
+        setHistoryStateVisibility({ loading: false, error: null, empty: false });
+      }
+
+      if (append) {
+        listEl.insertAdjacentHTML('beforeend', events.map(renderHistoryEvent).join(''));
+      } else {
+        listEl.innerHTML = events.map(renderHistoryEvent).join('');
+      }
+
+      historyState.loaded = true;
+      historyState.dirty = false;
+      historyState.page = page;
+      historyState.hasNext = !!result.pagination?.hasNext;
+
+      if (loadMoreBtn) {
+        loadMoreBtn.disabled = false;
+      }
+      setHistoryStateVisibility({ loading: false, error: null, empty: reset && events.length === 0 });
+    } catch (error) {
+      setHistoryStateVisibility({ loading: false, error: error.message, empty: false });
+    } finally {
+      historyState.loading = false;
+    }
+  }
+
+  function initLeadHistory() {
+    const loadMoreBtn = document.getElementById('leadHistoryLoadMoreBtn');
+    const historyPane = document.getElementById('lead-pane-history');
+
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener('click', async () => {
+        if (!historyState.hasNext || historyState.loading) {
+          return;
+        }
+        historyState.page += 1;
+        loadMoreBtn.disabled = true;
+        await loadLeadHistory({ append: true });
+      });
+    }
+
+    if (historyPane?.classList.contains('active')) {
+      loadLeadHistory({ reset: true });
+    }
+  }
+
   bindInlineFields();
   initLeadTabs();
+  initLeadHistory();
   initCommunicationDelete();
   initDiscussionModal();
   initDiscussionDelete();

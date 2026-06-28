@@ -1,4 +1,10 @@
 const { Lead, LeadCommunication } = require('../models');
+const {
+  recordLeadHistoryEvent,
+  buildCommunicationChanges,
+  LEAD_HISTORY_ACTIONS,
+  LEAD_HISTORY_ENTITY_TYPES,
+} = require('./leadHistoryService');
 
 const VALID_ITEM_TYPES = ['email', 'message'];
 
@@ -43,6 +49,21 @@ function validateCommunicationInput(input) {
   return errors;
 }
 
+function communicationSnapshot(communication) {
+  return {
+    itemType: communication.itemType,
+    sentAt: communication.sentAt,
+    toAddress: communication.toAddress,
+    subject: communication.subject,
+    description: communication.description || '',
+  };
+}
+
+function formatCommunicationSummary(itemType, subject) {
+  const label = itemType === 'email' ? 'email' : 'message';
+  return `Added ${label}: ${subject}`;
+}
+
 async function listLeadCommunications(companyId, leadId) {
   await assertCompanyLead(companyId, leadId);
 
@@ -52,8 +73,8 @@ async function listLeadCommunications(companyId, leadId) {
   });
 }
 
-async function createLeadCommunication(companyId, leadId, data) {
-  await assertCompanyLead(companyId, leadId);
+async function createLeadCommunication(companyId, leadId, data, { actorId } = {}) {
+  const lead = await assertCompanyLead(companyId, leadId);
 
   const input = normalizeCommunicationInput(data);
   const errors = validateCommunicationInput(input);
@@ -61,7 +82,7 @@ async function createLeadCommunication(companyId, leadId, data) {
     throw new Error(errors.join(' '));
   }
 
-  return LeadCommunication.create({
+  const communication = await LeadCommunication.create({
     leadId,
     itemType: input.itemType,
     sentAt: new Date(input.sentAt),
@@ -69,10 +90,22 @@ async function createLeadCommunication(companyId, leadId, data) {
     subject: input.subject,
     description: input.description,
   });
+
+  await recordLeadHistoryEvent({
+    leadId,
+    companyId: lead.companyId,
+    userId: actorId || null,
+    action: LEAD_HISTORY_ACTIONS.CREATED,
+    entityType: LEAD_HISTORY_ENTITY_TYPES.COMMUNICATION,
+    entityId: communication.id,
+    summary: formatCommunicationSummary(input.itemType, input.subject),
+  });
+
+  return communication;
 }
 
-async function updateLeadCommunication(companyId, leadId, communicationId, data) {
-  await assertCompanyLead(companyId, leadId);
+async function updateLeadCommunication(companyId, leadId, communicationId, data, { actorId } = {}) {
+  const lead = await assertCompanyLead(companyId, leadId);
 
   const communication = await LeadCommunication.findOne({
     where: { id: communicationId, leadId },
@@ -81,6 +114,7 @@ async function updateLeadCommunication(companyId, leadId, communicationId, data)
     throw new Error('Communication not found.');
   }
 
+  const before = communicationSnapshot(communication);
   const input = normalizeCommunicationInput(data);
   const errors = validateCommunicationInput(input);
   if (errors.length > 0) {
@@ -95,11 +129,27 @@ async function updateLeadCommunication(companyId, leadId, communicationId, data)
     description: input.description,
   });
 
+  const after = communicationSnapshot(communication);
+  const changes = buildCommunicationChanges(before, after);
+
+  if (Object.keys(changes).length > 0) {
+    await recordLeadHistoryEvent({
+      leadId,
+      companyId: lead.companyId,
+      userId: actorId || null,
+      action: LEAD_HISTORY_ACTIONS.UPDATED,
+      entityType: LEAD_HISTORY_ENTITY_TYPES.COMMUNICATION,
+      entityId: communication.id,
+      summary: `Updated ${input.itemType === 'email' ? 'email' : 'message'}: ${input.subject}`,
+      changes,
+    });
+  }
+
   return communication;
 }
 
-async function deleteLeadCommunication(companyId, leadId, communicationId) {
-  await assertCompanyLead(companyId, leadId);
+async function deleteLeadCommunication(companyId, leadId, communicationId, { actorId } = {}) {
+  const lead = await assertCompanyLead(companyId, leadId);
 
   const communication = await LeadCommunication.findOne({
     where: { id: communicationId, leadId },
@@ -107,6 +157,18 @@ async function deleteLeadCommunication(companyId, leadId, communicationId) {
   if (!communication) {
     throw new Error('Communication not found.');
   }
+
+  const summary = `Deleted ${communication.itemType === 'email' ? 'email' : 'message'}: ${communication.subject}`;
+
+  await recordLeadHistoryEvent({
+    leadId,
+    companyId: lead.companyId,
+    userId: actorId || null,
+    action: LEAD_HISTORY_ACTIONS.DELETED,
+    entityType: LEAD_HISTORY_ENTITY_TYPES.COMMUNICATION,
+    entityId: communication.id,
+    summary,
+  });
 
   await communication.destroy();
 }

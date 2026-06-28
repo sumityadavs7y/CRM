@@ -13,6 +13,7 @@ const LeadModel = require('./Lead');
 const LeadCommunicationModel = require('./LeadCommunication');
 const LeadDiscussionModel = require('./LeadDiscussion');
 const LeadTaskModel = require('./LeadTask');
+const LeadHistoryEventModel = require('./LeadHistoryEvent');
 
 const User = UserModel(sequelize, Sequelize.DataTypes);
 const Company = CompanyModel(sequelize, Sequelize.DataTypes);
@@ -28,6 +29,7 @@ const Lead = LeadModel(sequelize, Sequelize.DataTypes);
 const LeadCommunication = LeadCommunicationModel(sequelize, Sequelize.DataTypes);
 const LeadDiscussion = LeadDiscussionModel(sequelize, Sequelize.DataTypes);
 const LeadTask = LeadTaskModel(sequelize, Sequelize.DataTypes);
+const LeadHistoryEvent = LeadHistoryEventModel(sequelize, Sequelize.DataTypes);
 
 Company.hasMany(CompanyCredential, { foreignKey: 'companyId', as: 'credentials' });
 CompanyCredential.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
@@ -92,6 +94,11 @@ CompanyCredential.hasMany(LeadDiscussion, { foreignKey: 'userId', as: 'leadDiscu
 Lead.hasMany(LeadTask, { foreignKey: 'leadId', as: 'tasks' });
 LeadTask.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
 
+Lead.hasMany(LeadHistoryEvent, { foreignKey: 'leadId', as: 'historyEvents' });
+LeadHistoryEvent.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
+LeadHistoryEvent.belongsTo(CompanyCredential, { foreignKey: 'userId', as: 'user' });
+CompanyCredential.hasMany(LeadHistoryEvent, { foreignKey: 'userId', as: 'leadHistoryEvents' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -110,4 +117,5 @@ module.exports = {
   LeadCommunication,
   LeadDiscussion,
   LeadTask,
+  LeadHistoryEvent,
 };

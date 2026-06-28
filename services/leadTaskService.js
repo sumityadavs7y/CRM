@@ -3,6 +3,12 @@ const {
   VALID_LEAD_TASK_PRIORITIES,
   VALID_LEAD_TASK_STATUSES,
 } = require('../constants/leadTask');
+const {
+  recordLeadHistoryEvent,
+  buildTaskChanges,
+  LEAD_HISTORY_ACTIONS,
+  LEAD_HISTORY_ENTITY_TYPES,
+} = require('./leadHistoryService');
 
 async function assertCompanyLead(companyId, leadId) {
   const lead = await Lead.findOne({
@@ -51,8 +57,18 @@ function validateTaskInput(input) {
   return errors;
 }
 
-async function createLeadTask(companyId, leadId, data) {
-  await assertCompanyLead(companyId, leadId);
+function taskSnapshot(task) {
+  return {
+    name: task.name,
+    dueDate: task.dueDate,
+    dueTime: task.dueTime || '',
+    priority: task.priority || '',
+    status: task.status || 'ongoing',
+  };
+}
+
+async function createLeadTask(companyId, leadId, data, { actorId } = {}) {
+  const lead = await assertCompanyLead(companyId, leadId);
 
   const input = normalizeTaskInput(data);
   const errors = validateTaskInput(input);
@@ -60,7 +76,7 @@ async function createLeadTask(companyId, leadId, data) {
     throw new Error(errors.join(' '));
   }
 
-  return LeadTask.create({
+  const task = await LeadTask.create({
     leadId,
     name: input.name,
     dueDate: input.dueDate,
@@ -68,10 +84,22 @@ async function createLeadTask(companyId, leadId, data) {
     priority: input.priority,
     status: input.status,
   });
+
+  await recordLeadHistoryEvent({
+    leadId,
+    companyId: lead.companyId,
+    userId: actorId || null,
+    action: LEAD_HISTORY_ACTIONS.CREATED,
+    entityType: LEAD_HISTORY_ENTITY_TYPES.TASK,
+    entityId: task.id,
+    summary: `Added task: ${input.name}`,
+  });
+
+  return task;
 }
 
-async function updateLeadTask(companyId, leadId, taskId, data) {
-  await assertCompanyLead(companyId, leadId);
+async function updateLeadTask(companyId, leadId, taskId, data, { actorId } = {}) {
+  const lead = await assertCompanyLead(companyId, leadId);
 
   const task = await LeadTask.findOne({
     where: { id: taskId, leadId },
@@ -80,6 +108,7 @@ async function updateLeadTask(companyId, leadId, taskId, data) {
     throw new Error('Task not found.');
   }
 
+  const before = taskSnapshot(task);
   const input = normalizeTaskInput(data);
   const errors = validateTaskInput(input);
   if (errors.length > 0) {
@@ -94,11 +123,26 @@ async function updateLeadTask(companyId, leadId, taskId, data) {
     status: input.status,
   });
 
+  const changes = buildTaskChanges(before, taskSnapshot(task));
+
+  if (Object.keys(changes).length > 0) {
+    await recordLeadHistoryEvent({
+      leadId,
+      companyId: lead.companyId,
+      userId: actorId || null,
+      action: LEAD_HISTORY_ACTIONS.UPDATED,
+      entityType: LEAD_HISTORY_ENTITY_TYPES.TASK,
+      entityId: task.id,
+      summary: `Updated task: ${input.name}`,
+      changes,
+    });
+  }
+
   return task;
 }
 
-async function deleteLeadTask(companyId, leadId, taskId) {
-  await assertCompanyLead(companyId, leadId);
+async function deleteLeadTask(companyId, leadId, taskId, { actorId } = {}) {
+  const lead = await assertCompanyLead(companyId, leadId);
 
   const task = await LeadTask.findOne({
     where: { id: taskId, leadId },
@@ -106,6 +150,16 @@ async function deleteLeadTask(companyId, leadId, taskId) {
   if (!task) {
     throw new Error('Task not found.');
   }
+
+  await recordLeadHistoryEvent({
+    leadId,
+    companyId: lead.companyId,
+    userId: actorId || null,
+    action: LEAD_HISTORY_ACTIONS.DELETED,
+    entityType: LEAD_HISTORY_ENTITY_TYPES.TASK,
+    entityId: task.id,
+    summary: `Deleted task: ${task.name}`,
+  });
 
   await task.destroy();
 }

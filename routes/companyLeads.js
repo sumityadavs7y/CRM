@@ -4,6 +4,7 @@ const { requirePermission } = require('../middleware/companyFeatures');
 const { withTheme } = require('../utils/themes');
 const { buildUserContext } = require('../utils/sessionUser');
 const { LEAD_TABS, resolveActiveTab } = require('../constants/leadTabs');
+const { DEFAULT_HISTORY_PAGE_SIZE } = require('../constants/leadHistory');
 const { formatLeadQuality, getLeadQualityBadgeClass } = require('../constants/leadQuality');
 const {
   LEAD_TASK_PRIORITY_OPTIONS,
@@ -39,6 +40,7 @@ const {
   updateLeadTask,
   deleteLeadTask,
 } = require('../services/leadTaskService');
+const { listLeadHistory } = require('../services/leadHistoryService');
 const {
   LEAD_LIST_PAGE_SIZES,
   DEFAULT_LEAD_LIST_PAGE_SIZE,
@@ -124,6 +126,10 @@ function wantsJson(req) {
     || req.get('X-Requested-With') === 'fetch';
 }
 
+function getActorId(req) {
+  return buildUserContext(req).id || null;
+}
+
 async function renderCreateForm(req, res, { error, values }) {
   const formOptions = await getLeadFormOptions(req.session.companyId);
 
@@ -187,13 +193,27 @@ router.get('/new', isCompanyAuthenticated, requirePermission('leads', 'edit'), a
 
 router.post('/', isCompanyAuthenticated, requirePermission('leads', 'edit'), async (req, res) => {
   try {
-    await createLead(req.session.companyId, req.body);
+    await createLead(req.session.companyId, req.body, { actorId: getActorId(req) });
     return res.redirect('/company/leads?success=Lead+created+successfully.');
   } catch (error) {
     return renderCreateForm(req, res, {
       error: error.message,
       values: buildFormValues(req.body),
     });
+  }
+});
+
+router.get('/:id/history', isCompanyAuthenticated, requirePermission('leads', 'view'), async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10);
+    const pageSize = parseInt(req.query.pageSize, 10);
+    const result = await listLeadHistory(req.session.companyId, req.params.id, {
+      page: Number.isFinite(page) ? page : 1,
+      pageSize: Number.isFinite(pageSize) ? pageSize : DEFAULT_HISTORY_PAGE_SIZE,
+    });
+    return res.json({ ok: true, events: result.events, pagination: result.pagination });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: error.message });
   }
 });
 
@@ -231,7 +251,7 @@ router.get('/:id', isCompanyAuthenticated, requirePermission('leads', 'view'), a
 
 router.patch('/:id', isCompanyAuthenticated, requirePermission('leads', 'edit'), async (req, res) => {
   try {
-    const lead = await patchLead(req.session.companyId, req.params.id, req.body);
+    const lead = await patchLead(req.session.companyId, req.params.id, req.body, { actorId: getActorId(req) });
     return res.json({ ok: true, lead: serializeLeadForJson(lead) });
   } catch (error) {
     return res.status(400).json({ ok: false, error: error.message });
@@ -243,7 +263,8 @@ router.post('/:id/communications', isCompanyAuthenticated, requirePermission('le
     const communication = await createLeadCommunication(
       req.session.companyId,
       req.params.id,
-      req.body
+      req.body,
+      { actorId: getActorId(req) }
     );
 
     if (wantsJson(req)) {
@@ -272,7 +293,8 @@ router.patch('/:id/communications/:commId', isCompanyAuthenticated, requirePermi
       req.session.companyId,
       req.params.id,
       req.params.commId,
-      req.body
+      req.body,
+      { actorId: getActorId(req) }
     );
 
     if (wantsJson(req)) {
@@ -297,7 +319,12 @@ router.patch('/:id/communications/:commId', isCompanyAuthenticated, requirePermi
 
 router.post('/:id/communications/:commId/delete', isCompanyAuthenticated, requirePermission('leads', 'edit'), async (req, res) => {
   try {
-    await deleteLeadCommunication(req.session.companyId, req.params.id, req.params.commId);
+    await deleteLeadCommunication(
+      req.session.companyId,
+      req.params.id,
+      req.params.commId,
+      { actorId: getActorId(req) }
+    );
 
     if (wantsJson(req)) {
       return res.json({ ok: true });
@@ -324,7 +351,8 @@ router.post('/:id/discussions', isCompanyAuthenticated, requirePermission('leads
     const discussion = await createLeadDiscussion(
       req.session.companyId,
       req.params.id,
-      req.body
+      req.body,
+      { actorId: getActorId(req) }
     );
 
     if (wantsJson(req)) {
@@ -353,7 +381,8 @@ router.patch('/:id/discussions/:discussionId', isCompanyAuthenticated, requirePe
       req.session.companyId,
       req.params.id,
       req.params.discussionId,
-      req.body
+      req.body,
+      { actorId: getActorId(req) }
     );
 
     if (wantsJson(req)) {
@@ -378,7 +407,12 @@ router.patch('/:id/discussions/:discussionId', isCompanyAuthenticated, requirePe
 
 router.post('/:id/discussions/:discussionId/delete', isCompanyAuthenticated, requirePermission('leads', 'edit'), async (req, res) => {
   try {
-    await deleteLeadDiscussion(req.session.companyId, req.params.id, req.params.discussionId);
+    await deleteLeadDiscussion(
+      req.session.companyId,
+      req.params.id,
+      req.params.discussionId,
+      { actorId: getActorId(req) }
+    );
 
     if (wantsJson(req)) {
       return res.json({ ok: true });
@@ -405,7 +439,8 @@ router.post('/:id/tasks', isCompanyAuthenticated, requirePermission('leads', 'ed
     const task = await createLeadTask(
       req.session.companyId,
       req.params.id,
-      req.body
+      req.body,
+      { actorId: getActorId(req) }
     );
 
     if (wantsJson(req)) {
@@ -434,7 +469,8 @@ router.patch('/:id/tasks/:taskId', isCompanyAuthenticated, requirePermission('le
       req.session.companyId,
       req.params.id,
       req.params.taskId,
-      req.body
+      req.body,
+      { actorId: getActorId(req) }
     );
 
     if (wantsJson(req)) {
@@ -459,7 +495,12 @@ router.patch('/:id/tasks/:taskId', isCompanyAuthenticated, requirePermission('le
 
 router.post('/:id/tasks/:taskId/delete', isCompanyAuthenticated, requirePermission('leads', 'edit'), async (req, res) => {
   try {
-    await deleteLeadTask(req.session.companyId, req.params.id, req.params.taskId);
+    await deleteLeadTask(
+      req.session.companyId,
+      req.params.id,
+      req.params.taskId,
+      { actorId: getActorId(req) }
+    );
 
     if (wantsJson(req)) {
       return res.json({ ok: true });
