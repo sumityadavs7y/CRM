@@ -4,7 +4,8 @@ const { User, Company, CompanyCredential, CompanyRole, CompanySubscription, Subs
 const { getDefaultThemeLocals } = require('../utils/themes');
 const { isSubscriptionValid } = require('../utils/subscription');
 const { resolveCredentialAccess } = require('../services/companyRbacService');
-const { applyAccessToSession, clearAccessSession } = require('../utils/sessionUser');
+const { applyAccessToSession, applyProfileToSession, clearAccessSession } = require('../utils/sessionUser');
+const { applyUserThemeCookies } = require('../utils/themes');
 const router = express.Router();
 
 function withDefaultTheme(req, data = {}) {
@@ -152,6 +153,14 @@ router.post('/company/login', async (req, res) => {
       credential.companyRole
     );
     applyAccessToSession(req, access);
+    applyProfileToSession(req, credential);
+
+    if (credential.themeId || credential.colorMode) {
+      applyUserThemeCookies(res, {
+        themeId: credential.themeId,
+        colorMode: credential.colorMode,
+      });
+    }
 
     res.redirect('/dashboard');
   } catch (error) {

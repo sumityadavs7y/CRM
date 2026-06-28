@@ -72,6 +72,8 @@ const COLOR_MODE_COOKIE_NAME = 'crm_color_mode';
 const VALID_COLOR_MODES = new Set(['light', 'dark']);
 
 const themeMap = new Map(THEMES.map((theme) => [theme.id, theme]));
+const VALID_THEME_IDS = new Set(THEMES.map((theme) => theme.id));
+const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 function getTheme(themeId) {
   return themeMap.get(themeId) || themeMap.get(DEFAULT_THEME_ID);
@@ -96,8 +98,17 @@ function parseThemeCookie(req) {
 }
 
 function resolveThemeId(req) {
-  const candidate = parseThemeCookie(req) || DEFAULT_THEME_ID;
-  return themeMap.has(candidate) ? candidate : DEFAULT_THEME_ID;
+  const fromCookie = parseThemeCookie(req);
+  if (fromCookie && themeMap.has(fromCookie)) {
+    return fromCookie;
+  }
+
+  const fromSession = req?.session?.themeId;
+  if (fromSession && themeMap.has(fromSession)) {
+    return fromSession;
+  }
+
+  return DEFAULT_THEME_ID;
 }
 
 function parseColorModeCookie(req) {
@@ -119,8 +130,33 @@ function parseColorModeCookie(req) {
 }
 
 function resolveColorMode(req) {
-  const candidate = parseColorModeCookie(req);
-  return VALID_COLOR_MODES.has(candidate) ? candidate : null;
+  const fromCookie = parseColorModeCookie(req);
+  if (VALID_COLOR_MODES.has(fromCookie)) {
+    return fromCookie;
+  }
+
+  const fromSession = req?.session?.colorMode;
+  if (VALID_COLOR_MODES.has(fromSession)) {
+    return fromSession;
+  }
+
+  return null;
+}
+
+function applyUserThemeCookies(res, { themeId, colorMode }) {
+  const cookieOptions = {
+    path: '/',
+    maxAge: THEME_COOKIE_MAX_AGE,
+    sameSite: 'Lax',
+  };
+
+  if (themeId && VALID_THEME_IDS.has(themeId)) {
+    res.cookie(THEME_COOKIE_NAME, themeId, cookieOptions);
+  }
+
+  if (colorMode && VALID_COLOR_MODES.has(colorMode)) {
+    res.cookie(COLOR_MODE_COOKIE_NAME, colorMode, cookieOptions);
+  }
 }
 
 function upsertHtmlAttr(htmlAttrs, attrName, attrValue) {
@@ -168,6 +204,7 @@ function withTheme(req, data = {}) {
 module.exports = {
   THEMES,
   DEFAULT_THEME_ID,
+  VALID_THEME_IDS,
   THEME_STORAGE_KEY,
   THEME_COOKIE_NAME,
   COLOR_MODE_STORAGE_KEY,
@@ -175,6 +212,7 @@ module.exports = {
   getTheme,
   resolveThemeId,
   resolveColorMode,
+  applyUserThemeCookies,
   getDefaultThemeLocals,
   getThemeLocals,
   withTheme,

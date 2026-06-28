@@ -1,0 +1,138 @@
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Profile Settings - CRM',
+    activeNav: 'profile'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Profile Settings</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item active">Profile</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (error) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-danger" role="alert"><%= error %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (success) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-success" role="alert"><%= success %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Profile Photo</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center gap-4 mb-4">
+                                        <%- include('../partials/user-avatar', {
+                                            user: user,
+                                            avatarUrl: user.avatarUrl ? user.avatarUrl + '?t=' + Date.now() : null,
+                                            size: 'xl',
+                                            imgId: 'profile-avatar-preview'
+                                        }) %>
+                                        <div>
+                                            <p class="text-muted mb-2">Upload a square image. It will be resized to 256×256 pixels.</p>
+                                            <% if (user.avatarUrl) { %>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" id="remove-avatar-btn">Remove photo</button>
+                                            <% } %>
+                                        </div>
+                                    </div>
+
+                                    <form action="/profile/avatar" method="post" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <label for="avatar" class="form-label">Choose image</label>
+                                            <input type="file" class="form-control" id="avatar" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Upload Photo</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Account Details</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form action="/profile" method="post">
+                                        <div class="mb-3">
+                                            <label for="adminName" class="form-label">Name</label>
+                                            <input type="text" class="form-control" id="adminName" name="adminName" value="<%= values.adminName || '' %>" required>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="email" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="email" name="email" value="<%= values.email || '' %>" required>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-success">Save Changes</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0">Change Password</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form action="/profile/password" method="post">
+                                        <div class="mb-3">
+                                            <label for="currentPassword" class="form-label">Current password</label>
+                                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required autocomplete="current-password">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="newPassword" class="form-label">New password</label>
+                                            <input type="password" class="form-control" id="newPassword" name="newPassword" required autocomplete="new-password" minlength="8">
+                                            <div class="form-text">At least 8 characters.</div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="confirmPassword" class="form-label">Confirm new password</label>
+                                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required autocomplete="new-password" minlength="8">
+                                        </div>
+
+                                        <button type="submit" class="btn btn-warning">Update Password</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                    (function () {
+                        var removeBtn = document.getElementById('remove-avatar-btn');
+                        if (!removeBtn) return;
+
+                        removeBtn.addEventListener('click', function () {
+                            if (!confirm('Remove your profile photo?')) return;
+
+                            fetch('/profile/avatar', { method: 'DELETE' })
+                                .then(function (response) {
+                                    if (!response.ok) throw new Error('Failed');
+                                    window.location.href = '/profile?success=Avatar removed successfully.';
+                                })
+                                .catch(function () {
+                                    alert('Unable to remove avatar. Please try again.');
+                                });
+                        });
+                    })();
+                    </script>
+
+<%- include('../partials/velzon/app-layout-close') %>

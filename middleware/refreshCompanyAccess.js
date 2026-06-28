@@ -6,7 +6,7 @@ const {
   SubscriptionPlan,
 } = require('../models');
 const { resolveCredentialAccess } = require('../services/companyRbacService');
-const { applyAccessToSession } = require('../utils/sessionUser');
+const { applyAccessToSession, applyProfileToSession } = require('../utils/sessionUser');
 const { isSubscriptionValid } = require('../utils/subscription');
 
 async function refreshCompanyAccess(req, res, next) {
@@ -47,6 +47,7 @@ async function refreshCompanyAccess(req, res, next) {
       credential.companyRole
     );
     applyAccessToSession(req, access);
+    applyProfileToSession(req, credential);
   } catch (error) {
     console.error('Failed to refresh company access:', error);
   }

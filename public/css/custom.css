@@ -10,7 +10,16 @@ body {
     color: var(--vz-body-color);
 }
 
-.topbar-user .theme-submenu {
+.header-profile-user.avatar-xs,
+.header-profile-user.avatar-xl {
+    line-height: 1;
+}
+
+.header-profile-user.avatar-xs .avatar-title,
+.header-profile-user.avatar-xl .avatar-title {
+    font-weight: 600;
+}
+
     min-width: 10rem;
     max-height: 16rem;
     overflow-y: auto;

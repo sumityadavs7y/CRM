@@ -34,6 +34,21 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: true,
     },
+    avatarPath: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    themeId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    colorMode: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+      validate: {
+        isIn: [['light', 'dark']],
+      },
+    },
   }, {
     tableName: 'CompanyCredentials',
   });

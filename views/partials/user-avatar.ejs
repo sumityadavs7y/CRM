@@ -1,0 +1,28 @@
+<%
+    const displayName = typeof name !== 'undefined' ? name : (user && user.name);
+    const photoUrl = typeof avatarUrl !== 'undefined' ? avatarUrl : (user && user.avatarUrl);
+    const displayInitials = typeof initials !== 'undefined' ? initials : (user && user.initials);
+    const avatarSize = typeof size !== 'undefined' ? size : 'md';
+    const imageClass = typeof imgClass !== 'undefined' ? imgClass : '';
+    const imageId = typeof imgId !== 'undefined' ? imgId : '';
+    const bgClass = typeof initialsColorClass !== 'undefined'
+        ? initialsColorClass
+        : (user && user.initialsColorClass) || 'bg-primary';
+    const velzonSizeClass = avatarSize === 'header' ? 'avatar-xs' : (avatarSize === 'xl' ? 'avatar-xl' : 'avatar-md');
+%>
+
+<% if (photoUrl) { %>
+    <img
+        <% if (imageId) { %>id="<%= imageId %>"<% } %>
+        src="<%= photoUrl %>"
+        alt="<%= displayName %>"
+        class="rounded-circle<%= imageClass ? ' ' + imageClass : '' %>"
+        width="<%= avatarSize === 'header' ? 32 : (avatarSize === 'xl' ? 96 : 40) %>"
+        height="<%= avatarSize === 'header' ? 32 : (avatarSize === 'xl' ? 96 : 40) %>"
+        style="object-fit: cover;"
+    >
+<% } else { %>
+    <span class="<%= velzonSizeClass %><%= imageClass ? ' ' + imageClass : '' %>"<% if (imageId) { %> id="<%= imageId %>"<% } %>>
+        <span class="avatar-title rounded-circle <%= bgClass %> text-white"><%= displayInitials %></span>
+    </span>
+<% } %>

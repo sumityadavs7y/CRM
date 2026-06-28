@@ -25,10 +25,10 @@ app.use(session({
 }));
 
 // Development only (uncomment ONE block to enable):
-// const { devAutoLogin } = require('./development/devAutoLogin');
-// app.use(devAutoLogin);
-const { devAutoLoginCompanyAdmin } = require('./development/devAutoLoginCompanyAdmin');
-app.use(devAutoLoginCompanyAdmin);
+const { devAutoLogin } = require('./development/devAutoLogin');
+app.use(devAutoLogin);
+// const { devAutoLoginCompanyAdmin } = require('./development/devAutoLoginCompanyAdmin');
+// app.use(devAutoLoginCompanyAdmin);
 // const { devAutoLoginCompanyMember } = require('./development/devAutoLoginCompanyMember');
 // app.use(devAutoLoginCompanyMember);
 
@@ -53,6 +53,7 @@ const companyCrmSetupRoutes = require('./routes/companyCrmSetup');
 const companyLeadsRoutes = require('./routes/companyLeads');
 const companyProjectsRoutes = require('./routes/companyProjects');
 const companyMediaRoutes = require('./routes/companyMedia');
+const profileRoutes = require('./routes/profile');
 
 app.use('/auth', authRoutes);
 app.use('/companies', companyRoutes);
@@ -63,6 +64,7 @@ app.use('/company/crm-setup', companyCrmSetupRoutes);
 app.use('/company/leads', companyLeadsRoutes);
 app.use('/company/projects', companyProjectsRoutes);
 app.use('/company/media', companyMediaRoutes);
+app.use('/profile', profileRoutes);
 app.use('/access-demo', accessDemoRoutes);
 app.use('/', indexRoutes);
 
