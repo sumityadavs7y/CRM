@@ -48,6 +48,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    score: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    quality: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   }, {
     tableName: 'Leads',
   });

@@ -10,6 +10,7 @@ const {
 } = require('../models');
 const { sanitizeNotesHtml } = require('../utils/sanitizeHtml');
 const { PATCHABLE_FIELDS, leadToPatchBase, serializeLeadForJson } = require('../utils/leadHelpers');
+const { LEAD_QUALITY_OPTIONS, VALID_LEAD_QUALITIES } = require('../constants/leadQuality');
 
 const LEAD_INCLUDES = [
   { model: CompanyCredential, as: 'assignee', attributes: ['id', 'adminName', 'email'] },
@@ -49,6 +50,24 @@ function parseSourceIds(raw) {
   return [...new Set(list.map((id) => parseInt(id, 10)).filter(Number.isFinite))];
 }
 
+function parseOptionalScore(value) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const parsed = parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseOptionalQuality(value) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const normalized = String(value).trim().toLowerCase();
+  return normalized || null;
+}
+
 function normalizeLeadInput(data) {
   const notesRaw = data.notes;
   const notes = notesRaw === undefined || notesRaw === null
@@ -62,6 +81,8 @@ function normalizeLeadInput(data) {
     assigneeId: parseOptionalId(data.assigneeId),
     phone: data.phone?.trim() || null,
     followUpDate: data.followUpDate?.trim() || null,
+    score: parseOptionalScore(data.score),
+    quality: parseOptionalQuality(data.quality),
     pipelineId: parseOptionalId(data.pipelineId),
     stageId: parseOptionalId(data.stageId),
     notes,
@@ -124,7 +145,7 @@ async function getLeadFormOptions(companyId) {
     })),
   }));
 
-  return { assignees, pipelines, sources, pipelineStageMap };
+  return { assignees, pipelines, sources, pipelineStageMap, qualityOptions: LEAD_QUALITY_OPTIONS };
 }
 
 async function validateLeadPayload(companyId, data) {
@@ -148,6 +169,14 @@ async function validateLeadPayload(companyId, data) {
 
   if (input.stageId && !input.pipelineId) {
     errors.push('Pipeline is required when a stage is selected.');
+  }
+
+  if (input.score !== null && (!Number.isInteger(input.score) || input.score < 1 || input.score > 10)) {
+    errors.push('Score must be a whole number between 1 and 10.');
+  }
+
+  if (input.quality !== null && !VALID_LEAD_QUALITIES.has(input.quality)) {
+    errors.push('Quality must be High, Medium, or Low.');
   }
 
   if (errors.length > 0) {
@@ -221,6 +250,8 @@ async function createLead(companyId, data) {
       assigneeId: input.assigneeId,
       phone: input.phone,
       followUpDate: input.followUpDate,
+      score: input.score,
+      quality: input.quality,
       pipelineId: input.pipelineId,
       stageId: input.stageId,
       notes: input.notes,
@@ -253,6 +284,8 @@ async function updateLead(companyId, leadId, data) {
       assigneeId: input.assigneeId,
       phone: input.phone,
       followUpDate: input.followUpDate,
+      score: input.score,
+      quality: input.quality,
       pipelineId: input.pipelineId,
       stageId: input.stageId,
       notes: input.notes,

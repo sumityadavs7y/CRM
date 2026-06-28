@@ -4,6 +4,7 @@ const { requirePermission } = require('../middleware/companyFeatures');
 const { withTheme } = require('../utils/themes');
 const { buildUserContext } = require('../utils/sessionUser');
 const { LEAD_TABS, resolveActiveTab } = require('../constants/leadTabs');
+const { formatLeadQuality, getLeadQualityBadgeClass } = require('../constants/leadQuality');
 const { sanitizeNotesHtml } = require('../utils/sanitizeHtml');
 const {
   findCompanyLead,
@@ -45,6 +46,8 @@ function buildFormValues(body, lead = null) {
       assigneeId: '',
       phone: '',
       followUpDate: '',
+      score: '',
+      quality: '',
       pipelineId: '',
       stageId: '',
       notes: '',
@@ -59,6 +62,8 @@ function buildFormValues(body, lead = null) {
     assigneeId: String(lead.assigneeId),
     phone: lead.phone || '',
     followUpDate: lead.followUpDate || '',
+    score: lead.score ?? '',
+    quality: lead.quality || '',
     pipelineId: lead.pipelineId ? String(lead.pipelineId) : '',
     stageId: lead.stageId ? String(lead.stageId) : '',
     notes: lead.notes || '',
@@ -108,6 +113,8 @@ router.get('/', isCompanyAuthenticated, requirePermission('leads', 'view'), asyn
     user: buildUserContext(req),
     leads,
     success: req.query.success || null,
+    formatLeadQuality,
+    getLeadQualityBadgeClass,
     activeNav: 'leads',
   }));
 });
@@ -150,6 +157,8 @@ router.get('/:id', isCompanyAuthenticated, requirePermission('leads', 'view'), a
     error: req.query.error || null,
     activeTab: resolveActiveTab(req.query.tab),
     leadTabs: LEAD_TABS,
+    formatLeadQuality,
+    getLeadQualityBadgeClass,
     ...formOptions,
     activeNav: 'leads',
   }));

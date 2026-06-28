@@ -23,6 +23,30 @@
     return String(value);
   }
 
+  function formatQualityLabel(value) {
+    if (!value) {
+      return '—';
+    }
+    const option = (config.qualityOptions || []).find((item) => item.value === value);
+    return option ? option.label : value;
+  }
+
+  function getQualityBadgeClass(value) {
+    const classes = {
+      high: 'bg-success-subtle text-success',
+      medium: 'bg-warning-subtle text-warning',
+      low: 'bg-secondary-subtle text-secondary',
+    };
+    return classes[value] || 'bg-secondary-subtle text-secondary';
+  }
+
+  function renderQualityDisplay(value) {
+    if (!value) {
+      return '<span class="inline-field-display">—</span>';
+    }
+    return `<span class="inline-field-display"><span class="badge ${getQualityBadgeClass(value)}">${formatQualityLabel(value)}</span></span>`;
+  }
+
   function setFieldStatus(container, type, message) {
     let status = container.querySelector('.lead-field-status');
     if (!status) {
@@ -176,8 +200,10 @@
     closeActiveEdit();
 
     const field = container.dataset.field;
-    const currentValue = state[field] || '';
+    const inputType = container.dataset.type;
+    const currentValue = state[field] ?? '';
     const emptyLabel = container.dataset.empty || '—';
+    const optionalFields = new Set(['phone', 'followUpDate', 'score']);
 
     container.classList.add('is-editing');
     activeEditContainer = container;
@@ -186,9 +212,18 @@
     editor.className = 'inline-field-editor';
 
     const input = document.createElement('input');
-    input.type = container.dataset.type === 'date' ? 'date' : 'text';
+    if (inputType === 'date') {
+      input.type = 'date';
+    } else if (inputType === 'number') {
+      input.type = 'number';
+      input.min = '1';
+      input.max = '10';
+      input.step = '1';
+    } else {
+      input.type = 'text';
+    }
     input.className = 'form-control inline-field-input';
-    input.value = currentValue;
+    input.value = currentValue === null || currentValue === undefined ? '' : currentValue;
 
     editor.appendChild(input);
 
@@ -201,20 +236,31 @@
 
     const save = async () => {
       const newValue = input.value.trim();
-      if (field !== 'phone' && field !== 'followUpDate' && !newValue) {
+      if (!optionalFields.has(field) && !newValue) {
         setFieldStatus(container, 'error', 'This field is required.');
         return;
       }
 
-      if (String(newValue) === String(currentValue || '')) {
+      if (field === 'score' && newValue !== '') {
+        const score = parseInt(newValue, 10);
+        if (!Number.isInteger(score) || score < 1 || score > 10) {
+          setFieldStatus(container, 'error', 'Score must be a whole number between 1 and 10.');
+          return;
+        }
+      }
+
+      if (String(newValue) === String(currentValue ?? '')) {
         cancel();
         return;
       }
 
       setFieldStatus(container, 'saving', 'Saving…');
       try {
-        const updated = await patchField(field, newValue || null);
-        state[field] = updated[field] || '';
+        const patchValue = field === 'score'
+          ? (newValue === '' ? null : parseInt(newValue, 10))
+          : (newValue || null);
+        const updated = await patchField(field, patchValue);
+        state[field] = updated[field] ?? '';
         finishTextEdit(container, displayValue(updated[field], emptyLabel));
         setFieldStatus(container, 'saved', 'Saved');
         setTimeout(() => clearFieldStatus(container), 1500);
@@ -268,7 +314,7 @@
     return select;
   }
 
-  function startSelectEdit(container, options, currentValue, includeEmpty, onSaveSuccess) {
+  function startSelectEdit(container, options, currentValue, includeEmpty, onSaveSuccess, getDisplayHtml) {
     closeActiveEdit();
 
     container.classList.add('is-editing');
@@ -280,11 +326,15 @@
     const select = buildSelect(options, currentValue, includeEmpty);
     editor.appendChild(select);
 
+    const renderDisplay = (value) => {
+      if (getDisplayHtml) {
+        return getDisplayHtml(value);
+      }
+      return `<span class="inline-field-display">${container.dataset.display || '—'}</span>`;
+    };
+
     const cancel = () => {
-      restoreDisplay(
-        container,
-        `<span class="inline-field-display">${container.dataset.display || '—'}</span>`
-      );
+      restoreDisplay(container, renderDisplay(currentValue));
       clearFieldStatus(container);
     };
 
@@ -299,11 +349,9 @@
 
       setFieldStatus(container, 'saving', 'Saving…');
       try {
-        await onSaveSuccess(newValue || null);
-        restoreDisplay(
-          container,
-          `<span class="inline-field-display">${container.dataset.display || '—'}</span>`
-        );
+        const savedValue = await onSaveSuccess(newValue || null);
+        const displayValueForRender = savedValue === undefined ? (newValue || null) : savedValue;
+        restoreDisplay(container, renderDisplay(displayValueForRender));
         setFieldStatus(container, 'saved', 'Saved');
         setTimeout(() => clearFieldStatus(container), 1500);
       } catch (error) {
@@ -479,8 +527,25 @@
         const type = container.dataset.type;
         const field = container.dataset.field;
 
-        if (type === 'text' || type === 'date') {
+        if (type === 'text' || type === 'date' || type === 'number') {
           startTextEdit(container);
+          return;
+        }
+
+        if (type === 'quality') {
+          startSelectEdit(
+            container,
+            config.qualityOptions || [],
+            state.quality,
+            true,
+            async (value) => {
+              const updated = await patchField('quality', value);
+              state.quality = updated.quality || '';
+              container.dataset.display = formatQualityLabel(updated.quality);
+              return updated.quality || null;
+            },
+            renderQualityDisplay
+          );
           return;
         }
 
