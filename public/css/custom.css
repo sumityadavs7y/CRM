@@ -190,7 +190,7 @@ button.color-picker-trigger:hover {
 .inventory-node__header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 0.5rem;
     padding: 0.625rem 0.875rem;
     border-bottom: 1px solid var(--vz-border-color);
@@ -272,7 +272,16 @@ button.color-picker-trigger:hover {
     flex-wrap: wrap;
     align-items: center;
     gap: 0.35rem;
+    flex: 1;
     min-width: 0;
+}
+
+.inventory-node__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .inventory-node__icon {
@@ -284,13 +293,6 @@ button.color-picker-trigger:hover {
 .inventory-node__meta {
     color: var(--vz-secondary-color);
     font-size: 0.75rem;
-}
-
-.inventory-node__actions {
-    display: flex;
-    align-items: center;
-    gap: 0.125rem;
-    flex-shrink: 0;
 }
 
 .inventory-add-btn {

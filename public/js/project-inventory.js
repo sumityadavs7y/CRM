@@ -543,13 +543,6 @@
     initInventoryDropdowns();
     initInventoryUiActions();
     initInventoryEditing();
-
-    if (config.activeTab && config.activeTab !== 'general') {
-      const tabButton = document.querySelector(`[data-project-tab="${config.activeTab}"]`);
-      if (tabButton && window.bootstrap) {
-        window.bootstrap.Tab.getOrCreateInstance(tabButton).show();
-      }
-    }
   }
 
   if (document.readyState === 'loading') {
