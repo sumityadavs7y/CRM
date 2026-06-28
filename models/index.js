@@ -22,6 +22,11 @@ const ProjectUnitModel = require('./ProjectUnit');
 const ProjectReraRegistrationModel = require('./ProjectReraRegistration');
 const MediaFolderModel = require('./MediaFolder');
 const MediaFileModel = require('./MediaFile');
+const QuotationModel = require('./Quotation');
+const QuotationLineItemModel = require('./QuotationLineItem');
+const InvoiceModel = require('./Invoice');
+const InvoiceLineItemModel = require('./InvoiceLineItem');
+const ReceiptModel = require('./Receipt');
 
 const User = UserModel(sequelize, Sequelize.DataTypes);
 const Company = CompanyModel(sequelize, Sequelize.DataTypes);
@@ -46,6 +51,11 @@ const ProjectUnit = ProjectUnitModel(sequelize, Sequelize.DataTypes);
 const ProjectReraRegistration = ProjectReraRegistrationModel(sequelize, Sequelize.DataTypes);
 const MediaFolder = MediaFolderModel(sequelize, Sequelize.DataTypes);
 const MediaFile = MediaFileModel(sequelize, Sequelize.DataTypes);
+const Quotation = QuotationModel(sequelize, Sequelize.DataTypes);
+const QuotationLineItem = QuotationLineItemModel(sequelize, Sequelize.DataTypes);
+const Invoice = InvoiceModel(sequelize, Sequelize.DataTypes);
+const InvoiceLineItem = InvoiceLineItemModel(sequelize, Sequelize.DataTypes);
+const Receipt = ReceiptModel(sequelize, Sequelize.DataTypes);
 
 Company.hasMany(CompanyCredential, { foreignKey: 'companyId', as: 'credentials' });
 CompanyCredential.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
@@ -145,6 +155,39 @@ MediaFolder.hasMany(MediaFile, { foreignKey: 'folderId', as: 'files' });
 MediaFile.belongsTo(CompanyCredential, { foreignKey: 'uploadedById', as: 'uploadedBy' });
 CompanyCredential.hasMany(MediaFile, { foreignKey: 'uploadedById', as: 'uploadedMediaFiles' });
 
+Company.hasMany(Quotation, { foreignKey: 'companyId', as: 'quotations' });
+Quotation.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+Quotation.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
+Lead.hasMany(Quotation, { foreignKey: 'leadId', as: 'quotations' });
+Quotation.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+Project.hasMany(Quotation, { foreignKey: 'projectId', as: 'quotations' });
+Quotation.belongsTo(CompanyCredential, { foreignKey: 'assigneeId', as: 'assignee' });
+Quotation.belongsTo(CompanyCredential, { foreignKey: 'createdById', as: 'createdBy' });
+Quotation.belongsTo(Invoice, { foreignKey: 'convertedInvoiceId', as: 'convertedInvoice' });
+Quotation.hasMany(QuotationLineItem, { foreignKey: 'quotationId', as: 'lineItems' });
+QuotationLineItem.belongsTo(Quotation, { foreignKey: 'quotationId', as: 'quotation' });
+QuotationLineItem.belongsTo(ProjectUnit, { foreignKey: 'projectUnitId', as: 'projectUnit' });
+
+Company.hasMany(Invoice, { foreignKey: 'companyId', as: 'invoices' });
+Invoice.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+Invoice.belongsTo(Quotation, { foreignKey: 'quotationId', as: 'quotation' });
+Quotation.hasOne(Invoice, { foreignKey: 'quotationId', as: 'invoiceFromQuotation' });
+Invoice.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
+Invoice.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+Invoice.belongsTo(CompanyCredential, { foreignKey: 'assigneeId', as: 'assignee' });
+Invoice.belongsTo(CompanyCredential, { foreignKey: 'createdById', as: 'createdBy' });
+Invoice.hasMany(InvoiceLineItem, { foreignKey: 'invoiceId', as: 'lineItems' });
+InvoiceLineItem.belongsTo(Invoice, { foreignKey: 'invoiceId', as: 'invoice' });
+InvoiceLineItem.belongsTo(ProjectUnit, { foreignKey: 'projectUnitId', as: 'projectUnit' });
+
+Invoice.hasMany(Receipt, { foreignKey: 'invoiceId', as: 'receipts' });
+Receipt.belongsTo(Invoice, { foreignKey: 'invoiceId', as: 'invoice' });
+Receipt.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+Company.hasMany(Receipt, { foreignKey: 'companyId', as: 'receipts' });
+Receipt.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
+Receipt.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+Receipt.belongsTo(CompanyCredential, { foreignKey: 'createdById', as: 'createdBy' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -172,4 +215,9 @@ module.exports = {
   ProjectReraRegistration,
   MediaFolder,
   MediaFile,
+  Quotation,
+  QuotationLineItem,
+  Invoice,
+  InvoiceLineItem,
+  Receipt,
 };

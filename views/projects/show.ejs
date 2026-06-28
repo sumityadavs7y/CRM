@@ -58,6 +58,7 @@
                         <%- include('./_block-modal') %>
                         <%- include('./_floor-modal') %>
                         <%- include('./_unit-modal') %>
+                        <%- include('./_unit-delete-modal') %>
                         <%- include('./_rera-modal') %>
                     <% } %>
 
@@ -66,6 +67,8 @@
     window.projectDetailConfig = {
         projectId: <%= project.id %>,
         activeTab: '<%= activeTab %>',
+        focusUnitId: <%- JSON.stringify(typeof focusUnitId !== 'undefined' && focusUnitId ? String(focusUnitId) : null) %>,
+        inventoryFocusNodeKeys: <%- JSON.stringify(typeof inventoryFocusNodeKeys !== 'undefined' ? inventoryFocusNodeKeys : []) %>,
         canEdit: <%= canEdit ? 'true' : 'false' %>,
         unitStatusLabels: <%- JSON.stringify(unitStatusLabels) %>,
         unitStatusBadgeClasses: <%- JSON.stringify(unitStatusBadgeClasses) %>

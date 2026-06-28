@@ -1,0 +1,41 @@
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: (isEdit ? 'Edit' : 'New') + ' Quotation - Accounts',
+    activeNav: 'accounts-quotations'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0"><%= isEdit ? 'Edit quotation' : 'New quotation' %></h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item"><a href="/company/accounts/quotations">Quotations</a></li>
+                                        <li class="breadcrumb-item active"><%= isEdit ? 'Edit' : 'New' %></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-xl-10">
+                            <div class="card">
+                                <div class="card-body">
+                                    <% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
+
+                                    <form method="post" action="<%= isEdit ? '/company/accounts/quotations/' + quotation.id : '/company/accounts/quotations' %>" id="quotationForm">
+                                        <%- include('_form-fields', { formOptions, values }) %>
+                                        <div class="d-flex gap-2 mt-4">
+                                            <button type="submit" class="btn btn-success"><%= isEdit ? 'Save changes' : 'Create quotation' %></button>
+                                            <a href="<%= isEdit ? '/company/accounts/quotations/' + quotation.id : '/company/accounts/quotations' %>" class="btn btn-light">Cancel</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<script src="/js/quotation-form.js"></script>
+
+<%- include('../partials/velzon/app-layout-close') %>

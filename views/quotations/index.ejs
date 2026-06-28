@@ -1,0 +1,119 @@
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Quotations - Accounts',
+    activeNav: 'accounts-quotations'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Quotations</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item">Accounts & Transactions</li>
+                                        <li class="breadcrumb-item active">Quotations</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (success) { %><div class="alert alert-success"><%= success %></div><% } %>
+                    <% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
+
+                    <% if (filterLead) { %>
+                        <div class="alert alert-info d-flex align-items-center justify-content-between py-2">
+                            <span>
+                                Showing quotations for lead
+                                <a href="/company/leads/<%= filterLead.id %>" class="fw-medium"><%= filterLead.customerName %></a>
+                            </span>
+                            <a href="/company/accounts/quotations" class="btn btn-soft-dark btn-sm">Clear filter</a>
+                        </div>
+                    <% } %>
+
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">All quotations</h5>
+                            <% if (canEdit) { %>
+                                <a href="/company/accounts/quotations/new" class="btn btn-success btn-sm"><i class="ri-add-line"></i> New quotation</a>
+                            <% } %>
+                        </div>
+                        <div class="card-body">
+                            <form method="get" class="row g-2 mb-3">
+                                <% if (filters.leadId) { %>
+                                    <input type="hidden" name="leadId" value="<%= filters.leadId %>">
+                                <% } %>
+                                <div class="col-md-3">
+                                    <input type="search" name="search" class="form-control form-control-sm" placeholder="Search number or customer" value="<%= filters.search %>">
+                                </div>
+                                <div class="col-md-2">
+                                    <select name="status" class="form-select form-select-sm">
+                                        <option value="">All statuses</option>
+                                        <% statusOptions.forEach(function(status) { %>
+                                            <option value="<%= status %>" <%= filters.status === status ? 'selected' : '' %>><%= formatQuotationStatus(status) %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <select name="projectId" class="form-select form-select-sm">
+                                        <option value="">All projects</option>
+                                        <% formOptions.projects.forEach(function(project) { %>
+                                            <option value="<%= project.id %>" <%= filters.projectId == project.id ? 'selected' : '' %>><%= project.name %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                                    <a href="<%= filters.leadId ? '/company/accounts/quotations?leadId=' + filters.leadId : '/company/accounts/quotations' %>" class="btn btn-light btn-sm">Reset</a>
+                                </div>
+                            </form>
+
+                            <% if (!quotations.length) { %>
+                                <p class="text-muted mb-0">No quotations yet.</p>
+                            <% } else { %>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Number</th>
+                                                <th>Customer</th>
+                                                <th>Project</th>
+                                                <th>Issue date</th>
+                                                <th>Valid until</th>
+                                                <th class="text-end">Total</th>
+                                                <th>Status</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% quotations.forEach(function(quotation) { %>
+                                                <tr>
+                                                    <td><a href="/company/accounts/quotations/<%= quotation.id %>"><%= quotation.quotationNumber %></a></td>
+                                                    <td><%= quotation.customerName %></td>
+                                                    <td><%= quotation.project ? quotation.project.name : '—' %></td>
+                                                    <td><%= quotation.issueDate %></td>
+                                                    <td><%= quotation.validUntil || '—' %></td>
+                                                    <td class="text-end"><%= formatIndianCurrency(quotation.totalAmount) %></td>
+                                                    <td><span class="badge <%= getQuotationStatusBadgeClass(quotation.status) %>"><%= formatQuotationStatus(quotation.status) %></span></td>
+                                                    <td class="text-nowrap">
+                                                        <a href="/company/accounts/quotations/<%= quotation.id %>" class="btn btn-soft-primary btn-sm">View</a>
+                                                        <% if (canEdit) {
+                                                            const quotationDeleteMessage = 'Delete quotation ' + quotation.quotationNumber + '? This cannot be undone.'
+                                                                + (quotation.convertedInvoiceId ? '\n\nThe linked invoice and all payments will also be deleted.' : '')
+                                                                + '\n\nLinked inventory units will be marked as available.';
+                                                        %>
+                                                            <form action="/company/accounts/quotations/<%= quotation.id %>/delete" method="post" class="d-inline" onsubmit='return confirm(<%- JSON.stringify(quotationDeleteMessage) %>);'>
+                                                                <button type="submit" class="btn btn-soft-danger btn-sm">Delete</button>
+                                                            </form>
+                                                        <% } %>
+                                                    </td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+<%- include('../partials/velzon/app-layout-close') %>

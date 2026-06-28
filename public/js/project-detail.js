@@ -18,6 +18,9 @@
         } else {
           url.searchParams.set('tab', tabKey);
         }
+        if (tabKey !== 'inventory') {
+          url.searchParams.delete('unitId');
+        }
         url.searchParams.delete('success');
         url.searchParams.delete('error');
         window.history.replaceState({}, '', url.toString());

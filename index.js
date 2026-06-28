@@ -60,6 +60,8 @@ const companyLeadsRoutes = require('./routes/companyLeads');
 const companyProjectsRoutes = require('./routes/companyProjects');
 const companyMediaRoutes = require('./routes/companyMedia');
 const companyAccountsRoutes = require('./routes/companyAccounts');
+const companyQuotationRoutes = require('./routes/companyQuotations');
+const companyInvoiceRoutes = require('./routes/companyInvoices');
 const profileRoutes = require('./routes/profile');
 
 app.use('/auth', authRoutes);
@@ -71,6 +73,8 @@ app.use('/company/crm-setup', companyCrmSetupRoutes);
 app.use('/company/leads', companyLeadsRoutes);
 app.use('/company/projects', companyProjectsRoutes);
 app.use('/company/media', companyMediaRoutes);
+app.use('/company/accounts/quotations', companyQuotationRoutes);
+app.use('/company/accounts/invoices', companyInvoiceRoutes);
 app.use('/company/accounts', companyAccountsRoutes);
 app.use('/profile', profileRoutes);
 app.use('/access-demo', accessDemoRoutes);

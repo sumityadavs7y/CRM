@@ -7,8 +7,10 @@
         return total;
     }
 
+    const focusNodeKeys = typeof inventoryFocusNodeKeys !== 'undefined' ? inventoryFocusNodeKeys : [];
     const blockTargetId = 'inventory-block-' + block.id;
-    const blockExpanded = typeof inventoryCompact !== 'undefined' ? inventoryCompact : false;
+    const blockFocusExpanded = focusNodeKeys.indexOf('block-' + block.id) !== -1;
+    const blockExpanded = blockFocusExpanded || (typeof inventoryCompact !== 'undefined' ? inventoryCompact : false);
 %>
 
 <div class="inventory-node inventory-node--block">
@@ -65,7 +67,8 @@
         <% } else { %>
             <% (block.floors || []).forEach(function(floor) {
                 const floorTargetId = 'inventory-floor-' + floor.id;
-                const floorExpanded = typeof inventoryCompact !== 'undefined' ? inventoryCompact : false;
+                const floorFocusExpanded = focusNodeKeys.indexOf('floor-' + floor.id) !== -1;
+                const floorExpanded = floorFocusExpanded || (typeof inventoryCompact !== 'undefined' ? inventoryCompact : false);
             %>
                 <div class="inventory-node inventory-node--floor">
                     <div class="inventory-node__header<%= floorExpanded ? ' inventory-node__header--expanded' : '' %>">
@@ -131,8 +134,16 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <% (floor.units || []).forEach(function(unit) { %>
-                                            <tr>
+                                        <% (floor.units || []).forEach(function(unit) {
+                                            const isFocusedUnit = typeof inventoryFocusUnitId !== 'undefined'
+                                                && inventoryFocusUnitId !== null
+                                                && Number(inventoryFocusUnitId) === Number(unit.id);
+                                        %>
+                                            <tr
+                                                id="inventory-unit-<%= unit.id %>"
+                                                data-inventory-unit-id="<%= unit.id %>"
+                                                class="<%= isFocusedUnit ? 'inventory-unit-row--focused' : '' %>"
+                                            >
                                                 <td class="fw-medium"><%= unit.unitNumber %></td>
                                                 <td><%= formatUnitType(unit.unitType) %></td>
                                                 <td class="text-muted fs-13">
@@ -165,7 +176,7 @@
                                                                     label: 'Delete unit',
                                                                     action: 'delete-unit',
                                                                     danger: true,
-                                                                    attrs: { 'data-unit-id': String(unit.id) },
+                                                                    attrs: { 'data-unit-id': String(unit.id), 'data-unit-number': unit.unitNumber },
                                                                 },
                                                             ],
                                                         }) %>

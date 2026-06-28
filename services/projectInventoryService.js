@@ -5,8 +5,14 @@ const {
   ProjectBlock,
   ProjectFloor,
   ProjectUnit,
+  sequelize,
 } = require('../models');
 const { assertCompanyProject, slugify } = require('./projectService');
+const {
+  getUnitAccountsImpact,
+  unlinkUnitFromAccounts,
+  deleteUnitRelatedAccounts,
+} = require('./unitAccountsImpactService');
 const {
   PHASE_STATUSES,
   UNIT_TYPES,
@@ -434,9 +440,19 @@ async function updateUnit(companyId, projectId, unitId, data) {
   return unit;
 }
 
-async function deleteUnit(companyId, projectId, unitId) {
+async function deleteUnit(companyId, projectId, unitId, options = {}) {
+  const { deleteRelated = false, userId = null } = options;
   const unit = await assertCompanyUnit(companyId, projectId, unitId);
-  await unit.destroy();
+
+  await sequelize.transaction(async (transaction) => {
+    if (deleteRelated) {
+      await deleteUnitRelatedAccounts(companyId, unitId, userId, transaction);
+    } else {
+      await unlinkUnitFromAccounts(companyId, unitId, transaction);
+    }
+
+    await unit.destroy({ transaction });
+  });
 }
 
 function getInventoryFormOptions() {
@@ -470,4 +486,5 @@ module.exports = {
   updateUnit,
   deleteUnit,
   getInventoryFormOptions,
+  getUnitAccountsImpact,
 };

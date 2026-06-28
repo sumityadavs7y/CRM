@@ -57,7 +57,9 @@
     <div class="inventory-tree" id="projectInventoryTree" data-inventory-compact="<%= inventoryCompact ? 'true' : 'false' %>">
         <% phases.forEach(function(phase) {
             const phaseTargetId = 'inventory-phase-' + phase.id;
-            const phaseExpanded = true;
+            const phaseFocusExpanded = typeof inventoryFocusNodeKeys !== 'undefined'
+                && inventoryFocusNodeKeys.indexOf('phase-' + phase.id) !== -1;
+            const phaseExpanded = phaseFocusExpanded || true;
         %>
             <section class="inventory-node inventory-node--phase">
                 <div class="inventory-node__header inventory-node__header--expanded">
@@ -111,7 +113,12 @@
                             <p class="text-muted fs-13 mb-0 ps-4">No blocks in this phase.</p>
                         <% } else { %>
                             <% (phase.blocks || []).forEach(function(block) { %>
-                                <%- include('./_inventory-block', { block: block, inventoryCompact: inventoryCompact }) %>
+                                <%- include('./_inventory-block', {
+                                    block: block,
+                                    inventoryCompact: inventoryCompact,
+                                    inventoryFocusNodeKeys: typeof inventoryFocusNodeKeys !== 'undefined' ? inventoryFocusNodeKeys : [],
+                                    inventoryFocusUnitId: typeof focusUnitId !== 'undefined' ? focusUnitId : null,
+                                }) %>
                             <% }); %>
                         <% } %>
                     </div>
@@ -128,7 +135,12 @@
                 <% } %>
                 <div class="inventory-node__body">
                     <% directBlocks.forEach(function(block) { %>
-                        <%- include('./_inventory-block', { block: block, inventoryCompact: inventoryCompact }) %>
+                        <%- include('./_inventory-block', {
+                            block: block,
+                            inventoryCompact: inventoryCompact,
+                            inventoryFocusNodeKeys: typeof inventoryFocusNodeKeys !== 'undefined' ? inventoryFocusNodeKeys : [],
+                            inventoryFocusUnitId: typeof focusUnitId !== 'undefined' ? focusUnitId : null,
+                        }) %>
                     <% }); %>
                 </div>
             </section>

@@ -67,6 +67,15 @@ const {
 const { LEAD_REPORT_PERIOD_OPTIONS } = require('../constants/leadReports');
 const { parseLeadReportFilters } = require('../utils/leadReportFilters');
 const { getLeadReportData } = require('../services/leadReportService');
+const {
+  countQuotationsForLead,
+  listQuotationsForLead,
+} = require('../services/quotationService');
+const { formatIndianCurrency } = require('../utils/quotationCalculations');
+const {
+  formatQuotationStatus,
+  getQuotationStatusBadgeClass,
+} = require('../constants/quotations');
 
 const router = express.Router();
 
@@ -276,9 +285,23 @@ router.get('/:id', isCompanyAuthenticated, requirePermission('leads', 'view'), a
   const user = buildUserContext(req);
   const formOptions = await getLeadFormOptions(companyId);
 
+  let leadQuotations = [];
+  let leadQuotationsCount = 0;
+  if (user.can('quotations', 'view')) {
+    leadQuotationsCount = await countQuotationsForLead(companyId, lead.id);
+    if (leadQuotationsCount > 0) {
+      leadQuotations = await listQuotationsForLead(companyId, lead.id, { limit: 5 });
+    }
+  }
+
   res.render('leads/show', withTheme(req, {
     user,
     lead,
+    leadQuotations,
+    leadQuotationsCount,
+    formatQuotationStatus,
+    getQuotationStatusBadgeClass,
+    formatIndianCurrency,
     canEdit: user.can('leads', 'edit'),
     notesHtml: sanitizeNotesHtml(lead.notes) || '',
     success: req.query.success || null,

@@ -41,6 +41,16 @@
                     <div class="row mb-3">
                         <div class="col-12 d-flex gap-2">
                             <a href="/company/leads" class="btn btn-light btn-sm">Back to Leads</a>
+                            <% if (user.can('quotations', 'edit')) { %>
+                                <a href="/company/accounts/quotations/new?leadId=<%= lead.id %>" class="btn btn-soft-success btn-sm">
+                                    <i class="ri-file-text-line"></i> Create quotation
+                                </a>
+                            <% } %>
+                            <% if (user.can('quotations', 'view') && typeof leadQuotationsCount !== 'undefined' && leadQuotationsCount > 0) { %>
+                                <a href="/company/accounts/quotations?leadId=<%= lead.id %>" class="btn btn-soft-primary btn-sm">
+                                    <i class="ri-external-link-line"></i> View quotations (<%= leadQuotationsCount %>)
+                                </a>
+                            <% } %>
                             <% if (canEdit) { %>
                                 <form action="/company/leads/<%= lead.id %>/delete" method="post" class="d-inline" onsubmit="return confirm('Delete this lead? This cannot be undone.');">
                                     <button type="submit" class="btn btn-soft-danger btn-sm">Delete</button>
@@ -48,6 +58,8 @@
                             <% } %>
                         </div>
                     </div>
+
+                    <%- include('./_lead-quotations-summary') %>
 
                     <div class="row">
                         <div class="col-12">

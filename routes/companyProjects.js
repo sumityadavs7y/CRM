@@ -21,6 +21,7 @@ const {
   UNIT_STATUS_BADGE_CLASSES,
 } = require('../constants/projectManagement');
 const { parsePaginationQuery, buildQueryString, buildPageNumbers } = require('../utils/pagination');
+const { findUnitInventoryPath, inventoryFocusNodeKeysArray } = require('../utils/inventoryFocus');
 const {
   PROJECT_LIST_PAGE_SIZES,
   DEFAULT_PROJECT_LIST_PAGE_SIZE,
@@ -69,6 +70,7 @@ const {
   updateUnit,
   deleteUnit,
   getInventoryFormOptions,
+  getUnitAccountsImpact,
 } = require('../services/projectInventoryService');
 const {
   normalizeReraInput,
@@ -151,6 +153,8 @@ function renderProjectShow(req, res, project, extras = {}) {
   const user = buildUserContext(req);
   const inventoryOptions = getInventoryFormOptions();
   const reraOptions = getReraFormOptions();
+  const focusUnitId = req.query.unitId || null;
+  const inventoryFocus = findUnitInventoryPath(project, focusUnitId);
 
   res.render('projects/show', withTheme(req, {
     user,
@@ -158,7 +162,9 @@ function renderProjectShow(req, res, project, extras = {}) {
     canEdit: user.can('project_management', 'edit'),
     success: req.query.success || null,
     error: req.query.error || null,
-    activeTab: resolveActiveProjectTab(req.query.tab),
+    activeTab: resolveActiveProjectTab(req.query.tab || (inventoryFocus.unitId ? 'inventory' : undefined)),
+    focusUnitId: inventoryFocus.unitId,
+    inventoryFocusNodeKeys: inventoryFocusNodeKeysArray(inventoryFocus.nodeKeys),
     projectTabs: PROJECT_TABS,
     formatProjectType,
     formatProjectStatus,
@@ -513,10 +519,27 @@ router.patch('/:id/units/:unitId', isCompanyAuthenticated, requirePermission('pr
   }
 });
 
-router.post('/:id/units/:unitId/delete', isCompanyAuthenticated, requirePermission('project_management', 'edit'), async (req, res) => {
+router.get('/:id/units/:unitId/delete-impact', isCompanyAuthenticated, requirePermission('project_management', 'edit'), async (req, res) => {
   const { id: projectId, unitId } = req.params;
   try {
-    await deleteUnit(req.session.companyId, projectId, unitId);
+    const impact = await getUnitAccountsImpact(req.session.companyId, projectId, unitId);
+    return res.json({ ok: true, impact });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: error.message });
+  }
+});
+
+router.post('/:id/units/:unitId/delete', isCompanyAuthenticated, requirePermission('project_management', 'edit'), async (req, res) => {
+  const { id: projectId, unitId } = req.params;
+  const deleteRelated = req.body?.deleteRelated === true
+    || req.body?.deleteRelated === 'true'
+    || req.body?.deleteRelated === '1';
+
+  try {
+    await deleteUnit(req.session.companyId, projectId, unitId, {
+      deleteRelated,
+      userId: req.session.credentialId,
+    });
     if (wantsJson(req)) {
       return res.json({ ok: true });
     }

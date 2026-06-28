@@ -9,6 +9,9 @@ const LEAD_HISTORY_ENTITY_TYPES = {
   COMMUNICATION: 'communication',
   DISCUSSION: 'discussion',
   TASK: 'task',
+  QUOTATION: 'quotation',
+  INVOICE: 'invoice',
+  RECEIPT: 'receipt',
 };
 
 const LEAD_FIELD_LABELS = {

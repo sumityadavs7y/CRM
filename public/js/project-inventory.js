@@ -62,6 +62,90 @@
     return data;
   }
 
+  async function fetchDeleteImpact(unitId) {
+    const response = await fetch(`/company/projects/${projectId}/units/${unitId}/delete-impact`, {
+      headers: {
+        Accept: 'application/json',
+        'X-Requested-With': 'fetch',
+      },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || 'Failed to check related records.');
+    }
+    return data.impact;
+  }
+
+  function openUnitDeleteModal(impact) {
+    return new Promise((resolve) => {
+      const modalEl = document.getElementById('unitDeleteModal');
+      if (!modalEl || !window.bootstrap) {
+        if (!confirm(
+          `Unit ${impact.unitNumber} is linked to ${impact.quotations} quotation(s), `
+          + `${impact.invoices} invoice(s), and ${impact.receipts} receipt(s). Delete this unit?`
+        )) {
+          resolve(null);
+          return;
+        }
+        resolve(confirm(
+          'Delete ALL related quotations, invoices, and receipts too?\n\n'
+          + 'OK = delete everything\nCancel = keep records (unlink only)'
+        ));
+        return;
+      }
+
+      document.getElementById('unitDeleteModalUnitNumber').textContent = impact.unitNumber;
+      document.getElementById('unitDeleteModalQuotationCount').textContent = String(impact.quotations);
+      document.getElementById('unitDeleteModalInvoiceCount').textContent = String(impact.invoices);
+      document.getElementById('unitDeleteModalReceiptCount').textContent = String(impact.receipts);
+
+      const checkbox = document.getElementById('unitDeleteModalDeleteRelated');
+      checkbox.checked = false;
+
+      const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+      const confirmBtn = document.getElementById('unitDeleteModalConfirm');
+
+      const cleanup = () => {
+        confirmBtn.removeEventListener('click', onConfirm);
+        modalEl.removeEventListener('hidden.bs.modal', onHidden);
+      };
+
+      const onConfirm = () => {
+        const deleteRelated = checkbox.checked;
+        cleanup();
+        modal.hide();
+        resolve(deleteRelated);
+      };
+
+      const onHidden = () => {
+        cleanup();
+        resolve(null);
+      };
+
+      confirmBtn.addEventListener('click', onConfirm);
+      modalEl.addEventListener('hidden.bs.modal', onHidden, { once: false });
+      modal.show();
+    });
+  }
+
+  async function confirmAndDeleteUnit(unitId) {
+    const impact = await fetchDeleteImpact(unitId);
+    let deleteRelated = false;
+
+    if (impact.hasRelated) {
+      const choice = await openUnitDeleteModal(impact);
+      if (choice === null) {
+        return;
+      }
+      deleteRelated = choice;
+    } else if (!confirm(`Delete unit ${impact.unitNumber}?`)) {
+      return;
+    }
+
+    await submitJson(`/company/projects/${projectId}/units/${unitId}/delete`, 'POST', { deleteRelated });
+    reloadInventoryTab();
+  }
+
   function reloadInventoryTab() {
     window.location.href = `/company/projects/${projectId}?tab=inventory&success=Saved+successfully.`;
   }
@@ -122,15 +206,15 @@
   }
 
   function setCollapseExpanded(collapseEl, expanded, { persist = true, state } = {}) {
-    if (!window.bootstrap) {
-      return;
-    }
-
-    const instance = window.bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false });
-    if (expanded) {
-      instance.show();
+    if (window.bootstrap) {
+      const instance = window.bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false });
+      if (expanded) {
+        instance.show();
+      } else {
+        instance.hide();
+      }
     } else {
-      instance.hide();
+      collapseEl.classList.toggle('show', expanded);
     }
 
     syncCollapseUi(collapseEl, expanded);
@@ -145,23 +229,101 @@
     }
   }
 
+  function getFocusUnitId() {
+    const params = new URLSearchParams(window.location.search);
+    return config.focusUnitId || params.get('unitId') || null;
+  }
+
+  function getFocusNodeKeys() {
+    return new Set(Array.isArray(config.inventoryFocusNodeKeys) ? config.inventoryFocusNodeKeys : []);
+  }
+
+  function resolveFocusUnitRow() {
+    const unitId = getFocusUnitId();
+    if (!unitId) {
+      return null;
+    }
+    return document.getElementById(`inventory-unit-${unitId}`)
+      || document.querySelector(`[data-inventory-unit-id="${unitId}"]`);
+  }
+
+  function getAncestorCollapses(element) {
+    const collapses = [];
+    let el = element?.parentElement;
+    while (el) {
+      if (el.matches('[data-inventory-collapse]')) {
+        collapses.push(el);
+      }
+      el = el.parentElement;
+    }
+    return collapses.reverse();
+  }
+
+  function waitForCollapseShown(collapseEl) {
+    return new Promise((resolve) => {
+      if (collapseEl.classList.contains('show')) {
+        resolve();
+        return;
+      }
+
+      let settled = false;
+      const finish = () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        collapseEl.removeEventListener('shown.bs.collapse', finish);
+        resolve();
+      };
+
+      collapseEl.addEventListener('shown.bs.collapse', finish);
+      window.setTimeout(finish, 400);
+    });
+  }
+
+  async function expandCollapsesSequentially(collapses, state) {
+    for (const collapseEl of collapses) {
+      const nodeKey = collapseEl.dataset.inventoryNodeKey;
+      if (nodeKey) {
+        state[nodeKey] = true;
+      }
+      if (!collapseEl.classList.contains('show')) {
+        setCollapseExpanded(collapseEl, true, { persist: false, state });
+        await waitForCollapseShown(collapseEl);
+      } else {
+        syncCollapseUi(collapseEl, true);
+      }
+    }
+    saveExpandedState(state);
+  }
+
   function initInventoryCollapse() {
     const tree = document.getElementById('projectInventoryTree');
-    if (!tree || !window.bootstrap) {
+    if (!tree) {
       return;
     }
 
     const savedState = loadExpandedState();
+    const focusNodeKeys = getFocusNodeKeys();
     const collapseEls = tree.querySelectorAll('[data-inventory-collapse]');
 
     collapseEls.forEach((collapseEl) => {
       const nodeKey = collapseEl.dataset.inventoryNodeKey;
       const defaultExpanded = collapseEl.dataset.inventoryDefaultExpanded === 'true';
-      const shouldExpand = Object.prototype.hasOwnProperty.call(savedState, nodeKey)
+      let shouldExpand = Object.prototype.hasOwnProperty.call(savedState, nodeKey)
         ? savedState[nodeKey]
         : defaultExpanded;
 
+      if (nodeKey && focusNodeKeys.has(nodeKey)) {
+        shouldExpand = true;
+        savedState[nodeKey] = true;
+      }
+
       setCollapseExpanded(collapseEl, shouldExpand, { persist: false });
+
+      if (!window.bootstrap) {
+        return;
+      }
 
       collapseEl.addEventListener('shown.bs.collapse', () => {
         syncCollapseUi(collapseEl, true);
@@ -181,6 +343,10 @@
         }
       });
     });
+
+    if (focusNodeKeys.size) {
+      saveExpandedState(savedState);
+    }
 
     tree.querySelectorAll('.inventory-node__title--toggle').forEach((titleEl) => {
       titleEl.addEventListener('keydown', (event) => {
@@ -507,12 +673,13 @@
       }
 
       if (action === 'delete-unit') {
-        if (!confirm('Delete this unit?')) {
-          return;
-        }
         const unitId = button.getAttribute('data-unit-id');
-        await submitJson(`/company/projects/${projectId}/units/${unitId}/delete`, 'POST');
-        reloadInventoryTab();
+        try {
+          await confirmAndDeleteUnit(unitId);
+        } catch (error) {
+          alert(error.message);
+        }
+        return;
       }
     });
   }
@@ -538,11 +705,37 @@
     });
   }
 
-  function init() {
+  async function focusInventoryUnitFromUrl() {
+    const unitId = getFocusUnitId();
+    const activeTab = config.activeTab || new URLSearchParams(window.location.search).get('tab') || 'general';
+    if (!unitId || activeTab !== 'inventory') {
+      return;
+    }
+
+    const unitRow = resolveFocusUnitRow();
+    if (!unitRow) {
+      return;
+    }
+
+    const collapses = getAncestorCollapses(unitRow);
+    const state = loadExpandedState();
+    await expandCollapsesSequentially(collapses, state);
+
+    window.requestAnimationFrame(() => {
+      unitRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      unitRow.classList.add('inventory-unit-row--focused');
+      window.setTimeout(() => {
+        unitRow.classList.remove('inventory-unit-row--focused');
+      }, 4000);
+    });
+  }
+
+  async function init() {
     initInventoryCollapse();
     initInventoryDropdowns();
     initInventoryUiActions();
     initInventoryEditing();
+    await focusInventoryUnitFromUrl();
   }
 
   if (document.readyState === 'loading') {
