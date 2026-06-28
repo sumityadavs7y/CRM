@@ -43,51 +43,41 @@
                                         <p class="text-muted mb-0">No leads yet.</p>
                                     <% } else { %>
                                         <div class="table-responsive">
-                                            <table class="table table-hover align-middle mb-0">
+                                            <table class="table table-hover align-middle mb-0 table-sortable" data-leads-table>
                                                 <thead class="table-light">
                                                     <tr>
-                                                        <th>Customer</th>
-                                                        <th>Email</th>
-                                                        <th>Subject</th>
-                                                        <th>Assignee</th>
-                                                        <th>Phone</th>
-                                                        <th>Follow-up</th>
-                                                        <th>Score</th>
-                                                        <th>Quality</th>
-                                                        <th>Pipeline</th>
-                                                        <th>Stage</th>
-                                                        <th>Sources</th>
-                                                        <th>Actions</th>
+                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Customer<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Email<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Subject<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Assignee<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Phone<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th data-sortable data-sort-type="date" scope="col" tabindex="0" aria-sort="none">Follow-up<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th data-sortable data-sort-type="number" scope="col" tabindex="0" aria-sort="none">Score<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Quality<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Pipeline<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th data-sortable data-sort-type="text" scope="col" tabindex="0" aria-sort="none">Stage<i class="sort-indicator ri-arrow-up-down-line" aria-hidden="true"></i></th>
+                                                        <th scope="col">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <% leads.forEach(function(lead) { %>
                                                         <tr>
-                                                            <td class="fw-medium"><%= lead.customerName %></td>
-                                                            <td><%= lead.email %></td>
-                                                            <td><%= lead.subject %></td>
-                                                            <td><%= lead.assignee ? lead.assignee.adminName : '—' %></td>
-                                                            <td><%= lead.phone || '—' %></td>
-                                                            <td><%= lead.followUpDate || '—' %></td>
-                                                            <td><%= lead.score ?? '—' %></td>
-                                                            <td>
+                                                            <td class="fw-medium" data-sort-value="<%= lead.customerName %>"><%= lead.customerName %></td>
+                                                            <td data-sort-value="<%= lead.email %>"><%= lead.email %></td>
+                                                            <td data-sort-value="<%= lead.subject %>"><%= lead.subject %></td>
+                                                            <td data-sort-value="<%= lead.assignee ? lead.assignee.adminName : '' %>"><%= lead.assignee ? lead.assignee.adminName : '—' %></td>
+                                                            <td data-sort-value="<%= lead.phone || '' %>"><%= lead.phone || '—' %></td>
+                                                            <td data-sort-value="<%= lead.followUpDate || '' %>"><%= lead.followUpDate || '—' %></td>
+                                                            <td data-sort-value="<%= lead.score ?? '' %>"><%= lead.score ?? '—' %></td>
+                                                            <td data-sort-value="<%= lead.quality || '' %>">
                                                                 <% if (lead.quality) { %>
                                                                     <span class="badge <%= getLeadQualityBadgeClass(lead.quality) %>"><%= formatLeadQuality(lead.quality) %></span>
                                                                 <% } else { %>
                                                                     —
                                                                 <% } %>
                                                             </td>
-                                                            <td><%= lead.pipeline ? lead.pipeline.name : '—' %></td>
-                                                            <td><%= lead.stage ? lead.stage.name : '—' %></td>
-                                                            <td>
-                                                                <% if (lead.sources && lead.sources.length) { %>
-                                                                    <% lead.sources.forEach(function(source, index) { %>
-                                                                        <span class="badge bg-secondary-subtle text-secondary"><%= source.name %></span><% if (index < lead.sources.length - 1) { %> <% } %>
-                                                                    <% }); %>
-                                                                <% } else { %>
-                                                                    —
-                                                                <% } %>
-                                                            </td>
+                                                            <td data-sort-value="<%= lead.pipeline ? lead.pipeline.name : '' %>"><%= lead.pipeline ? lead.pipeline.name : '—' %></td>
+                                                            <td data-sort-value="<%= lead.stage ? lead.stage.name : '' %>"><%= lead.stage ? lead.stage.name : '—' %></td>
                                                             <td>
                                                                 <a href="/company/leads/<%= lead.id %>" class="btn btn-soft-primary btn-sm">View</a>
                                                             </td>
@@ -101,5 +91,7 @@
                             </div>
                         </div>
                     </div>
+
+<script src="/js/leads-list.js"></script>
 
 <%- include('../partials/velzon/app-layout-close') %>

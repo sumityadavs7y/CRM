@@ -64,3 +64,25 @@ button.color-picker-trigger:hover {
 .label-color-popup .IroColorPicker {
     margin: 0;
 }
+
+.table-sortable th[data-sortable] {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.table-sortable th[data-sortable]:hover {
+    background-color: var(--vz-light);
+}
+
+.table-sortable .sort-indicator {
+    margin-left: 0.25rem;
+    font-size: 0.875rem;
+    opacity: 0.45;
+    vertical-align: middle;
+}
+
+.table-sortable th[data-sortable][aria-sort="ascending"] .sort-indicator,
+.table-sortable th[data-sortable][aria-sort="descending"] .sort-indicator {
+    opacity: 1;
+}

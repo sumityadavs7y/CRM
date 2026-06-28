@@ -643,6 +643,30 @@
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   }
 
+  function toDateInputValue(value) {
+    if (!value) {
+      return '';
+    }
+    const str = String(value);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      return str;
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    const pad = (part) => String(part).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  }
+
+  function toTimeInputValue(value) {
+    if (!value) {
+      return '';
+    }
+    const match = String(value).match(/^(\d{2}):(\d{2})/);
+    return match ? `${match[1]}:${match[2]}` : '';
+  }
+
   function initCommunicationModal() {
     const form = document.getElementById('leadCommunicationForm');
     const modalEl = document.getElementById('leadCommunicationModal');
@@ -899,9 +923,168 @@
     });
   }
 
+  function initTaskModal() {
+    const form = document.getElementById('leadTaskForm');
+    const modalEl = document.getElementById('leadTaskModal');
+    if (!form || !modalEl) {
+      return;
+    }
+
+    const errorEl = document.getElementById('leadTaskFormError');
+    const submitBtn = document.getElementById('leadTaskSubmit');
+    const modalLabel = document.getElementById('leadTaskModalLabel');
+    const taskIdInput = document.getElementById('leadTaskId');
+    const nameInput = document.getElementById('modalTaskName');
+    const dueDateInput = document.getElementById('modalTaskDueDate');
+    const dueTimeInput = document.getElementById('modalTaskDueTime');
+    const priorityInput = document.getElementById('modalTaskPriority');
+    const statusInput = document.getElementById('modalTaskStatus');
+    const taskById = new Map((config.tasks || []).map((item) => [String(item.id), item]));
+
+    function resetTaskForm() {
+      form.reset();
+      taskIdInput.value = '';
+      statusInput.value = 'ongoing';
+      modalLabel.textContent = 'Add Task';
+      submitBtn.textContent = 'Add';
+      errorEl.classList.add('d-none');
+      errorEl.textContent = '';
+      submitBtn.disabled = false;
+    }
+
+    function openTaskModalForEdit(taskId) {
+      const task = taskById.get(String(taskId));
+      if (!task) {
+        return;
+      }
+
+      taskIdInput.value = String(task.id);
+      nameInput.value = task.name || '';
+      dueDateInput.value = toDateInputValue(task.dueDate);
+      dueTimeInput.value = toTimeInputValue(task.dueTime);
+      priorityInput.value = task.priority || '';
+      statusInput.value = task.status || 'ongoing';
+      modalLabel.textContent = 'Edit Task';
+      submitBtn.textContent = 'Save';
+      errorEl.classList.add('d-none');
+      errorEl.textContent = '';
+      submitBtn.disabled = false;
+
+      window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+
+    document.getElementById('leadTaskAddBtn')?.addEventListener('click', () => {
+      resetTaskForm();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', () => {
+      resetTaskForm();
+    });
+
+    document.querySelectorAll('.lead-task-edit').forEach((button) => {
+      button.addEventListener('click', () => {
+        openTaskModalForEdit(button.dataset.taskId);
+      });
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      errorEl.classList.add('d-none');
+      submitBtn.disabled = true;
+
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+      if (!payload.dueTime) {
+        payload.dueTime = '';
+      }
+      const taskId = taskIdInput.value;
+      const url = taskId ? `${config.taskUrl}/${taskId}` : config.taskUrl;
+      const method = taskId ? 'PATCH' : 'POST';
+      const successMessage = taskId
+        ? 'Task updated successfully.'
+        : 'Task added successfully.';
+
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-Requested-With': 'fetch',
+          },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || 'Unable to save task.');
+        }
+
+        window.location.href = `${config.patchUrl}?tab=tasks&success=${encodeURIComponent(successMessage)}`;
+      } catch (error) {
+        errorEl.textContent = error.message;
+        errorEl.classList.remove('d-none');
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
+  function initTaskDelete() {
+    document.querySelectorAll('.lead-task-delete').forEach((button) => {
+      button.addEventListener('click', async () => {
+        if (!window.confirm('Delete this task?')) {
+          return;
+        }
+
+        try {
+          const response = await fetch(button.dataset.deleteUrl, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'X-Requested-With': 'fetch',
+            },
+          });
+          const result = await response.json();
+          if (!response.ok || !result.ok) {
+            throw new Error(result.error || 'Unable to delete.');
+          }
+
+          window.location.href = `${config.patchUrl}?tab=tasks&success=${encodeURIComponent('Task deleted successfully.')}`;
+        } catch (error) {
+          window.alert(error.message);
+        }
+      });
+    });
+  }
+
+  function initLeadTabs() {
+    const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"][data-bs-target^="#lead-pane-"]');
+    tabButtons.forEach((button) => {
+      button.addEventListener('shown.bs.tab', () => {
+        const target = button.getAttribute('data-bs-target') || '';
+        const tabKey = target.replace('#lead-pane-', '');
+        if (!tabKey) {
+          return;
+        }
+
+        const url = new URL(window.location.href);
+        if (tabKey === 'general') {
+          url.searchParams.delete('tab');
+        } else {
+          url.searchParams.set('tab', tabKey);
+        }
+        url.searchParams.delete('success');
+        url.searchParams.delete('error');
+        window.history.replaceState({}, '', url.toString());
+      });
+    });
+  }
+
   bindInlineFields();
-  initCommunicationModal();
+  initLeadTabs();
   initCommunicationDelete();
   initDiscussionModal();
   initDiscussionDelete();
+  initTaskModal();
+  initTaskDelete();
 })();

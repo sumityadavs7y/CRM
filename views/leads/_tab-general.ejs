@@ -142,5 +142,18 @@
             postedAt: d.postedAt,
             message: d.message || ''
         };
-    })
+    }),
+    taskUrl: '/company/leads/' + lead.id + '/tasks',
+    tasks: (lead.tasks || []).map(function(t) {
+        return {
+            id: t.id,
+            name: t.name,
+            dueDate: t.dueDate,
+            dueTime: t.dueTime,
+            priority: t.priority || '',
+            status: t.status || 'ongoing'
+        };
+    }),
+    taskPriorityOptions: taskPriorityOptions,
+    taskStatusOptions: taskStatusOptions
 }) %></script>

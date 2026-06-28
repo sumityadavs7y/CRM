@@ -159,7 +159,31 @@
     });
   }
 
+  function initPipelineTabs() {
+    const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"][data-bs-target^="#pipeline-pane-"]');
+    tabButtons.forEach((button) => {
+      button.addEventListener('shown.bs.tab', () => {
+        const target = button.getAttribute('data-bs-target') || '';
+        const tabKey = target.replace('#pipeline-pane-', '');
+        if (!tabKey) {
+          return;
+        }
+
+        const url = new URL(window.location.href);
+        if (tabKey === 'lead') {
+          url.searchParams.delete('tab');
+        } else {
+          url.searchParams.set('tab', tabKey);
+        }
+        url.searchParams.delete('success');
+        url.searchParams.delete('error');
+        window.history.replaceState({}, '', url.toString());
+      });
+    });
+  }
+
   function initAll() {
+    initPipelineTabs();
     document.querySelectorAll('.pipeline-tab-form').forEach(initForm);
   }
 

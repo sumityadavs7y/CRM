@@ -6,14 +6,20 @@ const {
   Company,
   CompanyCredential,
   CompanyRole,
+  Lead,
+  Pipeline,
+  PipelineStage,
+  Source,
   SubscriptionPlan,
   CompanySubscription,
 } = require('../models');
 const { seedDefaultRoles, MEMBER_SLUG } = require('../services/companyRbacService');
 const { seedDefaultPipelines } = require('../services/pipelineService');
 const { seedDefaultSources } = require('../services/sourceService');
+const { createLead } = require('../services/leadService');
 const { isDevEnvMode } = require('../utils/helpers');
 const { DUMMY_PASSWORD, DUMMY_ACCOUNTS } = require('./dummyAccounts');
+const { ACME_DUMMY_LEADS } = require('./dummyLeads');
 
 const DUMMY_PLANS = [
   {
@@ -175,6 +181,93 @@ async function seedCompanyMember(memberData) {
   return { skipped: false };
 }
 
+async function resolveLeadReferences(companyId, leadData) {
+  let pipelineId = null;
+  let stageId = null;
+  const sourceIds = [];
+
+  if (leadData.pipelineName) {
+    const pipeline = await Pipeline.findOne({
+      where: { companyId, name: leadData.pipelineName, isActive: true },
+    });
+    if (pipeline) {
+      pipelineId = pipeline.id;
+
+      if (leadData.stageName) {
+        const stage = await PipelineStage.findOne({
+          where: {
+            pipelineId: pipeline.id,
+            name: leadData.stageName,
+            stageType: 'lead',
+            isActive: true,
+          },
+        });
+        if (stage) {
+          stageId = stage.id;
+        }
+      }
+    }
+  }
+
+  if (leadData.sourceSlugs?.length) {
+    const sources = await Source.findAll({
+      where: { companyId, slug: leadData.sourceSlugs, isActive: true },
+    });
+    sourceIds.push(...sources.map((source) => source.id));
+  }
+
+  return { pipelineId, stageId, sourceIds };
+}
+
+async function seedAcmeLeads() {
+  const company = await Company.findOne({ where: { name: 'Acme Corp' } });
+  if (!company) {
+    return { skipped: true, reason: 'company not found', created: 0 };
+  }
+
+  const alice = await CompanyCredential.findOne({
+    where: {
+      companyId: company.id,
+      email: DUMMY_ACCOUNTS.companyAdminEmail.toLowerCase(),
+    },
+  });
+  if (!alice) {
+    return { skipped: true, reason: 'assignee not found', created: 0 };
+  }
+
+  let created = 0;
+
+  for (const leadData of ACME_DUMMY_LEADS) {
+    const normalizedEmail = leadData.email.toLowerCase();
+    const existing = await Lead.findOne({
+      where: { companyId: company.id, email: normalizedEmail },
+    });
+    if (existing) {
+      continue;
+    }
+
+    const { pipelineId, stageId, sourceIds } = await resolveLeadReferences(company.id, leadData);
+
+    await createLead(company.id, {
+      customerName: leadData.customerName,
+      email: normalizedEmail,
+      subject: leadData.subject,
+      assigneeId: alice.id,
+      phone: leadData.phone,
+      followUpDate: leadData.followUpDate,
+      score: leadData.score,
+      quality: leadData.quality,
+      pipelineId,
+      stageId,
+      sourceIds,
+      notes: leadData.notes,
+    });
+    created += 1;
+  }
+
+  return { skipped: created === 0, created };
+}
+
 async function seedDummyData() {
   if (!isDevEnvMode()) {
     console.log('⚠️  Skipping dummy data seed (ENV_MODE is not development).');
@@ -218,7 +311,14 @@ async function seedDummyData() {
     console.log(`   ✅ Created company member (login: ${DUMMY_COMPANY_MEMBER.email} / ${DUMMY_PASSWORD})`);
   }
 
-  if (companiesCreated === 0 && newPlans === 0 && memberSkipped) {
+  const { created: leadsCreated } = await seedAcmeLeads();
+  if (leadsCreated > 0) {
+    console.log(`   ✅ Created ${leadsCreated} lead(s) for Acme Corp (assignee: Alice Admin)`);
+  } else {
+    console.log('   ℹ️  Acme Corp dummy leads already exist; skipped.');
+  }
+
+  if (companiesCreated === 0 && newPlans === 0 && memberSkipped && leadsCreated === 0) {
     console.log('   ℹ️  Dummy data already present; nothing to seed.');
   } else {
     console.log('🌱 Dummy data seed complete.');
@@ -227,6 +327,7 @@ async function seedDummyData() {
 
 module.exports = {
   seedDummyData,
+  seedAcmeLeads,
 };
 
 if (require.main === module) {

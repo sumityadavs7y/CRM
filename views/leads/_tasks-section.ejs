@@ -1,0 +1,104 @@
+<%
+    function formatDueDate(value) {
+        if (!value) {
+            return '—';
+        }
+        const date = new Date(value + 'T00:00:00');
+        if (Number.isNaN(date.getTime())) {
+            return '—';
+        }
+        return date.toLocaleDateString();
+    }
+
+    function formatDueTime(value) {
+        if (!value) {
+            return '—';
+        }
+        const parts = String(value).split(':');
+        if (parts.length < 2) {
+            return '—';
+        }
+        const date = new Date();
+        date.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
+        if (Number.isNaN(date.getTime())) {
+            return '—';
+        }
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    const tasks = lead.tasks || [];
+%>
+
+<div class="card border">
+    <div class="card-header align-items-center d-flex">
+        <h5 class="card-title mb-0 flex-grow-1">Tasks</h5>
+        <% if (canEdit) { %>
+            <button type="button" class="btn btn-soft-primary btn-sm" id="leadTaskAddBtn" data-bs-toggle="modal" data-bs-target="#leadTaskModal">
+                <i class="ri-add-line align-middle me-1"></i> Add task
+            </button>
+        <% } %>
+    </div>
+    <div class="card-body" id="leadTasksList">
+        <% if (tasks.length === 0) { %>
+            <p class="text-muted mb-0">No tasks yet.</p>
+        <% } else { %>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <% if (canEdit) { %>
+                                <th>Actions</th>
+                            <% } %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% tasks.forEach(function(item) { %>
+                            <tr data-task-id="<%= item.id %>">
+                                <td><%= item.name %></td>
+                                <td><%= formatDueDate(item.dueDate) %></td>
+                                <td><%= formatDueTime(item.dueTime) %></td>
+                                <td>
+                                    <% if (item.priority) { %>
+                                        <span class="badge <%= getLeadTaskPriorityBadgeClass(item.priority) %>">
+                                            <%= formatLeadTaskPriority(item.priority) %>
+                                        </span>
+                                    <% } else { %>
+                                        —
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span class="badge <%= getLeadTaskStatusBadgeClass(item.status) %>">
+                                        <%= formatLeadTaskStatus(item.status) %>
+                                    </span>
+                                </td>
+                                <% if (canEdit) { %>
+                                    <td class="text-nowrap">
+                                        <button
+                                            type="button"
+                                            class="btn btn-soft-primary btn-sm lead-task-edit me-1"
+                                            data-task-id="<%= item.id %>"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-soft-danger btn-sm lead-task-delete"
+                                            data-delete-url="/company/leads/<%= lead.id %>/tasks/<%= item.id %>/delete"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                <% } %>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+</div>

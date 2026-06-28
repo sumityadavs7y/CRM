@@ -5,6 +5,14 @@ const { withTheme } = require('../utils/themes');
 const { buildUserContext } = require('../utils/sessionUser');
 const { LEAD_TABS, resolveActiveTab } = require('../constants/leadTabs');
 const { formatLeadQuality, getLeadQualityBadgeClass } = require('../constants/leadQuality');
+const {
+  LEAD_TASK_PRIORITY_OPTIONS,
+  LEAD_TASK_STATUS_OPTIONS,
+  formatLeadTaskPriority,
+  formatLeadTaskStatus,
+  getLeadTaskPriorityBadgeClass,
+  getLeadTaskStatusBadgeClass,
+} = require('../constants/leadTask');
 const { sanitizeNotesHtml } = require('../utils/sanitizeHtml');
 const {
   findCompanyLead,
@@ -26,6 +34,11 @@ const {
   updateLeadDiscussion,
   deleteLeadDiscussion,
 } = require('../services/leadDiscussionService');
+const {
+  createLeadTask,
+  updateLeadTask,
+  deleteLeadTask,
+} = require('../services/leadTaskService');
 
 const router = express.Router();
 
@@ -159,6 +172,12 @@ router.get('/:id', isCompanyAuthenticated, requirePermission('leads', 'view'), a
     leadTabs: LEAD_TABS,
     formatLeadQuality,
     getLeadQualityBadgeClass,
+    formatLeadTaskPriority,
+    formatLeadTaskStatus,
+    getLeadTaskPriorityBadgeClass,
+    getLeadTaskStatusBadgeClass,
+    taskPriorityOptions: LEAD_TASK_PRIORITY_OPTIONS,
+    taskStatusOptions: LEAD_TASK_STATUS_OPTIONS,
     ...formOptions,
     activeNav: 'leads',
   }));
@@ -330,6 +349,87 @@ router.post('/:id/discussions/:discussionId/delete', isCompanyAuthenticated, req
 
     return res.redirect(showLeadUrl(req.params.id, {
       tab: 'general',
+      error: error.message,
+    }));
+  }
+});
+
+router.post('/:id/tasks', isCompanyAuthenticated, requirePermission('leads', 'edit'), async (req, res) => {
+  try {
+    const task = await createLeadTask(
+      req.session.companyId,
+      req.params.id,
+      req.body
+    );
+
+    if (wantsJson(req)) {
+      return res.json({ ok: true, task });
+    }
+
+    return res.redirect(showLeadUrl(req.params.id, {
+      tab: 'tasks',
+      success: 'Task added successfully.',
+    }));
+  } catch (error) {
+    if (wantsJson(req)) {
+      return res.status(400).json({ ok: false, error: error.message });
+    }
+
+    return res.redirect(showLeadUrl(req.params.id, {
+      tab: 'tasks',
+      error: error.message,
+    }));
+  }
+});
+
+router.patch('/:id/tasks/:taskId', isCompanyAuthenticated, requirePermission('leads', 'edit'), async (req, res) => {
+  try {
+    const task = await updateLeadTask(
+      req.session.companyId,
+      req.params.id,
+      req.params.taskId,
+      req.body
+    );
+
+    if (wantsJson(req)) {
+      return res.json({ ok: true, task });
+    }
+
+    return res.redirect(showLeadUrl(req.params.id, {
+      tab: 'tasks',
+      success: 'Task updated successfully.',
+    }));
+  } catch (error) {
+    if (wantsJson(req)) {
+      return res.status(400).json({ ok: false, error: error.message });
+    }
+
+    return res.redirect(showLeadUrl(req.params.id, {
+      tab: 'tasks',
+      error: error.message,
+    }));
+  }
+});
+
+router.post('/:id/tasks/:taskId/delete', isCompanyAuthenticated, requirePermission('leads', 'edit'), async (req, res) => {
+  try {
+    await deleteLeadTask(req.session.companyId, req.params.id, req.params.taskId);
+
+    if (wantsJson(req)) {
+      return res.json({ ok: true });
+    }
+
+    return res.redirect(showLeadUrl(req.params.id, {
+      tab: 'tasks',
+      success: 'Task deleted successfully.',
+    }));
+  } catch (error) {
+    if (wantsJson(req)) {
+      return res.status(400).json({ ok: false, error: error.message });
+    }
+
+    return res.redirect(showLeadUrl(req.params.id, {
+      tab: 'tasks',
       error: error.message,
     }));
   }

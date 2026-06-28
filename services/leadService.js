@@ -2,6 +2,7 @@ const {
   Lead,
   LeadCommunication,
   LeadDiscussion,
+  LeadTask,
   CompanyCredential,
   Pipeline,
   PipelineStage,
@@ -31,6 +32,12 @@ const LEAD_INCLUDES = [
     include: [
       { model: CompanyCredential, as: 'user', attributes: ['id', 'adminName', 'email'] },
     ],
+  },
+  {
+    model: LeadTask,
+    as: 'tasks',
+    separate: true,
+    order: [['dueDate', 'ASC'], ['dueTime', 'ASC']],
   },
 ];
 
