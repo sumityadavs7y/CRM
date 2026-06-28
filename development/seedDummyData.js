@@ -18,8 +18,11 @@ const { seedDefaultPipelines } = require('../services/pipelineService');
 const { seedDefaultSources } = require('../services/sourceService');
 const { createLead } = require('../services/leadService');
 const { isDevEnvMode } = require('../utils/helpers');
+const { getAccountsFeatureKeys } = require('../constants/accountsModules');
 const { DUMMY_PASSWORD, DUMMY_ACCOUNTS } = require('./dummyAccounts');
 const { ACME_DUMMY_LEADS } = require('./dummyLeads');
+
+const ACCOUNTS_FEATURE_KEYS = getAccountsFeatureKeys();
 
 const DUMMY_PLANS = [
   {
@@ -29,7 +32,7 @@ const DUMMY_PLANS = [
     maxContacts: 100,
     maxDeals: 25,
     maxStorageMb: 512,
-    features: ['user_management', 'access_demo', 'crm_setup', 'leads', 'project_management', 'media_library'],
+    features: ['user_management', 'access_demo', 'crm_setup', 'leads', 'project_management', 'media_library', ...ACCOUNTS_FEATURE_KEYS],
   },
   {
     name: 'Professional',
@@ -38,7 +41,7 @@ const DUMMY_PLANS = [
     maxContacts: 1000,
     maxDeals: 250,
     maxStorageMb: 4096,
-    features: ['user_management', 'role_management', 'access_demo', 'crm_setup', 'leads', 'project_management', 'media_library'],
+    features: ['user_management', 'role_management', 'access_demo', 'crm_setup', 'leads', 'project_management', 'media_library', ...ACCOUNTS_FEATURE_KEYS],
   },
 ];
 

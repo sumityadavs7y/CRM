@@ -40,10 +40,12 @@ const { refreshCompanyAccess } = require('./middleware/refreshCompanyAccess');
 app.use(refreshCompanyAccess);
 
 const { DEFAULT_THEME_ID } = require('./utils/themes');
+const { ACCOUNTS_MODULES } = require('./constants/accountsModules');
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 app.locals.assetBase = `/style/Admin/dist/${DEFAULT_THEME_ID}`;
+app.locals.accountsModules = ACCOUNTS_MODULES;
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -57,6 +59,7 @@ const companyCrmSetupRoutes = require('./routes/companyCrmSetup');
 const companyLeadsRoutes = require('./routes/companyLeads');
 const companyProjectsRoutes = require('./routes/companyProjects');
 const companyMediaRoutes = require('./routes/companyMedia');
+const companyAccountsRoutes = require('./routes/companyAccounts');
 const profileRoutes = require('./routes/profile');
 
 app.use('/auth', authRoutes);
@@ -68,6 +71,7 @@ app.use('/company/crm-setup', companyCrmSetupRoutes);
 app.use('/company/leads', companyLeadsRoutes);
 app.use('/company/projects', companyProjectsRoutes);
 app.use('/company/media', companyMediaRoutes);
+app.use('/company/accounts', companyAccountsRoutes);
 app.use('/profile', profileRoutes);
 app.use('/access-demo', accessDemoRoutes);
 app.use('/', indexRoutes);

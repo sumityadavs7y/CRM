@@ -1,0 +1,19 @@
+<ul class="nav nav-tabs nav-tabs-custom nav-success mb-4" role="tablist">
+    <% transactionViews.forEach((view, index) => { %>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link<%= index === 0 ? ' active' : '' %>" type="button" disabled>
+                <%= view.label %>
+            </button>
+        </li>
+    <% }); %>
+</ul>
+
+<div class="text-center py-4">
+    <div class="avatar-md mx-auto mb-3">
+        <span class="avatar-title rounded-circle bg-light text-muted fs-24">
+            <i class="ri-exchange-funds-line"></i>
+        </span>
+    </div>
+    <h5 class="mb-2">Transactions</h5>
+    <p class="text-muted mb-0">Money in, money out, and income/expense views will live here — use the tabs above to filter, not separate menu items.</p>
+</div>

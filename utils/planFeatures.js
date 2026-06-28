@@ -36,6 +36,26 @@ const AVAILABLE_PLAN_FEATURES = [
     label: 'Media Library',
     description: 'Upload and manage company files and images',
   },
+  {
+    key: 'quotations',
+    label: 'Quotations',
+    description: 'Create and manage sales quotations',
+  },
+  {
+    key: 'invoices',
+    label: 'Invoices',
+    description: 'Create and manage customer invoices',
+  },
+  {
+    key: 'transactions',
+    label: 'Transactions',
+    description: 'Record money in and out, and view income and expense transactions',
+  },
+  {
+    key: 'reconciliations',
+    label: 'Reconciliation',
+    description: 'Reconcile bank and account transactions',
+  },
 ];
 
 function getAvailablePlanFeatures() {
