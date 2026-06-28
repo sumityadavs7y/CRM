@@ -1,0 +1,67 @@
+<div class="modal fade" id="unitModal" tabindex="-1" aria-labelledby="unitModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="unitForm">
+                <input type="hidden" id="unitFloorId" name="floorId" value="">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="unitModalLabel">Add Unit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="unitFormError"></div>
+                    <div class="mb-3">
+                        <label for="unitNumber" class="form-label">Unit number <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="unitNumber" name="unitNumber" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="unitType" class="form-label">Unit type</label>
+                            <select class="form-select" id="unitType" name="unitType">
+                                <% unitTypes.forEach(function(type) { %>
+                                    <option value="<%= type %>"><%= formatUnitType(type) %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="unitStatus" class="form-label">Status</label>
+                            <select class="form-select" id="unitStatus" name="status">
+                                <% unitStatuses.forEach(function(status) { %>
+                                    <option value="<%= status %>"><%= formatUnitStatus(status) %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="carpetAreaSqft" class="form-label">Carpet area (sq ft)</label>
+                            <input type="number" class="form-control" id="carpetAreaSqft" name="carpetAreaSqft" step="0.01" min="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="superBuiltUpAreaSqft" class="form-label">Super built-up (sq ft)</label>
+                            <input type="number" class="form-control" id="superBuiltUpAreaSqft" name="superBuiltUpAreaSqft" step="0.01" min="0">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="unitFacing" class="form-label">Facing</label>
+                            <select class="form-select" id="unitFacing" name="facing">
+                                <option value="">None</option>
+                                <% unitFacings.forEach(function(facing) { %>
+                                    <option value="<%= facing %>"><%= formatUnitFacing(facing) %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="basePrice" class="form-label">Base price (₹)</label>
+                            <input type="number" class="form-control" id="basePrice" name="basePrice" step="0.01" min="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Unit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

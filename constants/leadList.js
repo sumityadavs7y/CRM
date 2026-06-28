@@ -28,6 +28,7 @@ const LEAD_LIST_DEFAULT_VISIBLE_COLUMNS = LEAD_LIST_COLUMNS
   .map((column) => column.key);
 
 const LEAD_LIST_COLUMNS_STORAGE_KEY = 'crm.leads-list.visible-columns';
+const LEAD_LIST_FILTERS_EXPANDED_STORAGE_KEY = 'crm.leads-list.filters-expanded';
 
 const LEAD_LIST_SORT_COLUMNS = new Set([
   'createdAt',
@@ -57,4 +58,5 @@ module.exports = {
   LEAD_LIST_COLUMNS,
   LEAD_LIST_DEFAULT_VISIBLE_COLUMNS,
   LEAD_LIST_COLUMNS_STORAGE_KEY,
+  LEAD_LIST_FILTERS_EXPANDED_STORAGE_KEY,
 };

@@ -51,6 +51,7 @@ const companyRoleRoutes = require('./routes/companyRoles');
 const accessDemoRoutes = require('./routes/accessDemo');
 const companyCrmSetupRoutes = require('./routes/companyCrmSetup');
 const companyLeadsRoutes = require('./routes/companyLeads');
+const companyProjectsRoutes = require('./routes/companyProjects');
 
 app.use('/auth', authRoutes);
 app.use('/companies', companyRoutes);
@@ -59,6 +60,7 @@ app.use('/company/users', companyUserRoutes);
 app.use('/company/roles', companyRoleRoutes);
 app.use('/company/crm-setup', companyCrmSetupRoutes);
 app.use('/company/leads', companyLeadsRoutes);
+app.use('/company/projects', companyProjectsRoutes);
 app.use('/access-demo', accessDemoRoutes);
 app.use('/', indexRoutes);
 

@@ -1,0 +1,28 @@
+<div class="dropdown unit-status-dropdown">
+    <button
+        type="button"
+        class="badge unit-status-badge <%= getUnitStatusBadgeClass(unit.status) %>"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        aria-label="Change status for unit <%= unit.unitNumber %>"
+        data-unit-id="<%= unit.id %>"
+        data-status="<%= unit.status %>"
+    >
+        <span class="unit-status-label"><%= formatUnitStatus(unit.status) %></span>
+        <i class="ri-arrow-down-s-line unit-status-caret" aria-hidden="true"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-sm shadow-sm unit-status-menu">
+        <% unitStatuses.forEach(function(status) { %>
+            <li>
+                <button
+                    type="button"
+                    class="dropdown-item unit-status-option<%= unit.status === status ? ' active' : '' %>"
+                    data-unit-status="<%= status %>"
+                    data-unit-id="<%= unit.id %>"
+                >
+                    <span class="badge <%= getUnitStatusBadgeClass(status) %>"><%= formatUnitStatus(status) %></span>
+                </button>
+            </li>
+        <% }); %>
+    </ul>
+</div>

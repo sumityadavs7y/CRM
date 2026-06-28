@@ -1,6 +1,6 @@
-<div class="leads-list-filters" data-leads-list-filters>
-    <div class="collapse<%= hasActiveFilters ? ' show' : '' %>" id="leadsListFiltersPanel" data-leads-filters-panel>
-        <form method="get" action="/company/leads" class="leads-list-filters__form">
+<div class="entity-list-filters" data-list-filters>
+    <div class="collapse<%= hasActiveFilters ? ' show' : '' %>" id="leadsListFiltersPanel" data-list-filters-panel>
+        <form method="get" action="/company/leads" class="entity-list-filters__form">
             <input type="hidden" name="sort" value="<%= pagination.sort %>">
             <input type="hidden" name="dir" value="<%= pagination.dir %>">
             <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
@@ -91,7 +91,7 @@
                 <div class="col-md-auto d-flex gap-2">
                     <button type="submit" class="btn btn-primary btn-sm">Apply</button>
                     <% if (hasActiveFilters) { %>
-                        <a href="<%= buildLeadsListUrl({ page: 1, q: null, assigneeId: null, pipelineId: null, stageId: null, quality: null, scoreMin: null, scoreMax: null, followUpFrom: null, followUpTo: null, createdFrom: null, createdTo: null, sourceId: null }) %>" class="btn btn-light btn-sm">Clear</a>
+                        <a href="<%= buildListUrl({ page: 1, q: null, assigneeId: null, pipelineId: null, stageId: null, quality: null, scoreMin: null, scoreMax: null, followUpFrom: null, followUpTo: null, createdFrom: null, createdTo: null, sourceId: null }) %>" class="btn btn-light btn-sm">Clear</a>
                     <% } %>
                 </div>
             </div>
@@ -101,4 +101,4 @@
 
 <script type="application/json" id="leads-filter-pipeline-stages-data"><%- JSON.stringify(filterOptions.pipelineStageMap) %></script>
 <script type="application/json" id="leads-filter-selected-stage"><%- JSON.stringify(filters.stageId ? String(filters.stageId) : '') %></script>
-<script type="application/json" id="leads-filter-has-active"><%- JSON.stringify(hasActiveFilters) %></script>
+<script type="application/json" id="entity-list-has-active-filters"><%- JSON.stringify(hasActiveFilters) %></script>

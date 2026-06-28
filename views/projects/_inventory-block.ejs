@@ -1,0 +1,185 @@
+<%
+    function countUnitsInBlock(block) {
+        let total = 0;
+        (block.floors || []).forEach(function(floor) {
+            total += (floor.units || []).length;
+        });
+        return total;
+    }
+
+    const blockTargetId = 'inventory-block-' + block.id;
+    const blockExpanded = typeof inventoryCompact !== 'undefined' ? inventoryCompact : false;
+%>
+
+<div class="inventory-node inventory-node--block">
+    <div class="inventory-node__header<%= blockExpanded ? ' inventory-node__header--expanded' : '' %>">
+        <%- include('./_inventory-collapse-toggle', { targetId: blockTargetId, expanded: blockExpanded, label: block.name }) %>
+        <div
+            class="inventory-node__title inventory-node__title--toggle"
+            role="button"
+            tabindex="0"
+            data-bs-toggle="collapse"
+            data-bs-target="#<%= blockTargetId %>"
+            aria-expanded="<%= blockExpanded ? 'true' : 'false' %>"
+            aria-controls="<%= blockTargetId %>"
+        >
+            <i class="ri-building-2-line inventory-node__icon"></i>
+            <span class="fw-medium"><%= block.name %></span>
+            <span class="inventory-node__meta">
+                <% if (block.totalFloors) { %><%= block.totalFloors %> floors · <% } %><%= countUnitsInBlock(block) %> units
+            </span>
+        </div>
+        <% if (canEdit) { %>
+            <div class="inventory-node__actions">
+                <button type="button" class="btn btn-sm btn-link inventory-add-btn" data-inventory-action="add-floor" data-block-id="<%= block.id %>">+ Floor</button>
+                <%- include('./_inventory-kebab', {
+                    items: [
+                        {
+                            label: 'Edit block',
+                            action: 'edit-block',
+                            attrs: {
+                                'data-block': JSON.stringify({ id: block.id, name: block.name, phaseId: block.phaseId, totalFloors: block.totalFloors }),
+                            },
+                        },
+                        {
+                            label: 'Delete block',
+                            action: 'delete-block',
+                            danger: true,
+                            attrs: { 'data-block-id': String(block.id) },
+                        },
+                    ],
+                }) %>
+            </div>
+        <% } %>
+    </div>
+
+    <div
+        class="collapse<%= blockExpanded ? ' show' : '' %> inventory-node__collapse"
+        id="<%= blockTargetId %>"
+        data-inventory-collapse
+        data-inventory-node-key="block-<%= block.id %>"
+        data-inventory-default-expanded="<%= inventoryCompact ? 'true' : 'false' %>"
+    >
+        <% if (!(block.floors || []).length) { %>
+            <p class="text-muted fs-13 mb-0 inventory-node__empty">No floors yet.</p>
+        <% } else { %>
+            <% (block.floors || []).forEach(function(floor) {
+                const floorTargetId = 'inventory-floor-' + floor.id;
+                const floorExpanded = typeof inventoryCompact !== 'undefined' ? inventoryCompact : false;
+            %>
+                <div class="inventory-node inventory-node--floor">
+                    <div class="inventory-node__header<%= floorExpanded ? ' inventory-node__header--expanded' : '' %>">
+                        <%- include('./_inventory-collapse-toggle', { targetId: floorTargetId, expanded: floorExpanded, label: floor.label }) %>
+                        <div
+                            class="inventory-node__title inventory-node__title--toggle"
+                            role="button"
+                            tabindex="0"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#<%= floorTargetId %>"
+                            aria-expanded="<%= floorExpanded ? 'true' : 'false' %>"
+                            aria-controls="<%= floorTargetId %>"
+                        >
+                            <i class="ri-layout-row-line inventory-node__icon"></i>
+                            <span><%= floor.label %></span>
+                            <span class="text-muted fs-12">#<%= floor.floorNumber %></span>
+                            <span class="inventory-node__meta"><%= (floor.units || []).length %> units</span>
+                        </div>
+                        <% if (canEdit) { %>
+                            <div class="inventory-node__actions">
+                                <button type="button" class="btn btn-sm btn-link inventory-add-btn" data-inventory-action="add-unit" data-floor-id="<%= floor.id %>">+ Unit</button>
+                                <%- include('./_inventory-kebab', {
+                                    items: [
+                                        {
+                                            label: 'Edit floor',
+                                            action: 'edit-floor',
+                                            attrs: {
+                                                'data-floor': JSON.stringify({ id: floor.id, blockId: floor.blockId, label: floor.label, floorNumber: floor.floorNumber }),
+                                            },
+                                        },
+                                        {
+                                            label: 'Delete floor',
+                                            action: 'delete-floor',
+                                            danger: true,
+                                            attrs: { 'data-floor-id': String(floor.id) },
+                                        },
+                                    ],
+                                }) %>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <div
+                        class="collapse<%= floorExpanded ? ' show' : '' %> inventory-node__collapse"
+                        id="<%= floorTargetId %>"
+                        data-inventory-collapse
+                        data-inventory-node-key="floor-<%= floor.id %>"
+                        data-inventory-default-expanded="<%= inventoryCompact ? 'true' : 'false' %>"
+                    >
+                        <% if (!(floor.units || []).length) { %>
+                            <p class="text-muted fs-13 mb-0 inventory-node__empty">No units on this floor.</p>
+                        <% } else { %>
+                            <div class="table-responsive inventory-units-table">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Unit</th>
+                                            <th>Type</th>
+                                            <th>Area</th>
+                                            <th>Price</th>
+                                            <th>Status</th>
+                                            <% if (canEdit) { %><th class="text-end" style="width: 2.5rem;"></th><% } %>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% (floor.units || []).forEach(function(unit) { %>
+                                            <tr>
+                                                <td class="fw-medium"><%= unit.unitNumber %></td>
+                                                <td><%= formatUnitType(unit.unitType) %></td>
+                                                <td class="text-muted fs-13">
+                                                    <% if (unit.carpetAreaSqft) { %>
+                                                        <%= unit.carpetAreaSqft %> sq ft
+                                                    <% } else { %>
+                                                        —
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-muted fs-13"><%= unit.basePrice ? '₹' + Number(unit.basePrice).toLocaleString('en-IN') : '—' %></td>
+                                                <td>
+                                                    <% if (canEdit) { %>
+                                                        <%- include('./_unit-status-picker', { unit: unit }) %>
+                                                    <% } else { %>
+                                                        <span class="badge unit-status-badge <%= getUnitStatusBadgeClass(unit.status) %>"><%= formatUnitStatus(unit.status) %></span>
+                                                    <% } %>
+                                                </td>
+                                                <% if (canEdit) { %>
+                                                    <td class="text-end">
+                                                        <%- include('./_inventory-kebab', {
+                                                            items: [
+                                                                {
+                                                                    label: 'Edit unit',
+                                                                    action: 'edit-unit',
+                                                                    attrs: {
+                                                                        'data-unit': JSON.stringify({ id: unit.id, floorId: unit.floorId, unitNumber: unit.unitNumber, unitType: unit.unitType, status: unit.status, carpetAreaSqft: unit.carpetAreaSqft, superBuiltUpAreaSqft: unit.superBuiltUpAreaSqft, facing: unit.facing, basePrice: unit.basePrice }),
+                                                                    },
+                                                                },
+                                                                {
+                                                                    label: 'Delete unit',
+                                                                    action: 'delete-unit',
+                                                                    danger: true,
+                                                                    attrs: { 'data-unit-id': String(unit.id) },
+                                                                },
+                                                            ],
+                                                        }) %>
+                                                    </td>
+                                                <% } %>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } %>
+    </div>
+</div>

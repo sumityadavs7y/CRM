@@ -1,0 +1,22 @@
+<%
+    // items: [{ label, action, danger?, attrs: { 'data-phase': '...' } }]
+%>
+<div class="dropdown d-inline-block inventory-kebab">
+    <button type="button" class="btn btn-sm btn-light inventory-kebab-btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions">
+        <i class="ri-more-2-fill"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+        <% items.forEach(function(item) { %>
+            <li>
+                <button
+                    type="button"
+                    class="dropdown-item<%= item.danger ? ' text-danger' : '' %>"
+                    data-inventory-action="<%= item.action %>"
+                    <% if (item.attrs) { Object.keys(item.attrs).forEach(function(key) { %>
+                        <%= key %>='<%- item.attrs[key] %>'
+                    <% }); } %>
+                ><%= item.label %></button>
+            </li>
+        <% }); %>
+    </ul>
+</div>

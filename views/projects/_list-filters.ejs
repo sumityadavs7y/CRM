@@ -1,0 +1,79 @@
+<div class="entity-list-filters" data-list-filters>
+    <div class="collapse<%= hasActiveFilters ? ' show' : '' %>" id="projectsListFiltersPanel" data-list-filters-panel>
+        <form method="get" action="/company/projects" class="entity-list-filters__form">
+            <input type="hidden" name="sort" value="<%= pagination.sort %>">
+            <input type="hidden" name="dir" value="<%= pagination.dir %>">
+            <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4 col-lg-3">
+                    <label for="projectsFilterQ" class="form-label mb-1">Search</label>
+                    <input type="search" class="form-control form-control-sm" id="projectsFilterQ" name="q" value="<%= filters.q || '' %>" placeholder="Name, city, state…">
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label for="projectsFilterStatus" class="form-label mb-1">Status</label>
+                    <select class="form-select form-select-sm" id="projectsFilterStatus" name="status">
+                        <option value="">All statuses</option>
+                        <% projectStatuses.forEach(function(status) { %>
+                            <option value="<%= status %>"<%= filters.status === status ? ' selected' : '' %>><%= formatProjectStatus(status) %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label for="projectsFilterProjectType" class="form-label mb-1">Type</label>
+                    <select class="form-select form-select-sm" id="projectsFilterProjectType" name="projectType">
+                        <option value="">All types</option>
+                        <% projectTypes.forEach(function(type) { %>
+                            <option value="<%= type %>"<%= filters.projectType === type ? ' selected' : '' %>><%= formatProjectType(type) %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label for="projectsFilterIsActive" class="form-label mb-1">Active</label>
+                    <select class="form-select form-select-sm" id="projectsFilterIsActive" name="isActive">
+                        <option value="">All</option>
+                        <option value="true"<%= filters.isActive === true ? ' selected' : '' %>>Active</option>
+                        <option value="false"<%= filters.isActive === false ? ' selected' : '' %>>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label for="projectsFilterCity" class="form-label mb-1">City</label>
+                    <input type="search" class="form-control form-control-sm" id="projectsFilterCity" name="city" value="<%= filters.city || '' %>" placeholder="City">
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label for="projectsFilterLaunchFrom" class="form-label mb-1">Launch from</label>
+                    <input type="date" class="form-control form-control-sm" id="projectsFilterLaunchFrom" name="launchFrom" value="<%= filters.launchFrom || '' %>">
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label for="projectsFilterLaunchTo" class="form-label mb-1">Launch to</label>
+                    <input type="date" class="form-control form-control-sm" id="projectsFilterLaunchTo" name="launchTo" value="<%= filters.launchTo || '' %>">
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label for="projectsFilterCreatedFrom" class="form-label mb-1">Created from</label>
+                    <input type="date" class="form-control form-control-sm" id="projectsFilterCreatedFrom" name="createdFrom" value="<%= filters.createdFrom || '' %>">
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label for="projectsFilterCreatedTo" class="form-label mb-1">Created to</label>
+                    <input type="date" class="form-control form-control-sm" id="projectsFilterCreatedTo" name="createdTo" value="<%= filters.createdTo || '' %>">
+                </div>
+
+                <div class="col-md-auto d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                    <% if (hasActiveFilters) { %>
+                        <a href="<%= buildListUrl({ page: 1, q: null, status: null, projectType: null, isActive: null, city: null, launchFrom: null, launchTo: null, createdFrom: null, createdTo: null }) %>" class="btn btn-light btn-sm">Clear</a>
+                    <% } %>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="application/json" id="entity-list-has-active-filters"><%- JSON.stringify(hasActiveFilters) %></script>

@@ -1,15 +1,15 @@
 <button
     type="button"
-    class="btn btn-soft-secondary btn-sm leads-list-filters__toggle"
+    class="btn btn-soft-secondary btn-sm entity-list-filters__toggle"
     data-bs-toggle="collapse"
-    data-bs-target="#leadsListFiltersPanel"
+    data-bs-target="#<%= filtersPanelId %>"
     aria-expanded="<%= hasActiveFilters ? 'true' : 'false' %>"
-    aria-controls="leadsListFiltersPanel"
-    data-leads-filters-toggle
+    aria-controls="<%= filtersPanelId %>"
+    data-list-filters-toggle
 >
     <i class="ri-filter-3-line align-middle me-1" aria-hidden="true"></i>
     Filters
-    <i class="ri-arrow-down-s-line align-middle ms-1 leads-list-filters__chevron" aria-hidden="true"></i>
+    <i class="ri-arrow-down-s-line align-middle ms-1 entity-list-filters__chevron" aria-hidden="true"></i>
     <% if (hasActiveFilters) { %>
         <span class="badge bg-primary-subtle text-primary ms-1">Active</span>
     <% } %>

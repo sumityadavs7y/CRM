@@ -1,0 +1,40 @@
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h5 class="mb-1"><%= project.name %></h5>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="badge <%= getProjectStatusBadgeClass(project.status) %>"><%= formatProjectStatus(project.status) %></span>
+            <span class="badge bg-light text-body"><%= formatProjectType(project.projectType) %></span>
+            <% if (!project.isActive) { %>
+                <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+            <% } %>
+        </div>
+    </div>
+    <% if (canEdit) { %>
+        <a href="/company/projects/<%= project.id %>/edit" class="btn btn-soft-primary btn-sm">Edit Project</a>
+    <% } %>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <dl class="row mb-0">
+            <dt class="col-sm-4 text-muted">Location</dt>
+            <dd class="col-sm-8">
+                <% const addressParts = [project.addressLine1, project.addressLine2, project.city, project.state, project.pincode].filter(Boolean); %>
+                <%= addressParts.length ? addressParts.join(', ') : '—' %>
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Land area</dt>
+            <dd class="col-sm-8"><%= project.totalLandAreaSqft ? project.totalLandAreaSqft + ' sq ft' : '—' %></dd>
+
+            <dt class="col-sm-4 text-muted">Launch date</dt>
+            <dd class="col-sm-8"><%= project.launchDate || '—' %></dd>
+
+            <dt class="col-sm-4 text-muted">Possession date</dt>
+            <dd class="col-sm-8"><%= project.possessionDate || '—' %></dd>
+        </dl>
+    </div>
+    <div class="col-lg-6">
+        <dt class="text-muted mb-1">Description</dt>
+        <dd class="mb-0"><%= project.description || '—' %></dd>
+    </div>
+</div>

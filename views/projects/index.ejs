@@ -1,16 +1,16 @@
 <%- include('../partials/velzon/app-layout-open', {
-    pageTitle: 'Leads - CRM',
-    activeNav: 'leads'
+    pageTitle: 'Project Management - CRM',
+    activeNav: 'projects'
 }) %>
 
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                <h4 class="mb-sm-0">Leads</h4>
+                                <h4 class="mb-sm-0">Project Management</h4>
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
                                         <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
-                                        <li class="breadcrumb-item active">Leads</li>
+                                        <li class="breadcrumb-item active">Projects</li>
                                     </ol>
                                 </div>
                             </div>
@@ -29,12 +29,12 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header align-items-center d-flex">
-                                    <h4 class="card-title mb-0 flex-grow-1">Lead List</h4>
+                                    <h4 class="card-title mb-0 flex-grow-1">Project List</h4>
                                     <div class="flex-shrink-0 d-flex gap-2 align-items-center">
-                                        <%- include('../partials/list/filters-toggle', { filtersPanelId: 'leadsListFiltersPanel', hasActiveFilters }) %>
-                                        <% if (user.can('leads', 'edit')) { %>
-                                            <a href="/company/leads/new" class="btn btn-success btn-sm">
-                                                <i class="ri-add-line align-middle me-1"></i> Add Lead
+                                        <%- include('../partials/list/filters-toggle', { filtersPanelId: 'projectsListFiltersPanel', hasActiveFilters }) %>
+                                        <% if (user.can('project_management', 'edit')) { %>
+                                            <a href="/company/projects/new" class="btn btn-success btn-sm">
+                                                <i class="ri-add-line align-middle me-1"></i> Add Project
                                             </a>
                                         <% } %>
                                     </div>
@@ -44,9 +44,9 @@
 
                                     <% if (pagination.total === 0) { %>
                                         <% if (hasActiveFilters) { %>
-                                            <p class="text-muted mb-0">No leads match your filters.</p>
+                                            <p class="text-muted mb-0">No projects match your filters.</p>
                                         <% } else { %>
-                                            <p class="text-muted mb-0">No leads yet.</p>
+                                            <p class="text-muted mb-0">No projects yet.</p>
                                         <% } %>
                                     <% } else { %>
                                         <%- include('../partials/pagination-bar', { position: 'top' }) %>
@@ -79,13 +79,13 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <% leads.forEach(function(lead) { %>
+                                                    <% projects.forEach(function(project) { %>
                                                         <tr>
                                                             <% listColumns.forEach(function(column) { %>
-                                                                <%- include('./_list-cell', { lead, column }) %>
+                                                                <%- include('./_list-cell', { project, column }) %>
                                                             <% }); %>
                                                             <td>
-                                                                <a href="/company/leads/<%= lead.id %>" class="btn btn-soft-primary btn-sm">View</a>
+                                                                <a href="/company/projects/<%= project.id %>" class="btn btn-soft-primary btn-sm">View</a>
                                                             </td>
                                                         </tr>
                                                     <% }); %>
@@ -100,11 +100,10 @@
                     </div>
 
 <script type="application/json" id="entity-list-config"><%- JSON.stringify({
-    filtersPanelId: 'leadsListFiltersPanel',
+    filtersPanelId: 'projectsListFiltersPanel',
     filtersExpandedStorageKey: listFiltersExpandedStorageKey,
     columnsStorageKey: listColumnsStorageKey
 }) %></script>
 <script src="/js/entity-list.js"></script>
-<script src="/js/leads-list.js"></script>
 
 <%- include('../partials/velzon/app-layout-close') %>

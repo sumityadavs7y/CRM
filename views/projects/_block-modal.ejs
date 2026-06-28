@@ -1,0 +1,38 @@
+<div class="modal fade" id="blockModal" tabindex="-1" aria-labelledby="blockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="blockForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="blockModalLabel">Add Block</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="blockFormError"></div>
+                    <div class="mb-3">
+                        <label for="blockName" class="form-label">Block / Tower name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="blockName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="blockTotalFloors" class="form-label">Total floors (planned)</label>
+                        <input type="number" class="form-control" id="blockTotalFloors" name="totalFloors" min="0">
+                    </div>
+                    <% if ((project.phases || []).length) { %>
+                        <div class="mb-3">
+                            <label for="blockPhaseSelect" class="form-label">Phase (optional)</label>
+                            <select class="form-select" id="blockPhaseSelect" name="phaseId">
+                                <option value="">Direct under project</option>
+                                <% (project.phases || []).forEach(function(phase) { %>
+                                    <option value="<%= phase.id %>"><%= phase.name %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Block</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

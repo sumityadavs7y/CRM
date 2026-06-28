@@ -1,0 +1,29 @@
+<div class="modal fade" id="floorModal" tabindex="-1" aria-labelledby="floorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="floorForm">
+                <input type="hidden" id="floorBlockId" name="blockId" value="">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="floorModalLabel">Add Floor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="floorFormError"></div>
+                    <div class="mb-3">
+                        <label for="floorLabel" class="form-label">Floor label <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="floorLabel" name="label" placeholder="e.g. Ground, 1st, 2nd" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="floorNumber" class="form-label">Floor number <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="floorNumber" name="floorNumber" required>
+                        <div class="form-text">Use 0 for ground, negative for basement.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Floor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

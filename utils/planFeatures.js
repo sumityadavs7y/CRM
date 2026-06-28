@@ -26,6 +26,11 @@ const AVAILABLE_PLAN_FEATURES = [
     label: 'Leads',
     description: 'View and manage customer leads',
   },
+  {
+    key: 'project_management',
+    label: 'Project Management',
+    description: 'Manage real estate projects, inventory, and RERA registrations',
+  },
 ];
 
 function getAvailablePlanFeatures() {

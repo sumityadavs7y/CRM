@@ -14,6 +14,12 @@ const LeadCommunicationModel = require('./LeadCommunication');
 const LeadDiscussionModel = require('./LeadDiscussion');
 const LeadTaskModel = require('./LeadTask');
 const LeadHistoryEventModel = require('./LeadHistoryEvent');
+const ProjectModel = require('./Project');
+const ProjectPhaseModel = require('./ProjectPhase');
+const ProjectBlockModel = require('./ProjectBlock');
+const ProjectFloorModel = require('./ProjectFloor');
+const ProjectUnitModel = require('./ProjectUnit');
+const ProjectReraRegistrationModel = require('./ProjectReraRegistration');
 
 const User = UserModel(sequelize, Sequelize.DataTypes);
 const Company = CompanyModel(sequelize, Sequelize.DataTypes);
@@ -30,6 +36,12 @@ const LeadCommunication = LeadCommunicationModel(sequelize, Sequelize.DataTypes)
 const LeadDiscussion = LeadDiscussionModel(sequelize, Sequelize.DataTypes);
 const LeadTask = LeadTaskModel(sequelize, Sequelize.DataTypes);
 const LeadHistoryEvent = LeadHistoryEventModel(sequelize, Sequelize.DataTypes);
+const Project = ProjectModel(sequelize, Sequelize.DataTypes);
+const ProjectPhase = ProjectPhaseModel(sequelize, Sequelize.DataTypes);
+const ProjectBlock = ProjectBlockModel(sequelize, Sequelize.DataTypes);
+const ProjectFloor = ProjectFloorModel(sequelize, Sequelize.DataTypes);
+const ProjectUnit = ProjectUnitModel(sequelize, Sequelize.DataTypes);
+const ProjectReraRegistration = ProjectReraRegistrationModel(sequelize, Sequelize.DataTypes);
 
 Company.hasMany(CompanyCredential, { foreignKey: 'companyId', as: 'credentials' });
 CompanyCredential.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
@@ -99,6 +111,26 @@ LeadHistoryEvent.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
 LeadHistoryEvent.belongsTo(CompanyCredential, { foreignKey: 'userId', as: 'user' });
 CompanyCredential.hasMany(LeadHistoryEvent, { foreignKey: 'userId', as: 'leadHistoryEvents' });
 
+Company.hasMany(Project, { foreignKey: 'companyId', as: 'projects' });
+Project.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+
+Project.hasMany(ProjectPhase, { foreignKey: 'projectId', as: 'phases' });
+ProjectPhase.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+
+Project.hasMany(ProjectBlock, { foreignKey: 'projectId', as: 'blocks' });
+ProjectBlock.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+ProjectPhase.hasMany(ProjectBlock, { foreignKey: 'phaseId', as: 'blocks' });
+ProjectBlock.belongsTo(ProjectPhase, { foreignKey: 'phaseId', as: 'phase' });
+
+ProjectBlock.hasMany(ProjectFloor, { foreignKey: 'blockId', as: 'floors' });
+ProjectFloor.belongsTo(ProjectBlock, { foreignKey: 'blockId', as: 'block' });
+
+ProjectFloor.hasMany(ProjectUnit, { foreignKey: 'floorId', as: 'units' });
+ProjectUnit.belongsTo(ProjectFloor, { foreignKey: 'floorId', as: 'floor' });
+
+Project.hasMany(ProjectReraRegistration, { foreignKey: 'projectId', as: 'reraRegistrations' });
+ProjectReraRegistration.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -118,4 +150,10 @@ module.exports = {
   LeadDiscussion,
   LeadTask,
   LeadHistoryEvent,
+  Project,
+  ProjectPhase,
+  ProjectBlock,
+  ProjectFloor,
+  ProjectUnit,
+  ProjectReraRegistration,
 };

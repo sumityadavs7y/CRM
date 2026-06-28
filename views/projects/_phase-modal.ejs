@@ -1,0 +1,41 @@
+<div class="modal fade" id="phaseModal" tabindex="-1" aria-labelledby="phaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="phaseForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="phaseModalLabel">Add Phase</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="phaseFormError"></div>
+                    <div class="mb-3">
+                        <label for="phaseName" class="form-label">Phase name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="phaseName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phaseStatus" class="form-label">Status</label>
+                        <select class="form-select" id="phaseStatus" name="status">
+                            <% phaseStatuses.forEach(function(status) { %>
+                                <option value="<%= status %>"><%= formatPhaseStatus(status) %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phaseLaunchDate" class="form-label">Launch date</label>
+                            <input type="date" class="form-control" id="phaseLaunchDate" name="launchDate">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phasePossessionDate" class="form-label">Possession date</label>
+                            <input type="date" class="form-control" id="phasePossessionDate" name="possessionDate">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Phase</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

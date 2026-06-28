@@ -1,0 +1,45 @@
+<%- include('../partials/velzon/app-layout-open', {
+    pageTitle: 'Edit ' + project.name + ' - CRM',
+    activeNav: 'projects'
+}) %>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Edit Project</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
+                                        <li class="breadcrumb-item"><a href="/company/projects">Projects</a></li>
+                                        <li class="breadcrumb-item"><a href="/company/projects/<%= project.id %>"><%= project.name %></a></li>
+                                        <li class="breadcrumb-item active">Edit</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title mb-0"><%= project.name %></h4>
+                                </div>
+                                <div class="card-body">
+                                    <% if (error) { %>
+                                        <div class="alert alert-danger" role="alert"><%= error %></div>
+                                    <% } %>
+
+                                    <form action="/company/projects/<%= project.id %>" method="post">
+                                        <%- include('./_form-fields') %>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-success" type="submit">Save Changes</button>
+                                            <a href="/company/projects/<%= project.id %>" class="btn btn-light">Cancel</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<%- include('../partials/velzon/app-layout-close') %>

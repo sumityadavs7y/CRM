@@ -50,6 +50,7 @@ const {
   LEAD_LIST_COLUMNS,
   LEAD_LIST_DEFAULT_VISIBLE_COLUMNS,
   LEAD_LIST_COLUMNS_STORAGE_KEY,
+  LEAD_LIST_FILTERS_EXPANDED_STORAGE_KEY,
 } = require('../constants/leadList');
 const { parsePaginationQuery, buildQueryString, buildPageNumbers } = require('../utils/pagination');
 const {
@@ -174,7 +175,7 @@ router.get('/', isCompanyAuthenticated, requirePermission('leads', 'view'), asyn
     success: req.query.success || null,
   };
 
-  const buildLeadsListUrl = (overrides = {}) => `/company/leads${buildQueryString(listQuery, overrides)}`;
+  const buildListUrl = (overrides = {}) => `/company/leads${buildQueryString(listQuery, overrides)}`;
   const hasActiveFilters = hasActiveLeadListFilters(filters);
 
   res.render('leads/index', withTheme(req, {
@@ -186,11 +187,12 @@ router.get('/', isCompanyAuthenticated, requirePermission('leads', 'view'), asyn
     hasActiveFilters,
     pageSizes: LEAD_LIST_PAGE_SIZES,
     pageNumbers: buildPageNumbers(pagination.page, pagination.totalPages),
-    buildLeadsListUrl,
+    buildListUrl,
     listColumns: LEAD_LIST_COLUMNS,
-    leadListDefaultVisibleColumns: LEAD_LIST_DEFAULT_VISIBLE_COLUMNS,
-    leadListSortColumns: LEAD_LIST_SORT_COLUMNS,
-    leadListColumnsStorageKey: LEAD_LIST_COLUMNS_STORAGE_KEY,
+    listDefaultVisibleColumns: LEAD_LIST_DEFAULT_VISIBLE_COLUMNS,
+    listSortColumns: LEAD_LIST_SORT_COLUMNS,
+    listColumnsStorageKey: LEAD_LIST_COLUMNS_STORAGE_KEY,
+    listFiltersExpandedStorageKey: LEAD_LIST_FILTERS_EXPANDED_STORAGE_KEY,
     formatLeadListNotesPreview,
     formatLeadListDate,
     formatLeadListCount,

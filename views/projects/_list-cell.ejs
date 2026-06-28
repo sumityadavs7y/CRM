@@ -1,0 +1,37 @@
+<td<% if (column.key === 'name') { %> class="fw-medium"<% } %> data-list-column="<%= column.key %>">
+    <% if (column.key === 'name') { %>
+        <a href="/company/projects/<%= project.id %>" class="text-body"><%= project.name %></a>
+    <% } else if (column.key === 'projectType') { %>
+        <%= formatProjectType(project.projectType) %>
+    <% } else if (column.key === 'status') { %>
+        <span class="badge <%= getProjectStatusBadgeClass(project.status) %>"><%= formatProjectStatus(project.status) %></span>
+    <% } else if (column.key === 'city') { %>
+        <%= project.city || '—' %>
+    <% } else if (column.key === 'state') { %>
+        <%= project.state || '—' %>
+    <% } else if (column.key === 'location') { %>
+        <%= formatProjectListLocation(project) %>
+    <% } else if (column.key === 'units') { %>
+        <%= formatProjectListUnits(project) %>
+    <% } else if (column.key === 'reraStatus') { %>
+        <% if (project.reraStatus) { %>
+            <span class="badge <%= getReraStatusBadgeClass(project.reraStatus) %>"><%= formatReraStatus(project.reraStatus) %></span>
+        <% } else { %>
+            —
+        <% } %>
+    <% } else if (column.key === 'launchDate') { %>
+        <%= formatProjectListDate(project.launchDate) %>
+    <% } else if (column.key === 'possessionDate') { %>
+        <%= formatProjectListDate(project.possessionDate) %>
+    <% } else if (column.key === 'isActive') { %>
+        <% if (project.isActive) { %>
+            <span class="badge bg-success-subtle text-success">Active</span>
+        <% } else { %>
+            <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+        <% } %>
+    <% } else if (column.key === 'createdAt') { %>
+        <%= formatProjectListDate(project.createdAt) %>
+    <% } else if (column.key === 'updatedAt') { %>
+        <%= formatProjectListDate(project.updatedAt) %>
+    <% } %>
+</td>
