@@ -42,11 +42,18 @@ const DUMMY_PLANS = [
   },
 ];
 
-const DUMMY_COMPANY_MEMBER = {
-  companyName: 'Acme Corp',
-  name: 'Charlie Employee',
-  email: DUMMY_ACCOUNTS.companyMemberEmail,
-};
+const DUMMY_COMPANY_MEMBERS = [
+  {
+    companyName: 'Acme Corp',
+    name: 'Charlie Employee',
+    email: DUMMY_ACCOUNTS.companyMemberEmail,
+  },
+  {
+    companyName: 'Globex Inc',
+    name: 'Dana Employee',
+    email: DUMMY_ACCOUNTS.globexMemberEmail,
+  },
+];
 
 const DUMMY_COMPANIES = [
   {
@@ -58,7 +65,7 @@ const DUMMY_COMPANIES = [
   {
     name: 'Globex Inc',
     adminName: 'Bob Manager',
-    email: 'admin@globex.example.com',
+    email: DUMMY_ACCOUNTS.globexAdminEmail,
     planName: 'Professional',
   },
 ];
@@ -304,11 +311,15 @@ async function seedDummyData() {
     console.log(`   ✅ Created company "${company.name}" (login: ${companyData.email} / ${DUMMY_PASSWORD})`);
   }
 
-  const { skipped: memberSkipped } = await seedCompanyMember(DUMMY_COMPANY_MEMBER);
-  if (memberSkipped) {
-    console.log(`   ℹ️  Company member ${DUMMY_COMPANY_MEMBER.email} already exists; skipped.`);
-  } else {
-    console.log(`   ✅ Created company member (login: ${DUMMY_COMPANY_MEMBER.email} / ${DUMMY_PASSWORD})`);
+  let membersCreated = 0;
+  for (const memberData of DUMMY_COMPANY_MEMBERS) {
+    const { skipped: memberSkipped } = await seedCompanyMember(memberData);
+    if (memberSkipped) {
+      console.log(`   ℹ️  Company member ${memberData.email} already exists; skipped.`);
+    } else {
+      membersCreated += 1;
+      console.log(`   ✅ Created company member (login: ${memberData.email} / ${DUMMY_PASSWORD})`);
+    }
   }
 
   const { created: leadsCreated } = await seedAcmeLeads();
@@ -318,7 +329,7 @@ async function seedDummyData() {
     console.log('   ℹ️  Acme Corp dummy leads already exist; skipped.');
   }
 
-  if (companiesCreated === 0 && newPlans === 0 && memberSkipped && leadsCreated === 0) {
+  if (companiesCreated === 0 && newPlans === 0 && membersCreated === 0 && leadsCreated === 0) {
     console.log('   ℹ️  Dummy data already present; nothing to seed.');
   } else {
     console.log('🌱 Dummy data seed complete.');
