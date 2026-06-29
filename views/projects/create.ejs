@@ -41,4 +41,9 @@
                         </div>
                     </div>
 
+<script type="application/json" id="projectFormConfig"><%- JSON.stringify({
+    canUploadMedia: typeof canUploadMedia !== 'undefined' ? canUploadMedia : false
+}) %></script>
+
 <%- include('../partials/velzon/app-layout-close') %>
+<script src="/js/project-form.js"></script>

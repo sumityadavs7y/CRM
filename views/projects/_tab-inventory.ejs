@@ -2,6 +2,7 @@
     const phases = project.phases || [];
     const allBlocks = project.blocks || [];
     const directBlocks = allBlocks.filter(function(b) { return !b.phaseId; });
+    const hasPhases = phases.length > 0;
 
     function countUnitsInBlock(block) {
         let total = 0;
@@ -24,10 +25,22 @@
         inventoryNodeCount += (block.floors || []).length;
     });
     const inventoryCompact = inventoryNodeCount <= 8;
+
+    const focusKeys = typeof inventoryFocusNodeKeys !== 'undefined' ? inventoryFocusNodeKeys : [];
+    const focusUnit = typeof focusUnitId !== 'undefined' ? focusUnitId : null;
+
+    let activePhaseTab = typeof inventoryPhaseTab !== 'undefined' && inventoryPhaseTab ? inventoryPhaseTab : null;
+    if (!activePhaseTab) {
+        if (hasPhases) {
+            activePhaseTab = 'phase-' + phases[0].id;
+        } else {
+            activePhaseTab = 'default';
+        }
+    }
 %>
 
 <div class="inventory-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <p class="text-muted mb-0 fs-13">Phases → Blocks → Floors → Units</p>
+    <p class="text-muted mb-0 fs-13">Blocks → Floors → Units</p>
     <div class="d-flex flex-wrap gap-2 align-items-center">
         <% if (phases.length || directBlocks.length) { %>
             <div class="btn-group btn-group-sm" role="group" aria-label="Expand or collapse inventory">
@@ -39,7 +52,7 @@
             <button type="button" class="btn btn-sm btn-outline-primary" data-inventory-action="add-phase">
                 <i class="ri-add-line align-middle"></i> Phase
             </button>
-            <button type="button" class="btn btn-sm btn-outline-primary" data-inventory-action="add-block" data-phase-id="">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-inventory-action="add-block">
                 <i class="ri-add-line align-middle"></i> Block
             </button>
         <% } %>
@@ -53,97 +66,143 @@
             <p class="text-muted fs-13 mb-0">Start with a <strong>Block</strong> (single tower) or a <strong>Phase</strong> (for large townships).</p>
         <% } %>
     </div>
-<% } else { %>
-    <div class="inventory-tree" id="projectInventoryTree" data-inventory-compact="<%= inventoryCompact ? 'true' : 'false' %>">
+<% } else if (hasPhases) { %>
+    <ul class="nav nav-tabs nav-tabs-custom inventory-phase-tabs mb-3" id="inventoryPhaseTabs" role="tablist">
         <% phases.forEach(function(phase) {
-            const phaseTargetId = 'inventory-phase-' + phase.id;
-            const phaseFocusExpanded = typeof inventoryFocusNodeKeys !== 'undefined'
-                && inventoryFocusNodeKeys.indexOf('phase-' + phase.id) !== -1;
-            const phaseExpanded = phaseFocusExpanded || true;
+            const phaseTabKey = 'phase-' + phase.id;
+            const isActive = activePhaseTab === phaseTabKey;
         %>
-            <section class="inventory-node inventory-node--phase">
-                <div class="inventory-node__header inventory-node__header--expanded">
-                    <%- include('./_inventory-collapse-toggle', { targetId: phaseTargetId, expanded: phaseExpanded, label: phase.name }) %>
-                    <div
-                        class="inventory-node__title inventory-node__title--toggle"
-                        role="button"
-                        tabindex="0"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#<%= phaseTargetId %>"
-                        aria-expanded="<%= phaseExpanded ? 'true' : 'false' %>"
-                        aria-controls="<%= phaseTargetId %>"
-                    >
-                        <i class="ri-stack-line inventory-node__icon"></i>
-                        <span class="fw-medium"><%= phase.name %></span>
-                        <span class="badge bg-light text-body ms-1"><%= formatPhaseStatus(phase.status) %></span>
-                        <span class="inventory-node__meta"><%= (phase.blocks || []).length %> blocks · <%= countUnitsInPhase(phase) %> units</span>
+            <li class="nav-item" role="presentation">
+                <button
+                    class="nav-link<%= isActive ? ' active' : '' %>"
+                    id="inventory-phase-tab-<%= phase.id %>"
+                    data-bs-toggle="tab"
+                    data-bs-target="#inventory-phase-pane-<%= phase.id %>"
+                    type="button"
+                    role="tab"
+                    aria-controls="inventory-phase-pane-<%= phase.id %>"
+                    aria-selected="<%= isActive ? 'true' : 'false' %>"
+                    data-inventory-phase-tab="<%= phaseTabKey %>"
+                >
+                    <%= phase.name %>
+                </button>
+            </li>
+        <% }); %>
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link<%= activePhaseTab === 'default' ? ' active' : '' %>"
+                id="inventory-phase-tab-default"
+                data-bs-toggle="tab"
+                data-bs-target="#inventory-phase-pane-default"
+                type="button"
+                role="tab"
+                aria-controls="inventory-phase-pane-default"
+                aria-selected="<%= activePhaseTab === 'default' ? 'true' : 'false' %>"
+                data-inventory-phase-tab="default"
+            >
+                Default
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="inventoryPhaseTabContent">
+        <% phases.forEach(function(phase) {
+            const phaseTabKey = 'phase-' + phase.id;
+            const isActive = activePhaseTab === phaseTabKey;
+        %>
+            <div
+                class="tab-pane fade<%= isActive ? ' show active' : '' %>"
+                id="inventory-phase-pane-<%= phase.id %>"
+                role="tabpanel"
+                aria-labelledby="inventory-phase-tab-<%= phase.id %>"
+                data-inventory-phase-pane="<%= phaseTabKey %>"
+            >
+                <div class="inventory-phase-pane__header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="badge bg-light text-body"><%= formatPhaseStatus(phase.status) %></span>
+                        <span class="text-muted fs-13"><%= (phase.blocks || []).length %> blocks · <%= countUnitsInPhase(phase) %> units</span>
                     </div>
-                    <% if (canEdit) { %>
-                        <div class="inventory-node__actions">
-                            <button type="button" class="btn btn-sm btn-link inventory-add-btn" data-inventory-action="add-block" data-phase-id="<%= phase.id %>">+ Block</button>
-                            <%- include('./_inventory-kebab', {
-                                items: [
-                                    {
-                                        label: 'Edit phase',
-                                        action: 'edit-phase',
-                                        attrs: {
-                                            'data-phase': JSON.stringify({ id: phase.id, name: phase.name, status: phase.status, launchDate: phase.launchDate, possessionDate: phase.possessionDate }),
+                    <% if ((typeof canViewBudget !== 'undefined' && canViewBudget) || canEdit) { %>
+                        <div class="d-flex align-items-center gap-1">
+                            <% if (typeof canViewBudget !== 'undefined' && canViewBudget) { %>
+                                <a href="/company/projects/<%= project.id %>?tab=budget&amp;phaseTab=<%= phaseTabKey %>" class="btn btn-sm btn-soft-primary">
+                                    <i class="ri-money-rupee-circle-line align-middle"></i> Budget
+                                </a>
+                            <% } %>
+                            <% if (canEdit) { %>
+                                <button type="button" class="btn btn-sm btn-link inventory-add-btn" data-inventory-action="add-block">+ Block</button>
+                                <%- include('./_inventory-kebab', {
+                                    items: [
+                                        {
+                                            label: 'Edit phase',
+                                            action: 'edit-phase',
+                                            attrs: {
+                                                'data-phase': JSON.stringify({ id: phase.id, name: phase.name, status: phase.status, launchDate: phase.launchDate, possessionDate: phase.possessionDate }),
+                                            },
                                         },
-                                    },
-                                    {
-                                        label: 'Delete phase',
-                                        action: 'delete-phase',
-                                        danger: true,
-                                        attrs: { 'data-phase-id': String(phase.id) },
-                                    },
-                                ],
-                            }) %>
+                                        {
+                                            label: 'Delete phase',
+                                            action: 'delete-phase',
+                                            danger: true,
+                                            attrs: { 'data-phase-id': String(phase.id) },
+                                        },
+                                    ],
+                                }) %>
+                            <% } %>
                         </div>
                     <% } %>
                 </div>
-                <div
-                    class="collapse<%= phaseExpanded ? ' show' : '' %> inventory-node__collapse"
-                    id="<%= phaseTargetId %>"
-                    data-inventory-collapse
-                    data-inventory-node-key="phase-<%= phase.id %>"
-                    data-inventory-default-expanded="true"
-                >
-                    <div class="inventory-node__body">
-                        <% if (!(phase.blocks || []).length) { %>
-                            <p class="text-muted fs-13 mb-0 ps-4">No blocks in this phase.</p>
-                        <% } else { %>
-                            <% (phase.blocks || []).forEach(function(block) { %>
-                                <%- include('./_inventory-block', {
-                                    block: block,
-                                    inventoryCompact: inventoryCompact,
-                                    inventoryFocusNodeKeys: typeof inventoryFocusNodeKeys !== 'undefined' ? inventoryFocusNodeKeys : [],
-                                    inventoryFocusUnitId: typeof focusUnitId !== 'undefined' ? focusUnitId : null,
-                                }) %>
-                            <% }); %>
-                        <% } %>
-                    </div>
-                </div>
-            </section>
+                <%- include('./_inventory-blocks-list', {
+                    blocks: phase.blocks || [],
+                    inventoryTreeId: 'projectInventoryTree-phase-' + phase.id,
+                    inventoryPhasePane: phaseTabKey,
+                    inventoryCompact: inventoryCompact,
+                    inventoryFocusNodeKeys: focusKeys,
+                    focusUnitId: focusUnit,
+                    emptyMessage: 'No blocks in this phase.',
+                }) %>
+            </div>
         <% }); %>
 
-        <% if (directBlocks.length) { %>
-            <section class="inventory-node inventory-node--direct">
-                <% if (phases.length) { %>
-                    <div class="inventory-node__header inventory-node__header--label">
-                        <span class="text-muted fs-13 fw-medium text-uppercase">Blocks without phase</span>
-                    </div>
-                <% } %>
-                <div class="inventory-node__body">
-                    <% directBlocks.forEach(function(block) { %>
-                        <%- include('./_inventory-block', {
-                            block: block,
-                            inventoryCompact: inventoryCompact,
-                            inventoryFocusNodeKeys: typeof inventoryFocusNodeKeys !== 'undefined' ? inventoryFocusNodeKeys : [],
-                            inventoryFocusUnitId: typeof focusUnitId !== 'undefined' ? focusUnitId : null,
-                        }) %>
-                    <% }); %>
+        <div
+            class="tab-pane fade<%= activePhaseTab === 'default' ? ' show active' : '' %>"
+            id="inventory-phase-pane-default"
+            role="tabpanel"
+            aria-labelledby="inventory-phase-tab-default"
+            data-inventory-phase-pane="default"
+        >
+            <div class="inventory-phase-pane__header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <span class="text-muted fs-13">Blocks not assigned to a phase</span>
+                <div class="d-flex align-items-center gap-1">
+                    <% if (typeof canViewBudget !== 'undefined' && canViewBudget) { %>
+                        <a href="/company/projects/<%= project.id %>?tab=budget&amp;phaseTab=default" class="btn btn-sm btn-soft-primary">
+                            <i class="ri-money-rupee-circle-line align-middle"></i> Budget
+                        </a>
+                    <% } %>
+                    <% if (canEdit) { %>
+                        <button type="button" class="btn btn-sm btn-link inventory-add-btn" data-inventory-action="add-block">+ Block</button>
+                    <% } %>
                 </div>
-            </section>
-        <% } %>
+            </div>
+            <%- include('./_inventory-blocks-list', {
+                blocks: directBlocks,
+                inventoryTreeId: 'projectInventoryTree-default',
+                inventoryPhasePane: 'default',
+                inventoryCompact: inventoryCompact,
+                inventoryFocusNodeKeys: focusKeys,
+                focusUnitId: focusUnit,
+                emptyMessage: 'No blocks in this section.',
+            }) %>
+        </div>
     </div>
+<% } else { %>
+    <%- include('./_inventory-blocks-list', {
+        blocks: directBlocks,
+        inventoryTreeId: 'projectInventoryTree',
+        inventoryPhasePane: 'default',
+        inventoryCompact: inventoryCompact,
+        inventoryFocusNodeKeys: focusKeys,
+        focusUnitId: focusUnit,
+        emptyMessage: 'No blocks yet.',
+    }) %>
 <% } %>

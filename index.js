@@ -65,6 +65,7 @@ app.use('/company/users', companyUserRoutes);
 app.use('/company/roles', companyRoleRoutes);
 app.use('/company/crm-setup', companyCrmSetupRoutes);
 app.use('/company/projects', companyProjectsRoutes);
+app.use('/company/projects', require('./routes/companyProjectBudget'));
 app.use('/company/media', companyMediaRoutes);
 app.use('/profile', profileRoutes);
 app.use('/access-demo', accessDemoRoutes);

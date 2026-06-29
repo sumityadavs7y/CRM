@@ -203,6 +203,12 @@ async function listFiles(companyId, filters = {}) {
     };
   }
 
+  if (filters.imagesOnly) {
+    where.mimeType = {
+      [Sequelize.Op.like]: 'image/%',
+    };
+  }
+
   const files = await MediaFile.findAll({
     where,
     order: getSortOrder(filters.sort),

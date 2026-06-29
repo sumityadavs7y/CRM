@@ -1,0 +1,26 @@
+<%
+    const blocksList = blocks || [];
+    const treeId = typeof inventoryTreeId !== 'undefined' ? inventoryTreeId : 'projectInventoryTree';
+    const isCompact = typeof inventoryCompact !== 'undefined' ? inventoryCompact : false;
+    const focusKeys = typeof inventoryFocusNodeKeys !== 'undefined' ? inventoryFocusNodeKeys : [];
+    const focusUnit = typeof focusUnitId !== 'undefined' ? focusUnitId : null;
+%>
+<div
+    class="inventory-tree"
+    id="<%= treeId %>"
+    data-inventory-compact="<%= isCompact ? 'true' : 'false' %>"
+    <% if (typeof inventoryPhasePane !== 'undefined') { %>data-inventory-phase-pane="<%= inventoryPhasePane %>"<% } %>
+>
+    <% if (!blocksList.length) { %>
+        <p class="text-muted fs-13 mb-0 inventory-phase-pane__empty"><%= typeof emptyMessage !== 'undefined' ? emptyMessage : 'No blocks yet.' %></p>
+    <% } else { %>
+        <% blocksList.forEach(function(block) { %>
+            <%- include('./_inventory-block', {
+                block: block,
+                inventoryCompact: isCompact,
+                inventoryFocusNodeKeys: focusKeys,
+                inventoryFocusUnitId: focusUnit,
+            }) %>
+        <% }); %>
+    <% } %>
+</div>

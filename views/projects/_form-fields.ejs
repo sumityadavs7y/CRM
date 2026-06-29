@@ -1,3 +1,5 @@
+<%- include('./_project-avatar-field') %>
+
 <div class="mb-3">
     <label for="name" class="form-label">Project name <span class="text-danger">*</span></label>
     <input type="text" class="form-control" id="name" name="name" value="<%= values.name || '' %>" required>
@@ -64,6 +66,21 @@
     <div class="col-md-4 mb-3">
         <label for="possessionDate" class="form-label">Possession date</label>
         <input type="date" class="form-control" id="possessionDate" name="possessionDate" value="<%= values.possessionDate || '' %>">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label for="expectedStartDate" class="form-label">Expected start date</label>
+        <input type="date" class="form-control" id="expectedStartDate" name="expectedStartDate" value="<%= values.expectedStartDate || '' %>">
+    </div>
+    <div class="col-md-4 mb-3">
+        <label for="expectedEndDate" class="form-label">Expected end date</label>
+        <input type="date" class="form-control" id="expectedEndDate" name="expectedEndDate" value="<%= values.expectedEndDate || '' %>">
+    </div>
+    <div class="col-md-4 mb-3">
+        <label for="expectedProfits" class="form-label">Expected profits (₹)</label>
+        <input type="number" class="form-control" id="expectedProfits" name="expectedProfits" step="0.01" min="0" value="<%= values.expectedProfits !== '' && values.expectedProfits != null ? values.expectedProfits : '' %>">
     </div>
 </div>
 

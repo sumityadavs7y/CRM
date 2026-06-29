@@ -14,6 +14,9 @@ const PROJECT_LIST_COLUMNS = [
   { key: 'reraStatus', label: 'RERA', defaultVisible: true },
   { key: 'launchDate', label: 'Launch', defaultVisible: false },
   { key: 'possessionDate', label: 'Possession', defaultVisible: false },
+  { key: 'expectedStartDate', label: 'Expected start', defaultVisible: false },
+  { key: 'expectedEndDate', label: 'Expected end', defaultVisible: false },
+  { key: 'expectedProfits', label: 'Expected profits', defaultVisible: false },
   { key: 'isActive', label: 'Active', defaultVisible: false },
   { key: 'createdAt', label: 'Created', defaultVisible: false },
   { key: 'updatedAt', label: 'Updated', defaultVisible: false },
@@ -34,9 +37,16 @@ const PROJECT_LIST_SORT_COLUMNS = new Set([
   'state',
   'launchDate',
   'possessionDate',
+  'expectedStartDate',
+  'expectedEndDate',
+  'expectedProfits',
   'createdAt',
   'updatedAt',
 ]);
+
+const PROJECT_LIST_VIEW_MODES = ['list', 'grid'];
+const DEFAULT_PROJECT_LIST_VIEW = 'grid';
+const PROJECT_LIST_VIEW_STORAGE_KEY = 'crm.projects-list.view-mode';
 
 module.exports = {
   PROJECT_LIST_PAGE_SIZES,
@@ -48,4 +58,7 @@ module.exports = {
   PROJECT_LIST_COLUMNS_STORAGE_KEY,
   PROJECT_LIST_FILTERS_EXPANDED_STORAGE_KEY,
   PROJECT_LIST_SORT_COLUMNS,
+  PROJECT_LIST_VIEW_MODES,
+  DEFAULT_PROJECT_LIST_VIEW,
+  PROJECT_LIST_VIEW_STORAGE_KEY,
 };

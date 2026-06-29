@@ -1,6 +1,9 @@
 <td<% if (column.key === 'name') { %> class="fw-medium"<% } %> data-list-column="<%= column.key %>">
     <% if (column.key === 'name') { %>
-        <a href="/company/projects/<%= project.id %>" class="text-body"><%= project.name %></a>
+        <div class="d-flex align-items-center gap-2">
+            <%- include('./_project-avatar', { project, size: 'sm' }) %>
+            <a href="/company/projects/<%= project.id %>" class="text-body"><%= project.name %></a>
+        </div>
     <% } else if (column.key === 'projectType') { %>
         <%= formatProjectType(project.projectType) %>
     <% } else if (column.key === 'status') { %>
@@ -23,6 +26,12 @@
         <%= formatProjectListDate(project.launchDate) %>
     <% } else if (column.key === 'possessionDate') { %>
         <%= formatProjectListDate(project.possessionDate) %>
+    <% } else if (column.key === 'expectedStartDate') { %>
+        <%= formatProjectListDate(project.expectedStartDate) %>
+    <% } else if (column.key === 'expectedEndDate') { %>
+        <%= formatProjectListDate(project.expectedEndDate) %>
+    <% } else if (column.key === 'expectedProfits') { %>
+        <%= formatProjectListCurrency(project.expectedProfits) %>
     <% } else if (column.key === 'isActive') { %>
         <% if (project.isActive) { %>
             <span class="badge bg-success-subtle text-success">Active</span>

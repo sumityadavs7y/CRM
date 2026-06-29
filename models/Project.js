@@ -63,6 +63,22 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
+    expectedStartDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    expectedEndDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    expectedProfits: {
+      type: DataTypes.DECIMAL(14, 2),
+      allowNull: true,
+    },
+    avatarMediaFileId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

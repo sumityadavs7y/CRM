@@ -85,7 +85,22 @@
       this.cacheElements();
       this.bindEvents();
       this.buildSortMenu();
+      this.syncUploadVisibility();
       this.refresh();
+    }
+
+    syncUploadVisibility() {
+      const showUpload = this.config.canEdit && (!this.config.pickerMode || this.config.imageOnly);
+      if (this.els.uploadBtn) {
+        this.els.uploadBtn.classList.toggle('d-none', !showUpload);
+        this.els.uploadBtn.innerHTML = this.config.imageOnly && this.config.pickerMode
+          ? '<i class="ri-upload-2-line me-1"></i> Upload Image'
+          : '<i class="ri-upload-2-line me-1"></i> Upload Files';
+      }
+      if (this.els.uploadInput) {
+        this.els.uploadInput.multiple = !(this.config.imageOnly && this.config.pickerMode);
+        this.els.uploadInput.accept = this.config.imageOnly ? 'image/*' : '';
+      }
     }
 
     cacheElements() {
@@ -227,6 +242,9 @@
       }
       params.set('sort', this.state.sort);
       params.set('view', this.state.view);
+      if (this.config.imageOnly) {
+        params.set('imagesOnly', '1');
+      }
       return params.toString();
     }
 
@@ -648,7 +666,22 @@
           throw new Error(data.error || 'Upload failed.');
         }
         this.els.uploadInput.value = '';
+        const uploadedFiles = Array.isArray(data.files) ? data.files : [];
         await this.refresh();
+
+        if (
+          this.config.pickerMode
+          && this.config.imageOnly
+          && uploadedFiles.length
+        ) {
+          const imageFile = uploadedFiles.find((file) => file.isImage || String(file.mimeType || '').startsWith('image/'));
+          if (imageFile) {
+            this.state.selectedIds.clear();
+            this.state.selectedIds.add(imageFile.id);
+            this.renderFiles(this.state.files);
+            this.notifySelectionChange();
+          }
+        }
       } catch (error) {
         this.showToast(error.message || 'Upload failed.');
       } finally {

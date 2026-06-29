@@ -22,7 +22,7 @@ const DUMMY_PLANS = [
     maxContacts: 100,
     maxDeals: 25,
     maxStorageMb: 512,
-    features: ['user_management', 'access_demo', 'crm_setup', 'project_management', 'media_library'],
+    features: ['user_management', 'access_demo', 'crm_setup', 'project_management', 'media_library', 'budget_management'],
   },
   {
     name: 'Professional',
@@ -31,7 +31,7 @@ const DUMMY_PLANS = [
     maxContacts: 1000,
     maxDeals: 250,
     maxStorageMb: 4096,
-    features: ['user_management', 'role_management', 'access_demo', 'crm_setup', 'project_management', 'media_library'],
+    features: ['user_management', 'role_management', 'access_demo', 'crm_setup', 'project_management', 'media_library', 'budget_management'],
   },
 ];
 
@@ -231,6 +231,8 @@ async function seedDummyData() {
   } else {
     console.log('🌱 Dummy data seed complete.');
   }
+
+  await require('./seedAcmeProjectDemo').seedAcmeCorpProjectDemo();
 }
 
 module.exports = {

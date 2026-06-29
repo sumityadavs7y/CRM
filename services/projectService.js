@@ -6,10 +6,13 @@ const {
   ProjectBlock,
   ProjectFloor,
   ProjectUnit,
+  MediaFile,
   sequelize,
 } = require('../models');
 const { buildPaginationMeta } = require('../utils/pagination');
 const { escapeIlikePattern } = require('../utils/projectListFilters');
+const { isImageMimeType } = require('../constants/mediaLibrary');
+const { enrichProjectAvatar } = require('../utils/projectAvatar');
 const {
   PROJECT_TYPES,
   PROJECT_STATUSES,
@@ -67,6 +70,14 @@ function parseOptionalDate(value) {
   return trimmed || null;
 }
 
+function parseOptionalId(value) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+  const parsed = parseInt(String(value), 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function normalizeProjectInput(data) {
   return {
     name: data.name?.trim() || '',
@@ -81,8 +92,30 @@ function normalizeProjectInput(data) {
     totalLandAreaSqft: parseOptionalDecimal(data.totalLandAreaSqft),
     launchDate: parseOptionalDate(data.launchDate),
     possessionDate: parseOptionalDate(data.possessionDate),
+    expectedStartDate: parseOptionalDate(data.expectedStartDate),
+    expectedEndDate: parseOptionalDate(data.expectedEndDate),
+    expectedProfits: parseOptionalDecimal(data.expectedProfits),
+    avatarMediaFileId: parseOptionalId(data.avatarMediaFileId),
     isActive: data.isActive === 'false' || data.isActive === false ? false : true,
   };
+}
+
+async function assertValidProjectAvatarMedia(companyId, avatarMediaFileId) {
+  if (!avatarMediaFileId) {
+    return;
+  }
+
+  const file = await MediaFile.findOne({
+    where: { id: avatarMediaFileId, companyId },
+  });
+
+  if (!file) {
+    throw new Error('Selected image was not found in your media library.');
+  }
+
+  if (!isImageMimeType(file.mimeType)) {
+    throw new Error('Project avatar must be an image file.');
+  }
 }
 
 function validateProjectInput(input) {
@@ -98,6 +131,10 @@ function validateProjectInput(input) {
 
   if (!PROJECT_STATUSES.includes(input.status)) {
     errors.push('Invalid project status.');
+  }
+
+  if (input.expectedStartDate && input.expectedEndDate && input.expectedEndDate < input.expectedStartDate) {
+    errors.push('Expected end date must be on or after expected start date.');
   }
 
   return errors;
@@ -119,6 +156,12 @@ async function assertCompanyProject(companyId, projectId) {
 }
 
 const PROJECT_DETAIL_INCLUDES = [
+  {
+    model: MediaFile,
+    as: 'avatarMedia',
+    attributes: ['id', 'mimeType', 'originalName'],
+    required: false,
+  },
   {
     model: ProjectReraRegistration,
     as: 'reraRegistrations',
@@ -320,6 +363,7 @@ async function listCompanyProjectsPaginated(companyId, {
   sort = DEFAULT_PROJECT_LIST_SORT,
   dir = DEFAULT_PROJECT_LIST_DIR,
   filters = {},
+  canLoadMedia = true,
 } = {}) {
   const safePage = Math.max(1, parseInt(page, 10) || 1);
   const safePageSize = PROJECT_LIST_PAGE_SIZES.includes(parseInt(pageSize, 10))
@@ -331,6 +375,12 @@ async function listCompanyProjectsPaginated(companyId, {
 
   const { count, rows } = await Project.findAndCountAll({
     where,
+    include: [{
+      model: MediaFile,
+      as: 'avatarMedia',
+      attributes: ['id', 'mimeType', 'originalName'],
+      required: false,
+    }],
     order: [[safeSort, safeDir]],
     limit: safePageSize,
     offset: (safePage - 1) * safePageSize,
@@ -343,15 +393,15 @@ async function listCompanyProjectsPaginated(companyId, {
   ]);
 
   const projects = rows.map((project) => {
-    const plain = project.get({ plain: true });
-    plain.unitStats = unitStats.get(project.id) || {
+    const enriched = enrichProjectAvatar(project, { canLoadMedia });
+    enriched.unitStats = unitStats.get(project.id) || {
       totalUnits: 0,
       availableUnits: 0,
       bookedUnits: 0,
       soldUnits: 0,
     };
-    plain.reraStatus = reraSummary.get(project.id) || null;
-    return plain;
+    enriched.reraStatus = reraSummary.get(project.id) || null;
+    return enriched;
   });
 
   return {
@@ -373,6 +423,8 @@ async function createProject(companyId, data) {
     throw new Error(errors.join(' '));
   }
 
+  await assertValidProjectAvatarMedia(companyId, input.avatarMediaFileId);
+
   const slug = await generateUniqueProjectSlug(companyId, input.name);
 
   return Project.create({
@@ -389,6 +441,8 @@ async function updateProject(companyId, projectId, data) {
   if (errors.length > 0) {
     throw new Error(errors.join(' '));
   }
+
+  await assertValidProjectAvatarMedia(companyId, input.avatarMediaFileId);
 
   if (input.name !== project.name) {
     project.slug = await generateUniqueProjectSlug(companyId, input.name, projectId);

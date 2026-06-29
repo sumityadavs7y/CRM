@@ -3,7 +3,7 @@ const { isCompanyAuthenticated } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/companyFeatures');
 const { withTheme } = require('../utils/themes');
 const { buildUserContext } = require('../utils/sessionUser');
-const { PROJECT_TABS, resolveActiveProjectTab } = require('../constants/projectTabs');
+const { PROJECT_TABS, resolveActiveProjectTab, getVisibleProjectTabs } = require('../constants/projectTabs');
 const {
   formatProjectType,
   formatProjectStatus,
@@ -21,7 +21,11 @@ const {
   UNIT_STATUS_BADGE_CLASSES,
 } = require('../constants/projectManagement');
 const { parsePaginationQuery, buildQueryString, buildPageNumbers } = require('../utils/pagination');
-const { findUnitInventoryPath, inventoryFocusNodeKeysArray } = require('../utils/inventoryFocus');
+const {
+  findUnitInventoryPath,
+  inventoryFocusNodeKeysArray,
+  resolveInventoryPhaseTab,
+} = require('../utils/inventoryFocus');
 const {
   PROJECT_LIST_PAGE_SIZES,
   DEFAULT_PROJECT_LIST_PAGE_SIZE,
@@ -32,6 +36,9 @@ const {
   PROJECT_LIST_DEFAULT_VISIBLE_COLUMNS,
   PROJECT_LIST_COLUMNS_STORAGE_KEY,
   PROJECT_LIST_FILTERS_EXPANDED_STORAGE_KEY,
+  PROJECT_LIST_VIEW_MODES,
+  DEFAULT_PROJECT_LIST_VIEW,
+  PROJECT_LIST_VIEW_STORAGE_KEY,
 } = require('../constants/projectList');
 const {
   parseProjectListFilters,
@@ -42,6 +49,7 @@ const {
   formatProjectListDate,
   formatProjectListLocation,
   formatProjectListUnits,
+  formatProjectListCurrency,
 } = require('../utils/projectListView');
 const {
   findCompanyProjectWithDetails,
@@ -78,6 +86,12 @@ const {
   deleteReraRegistration,
   getReraFormOptions,
 } = require('../services/projectReraService');
+const {
+  listProjectBudgetsEnriched,
+  indexBudgetsByScopeTab,
+} = require('../services/budgetService');
+const { enrichProjectAvatar } = require('../utils/projectAvatar');
+const { formatBudgetCurrency } = require('../constants/budgetManagement');
 
 const router = express.Router();
 
@@ -87,6 +101,7 @@ function buildFormValues(body, project = null) {
     return {
       ...normalized,
       isActive: normalized.isActive ? 'true' : 'false',
+      avatarMediaFileId: normalized.avatarMediaFileId ?? '',
     };
   }
 
@@ -104,7 +119,11 @@ function buildFormValues(body, project = null) {
       totalLandAreaSqft: '',
       launchDate: '',
       possessionDate: '',
+      expectedStartDate: '',
+      expectedEndDate: '',
+      expectedProfits: '',
       isActive: 'true',
+      avatarMediaFileId: '',
     };
   }
 
@@ -121,7 +140,37 @@ function buildFormValues(body, project = null) {
     totalLandAreaSqft: project.totalLandAreaSqft ?? '',
     launchDate: project.launchDate || '',
     possessionDate: project.possessionDate || '',
+    expectedStartDate: project.expectedStartDate || '',
+    expectedEndDate: project.expectedEndDate || '',
+    expectedProfits: project.expectedProfits ?? '',
     isActive: project.isActive ? 'true' : 'false',
+    avatarMediaFileId: project.avatarMediaFileId ?? '',
+  };
+}
+
+function getAvatarFormContext(user, values, project = null) {
+  const canPickMedia = user.can('media_library', 'view');
+  const canUploadMedia = user.can('media_library', 'edit');
+  const fileId = values.avatarMediaFileId ? parseInt(values.avatarMediaFileId, 10) : null;
+  let avatarMedia = project?.avatarMedia || null;
+  if (fileId && (!avatarMedia || avatarMedia.id !== fileId)) {
+    avatarMedia = { id: fileId, mimeType: 'image/jpeg', originalName: 'Selected image' };
+  }
+  const previewSource = {
+    name: values.name || project?.name || 'Project',
+    avatarMediaFileId: fileId,
+    avatarMedia,
+  };
+  const enriched = enrichProjectAvatar(previewSource, { canLoadMedia: canPickMedia });
+
+  return {
+    canPickMedia,
+    canUploadMedia,
+    avatarPreviewUrl: enriched.hasAvatar ? enriched.avatarUrl : null,
+    avatarThumbUrl: enriched.hasAvatar ? enriched.avatarThumbUrl : null,
+    avatarInitials: enriched.avatarInitials,
+    avatarAccent: enriched.avatarAccent,
+    hasAvatarPreview: enriched.hasAvatar,
   };
 }
 
@@ -148,23 +197,45 @@ function wantsJson(req) {
     || req.get('X-Requested-With') === 'fetch';
 }
 
-function renderProjectShow(req, res, project, extras = {}) {
+async function renderProjectShow(req, res, project, extras = {}) {
   const user = buildUserContext(req);
+  const canLoadMedia = user.can('media_library', 'view');
+  const enrichedProject = enrichProjectAvatar(project, { canLoadMedia });
   const inventoryOptions = getInventoryFormOptions();
   const reraOptions = getReraFormOptions();
   const focusUnitId = req.query.unitId || null;
   const inventoryFocus = findUnitInventoryPath(project, focusUnitId);
+  const canViewBudget = user.can('budget_management', 'view');
+  const canEditBudget = user.can('budget_management', 'edit');
+  let budgetByTab = {};
+  let projectBudget = null;
+
+  if (canViewBudget) {
+    const budgets = await listProjectBudgetsEnriched(req.session.companyId, project.id);
+    budgetByTab = indexBudgetsByScopeTab(budgets, project.phases || []);
+    projectBudget = budgetByTab.project || null;
+  }
+
+  const visibleProjectTabs = getVisibleProjectTabs(user);
+  const requestedTab = resolveActiveProjectTab(req.query.tab || (inventoryFocus.unitId ? 'inventory' : undefined));
+  const activeTab = visibleProjectTabs.some((tab) => tab.key === requestedTab) ? requestedTab : 'general';
 
   res.render('projects/show', withTheme(req, {
     user,
-    project,
+    project: enrichedProject,
     canEdit: user.can('project_management', 'edit'),
+    canViewBudget,
+    canEditBudget,
+    budgetByTab,
+    projectBudget,
+    formatBudgetCurrency,
     success: req.query.success || null,
     error: req.query.error || null,
-    activeTab: resolveActiveProjectTab(req.query.tab || (inventoryFocus.unitId ? 'inventory' : undefined)),
+    activeTab,
     focusUnitId: inventoryFocus.unitId,
     inventoryFocusNodeKeys: inventoryFocusNodeKeysArray(inventoryFocus.nodeKeys),
-    projectTabs: PROJECT_TABS,
+    inventoryPhaseTab: resolveInventoryPhaseTab(req.query.phaseTab, inventoryFocus, project),
+    projectTabs: visibleProjectTabs,
     formatProjectType,
     formatProjectStatus,
     getProjectStatusBadgeClass,
@@ -185,13 +256,15 @@ function renderProjectShow(req, res, project, extras = {}) {
 }
 
 async function renderCreateForm(req, res, { error, values }) {
+  const user = buildUserContext(req);
   const formOptions = getProjectFormOptions();
 
   res.render('projects/create', withTheme(req, {
-    user: buildUserContext(req),
+    user,
     error,
     values,
     ...formOptions,
+    ...getAvatarFormContext(user, values),
     formatProjectType,
     formatProjectStatus,
     activeNav: 'projects',
@@ -199,14 +272,16 @@ async function renderCreateForm(req, res, { error, values }) {
 }
 
 async function renderEditForm(req, res, project, { error, values }) {
+  const user = buildUserContext(req);
   const formOptions = getProjectFormOptions();
 
   res.render('projects/edit', withTheme(req, {
-    user: buildUserContext(req),
+    user,
     project,
     error,
     values,
     ...formOptions,
+    ...getAvatarFormContext(user, values, project),
     formatProjectType,
     formatProjectStatus,
     activeNav: 'projects',
@@ -214,6 +289,8 @@ async function renderEditForm(req, res, project, { error, values }) {
 }
 
 router.get('/', isCompanyAuthenticated, requirePermission('project_management', 'view'), async (req, res) => {
+  const user = buildUserContext(req);
+  const canLoadMedia = user.can('media_library', 'view');
   const paginationParams = parsePaginationQuery(req.query, {
     defaultPageSize: DEFAULT_PROJECT_LIST_PAGE_SIZE,
     allowedPageSizes: PROJECT_LIST_PAGE_SIZES,
@@ -227,6 +304,7 @@ router.get('/', isCompanyAuthenticated, requirePermission('project_management', 
   const result = await listCompanyProjectsPaginated(req.session.companyId, {
     ...paginationParams,
     filters,
+    canLoadMedia,
   });
 
   const listQuery = {
@@ -240,7 +318,7 @@ router.get('/', isCompanyAuthenticated, requirePermission('project_management', 
   const buildListUrl = (overrides = {}) => `/company/projects${buildQueryString(listQuery, overrides)}`;
 
   res.render('projects/index', withTheme(req, {
-    user: buildUserContext(req),
+    user,
     projects: result.projects,
     pagination: result.pagination,
     filters,
@@ -253,6 +331,9 @@ router.get('/', isCompanyAuthenticated, requirePermission('project_management', 
     listSortColumns: PROJECT_LIST_SORT_COLUMNS,
     listColumnsStorageKey: PROJECT_LIST_COLUMNS_STORAGE_KEY,
     listFiltersExpandedStorageKey: PROJECT_LIST_FILTERS_EXPANDED_STORAGE_KEY,
+    listViewModes: PROJECT_LIST_VIEW_MODES,
+    listViewStorageKey: PROJECT_LIST_VIEW_STORAGE_KEY,
+    defaultListView: DEFAULT_PROJECT_LIST_VIEW,
     projectTypes: PROJECT_TYPES,
     projectStatuses: PROJECT_STATUSES,
     formatProjectType,
@@ -263,6 +344,7 @@ router.get('/', isCompanyAuthenticated, requirePermission('project_management', 
     formatProjectListDate,
     formatProjectListLocation,
     formatProjectListUnits,
+    formatProjectListCurrency,
     success: req.query.success || null,
     activeNav: 'projects',
   }));

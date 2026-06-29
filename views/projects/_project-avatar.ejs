@@ -1,0 +1,12 @@
+<%
+    const avatarSize = typeof size !== 'undefined' ? size : 'md';
+    const avatarClass = 'project-avatar project-avatar--' + avatarSize;
+    const inactiveClass = project.isActive === false ? ' project-avatar--inactive' : '';
+%>
+<span class="<%= avatarClass %><%= inactiveClass %>" title="<%= project.name %>">
+    <% if (project.hasAvatar && project.avatarThumbUrl) { %>
+        <img src="<%= project.avatarThumbUrl %>" alt="" class="project-avatar__image" loading="lazy" decoding="async">
+    <% } else { %>
+        <span class="project-avatar__initials" style="--project-avatar-accent: <%= project.avatarAccent %>"><%= project.avatarInitials %></span>
+    <% } %>
+</span>

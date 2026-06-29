@@ -16,6 +16,9 @@ const ProjectUnitModel = require('./ProjectUnit');
 const ProjectReraRegistrationModel = require('./ProjectReraRegistration');
 const MediaFolderModel = require('./MediaFolder');
 const MediaFileModel = require('./MediaFile');
+const BudgetModel = require('./Budget');
+const BudgetItemModel = require('./BudgetItem');
+const BudgetExpenseModel = require('./BudgetExpense');
 
 const User = UserModel(sequelize, Sequelize.DataTypes);
 const Company = CompanyModel(sequelize, Sequelize.DataTypes);
@@ -34,6 +37,9 @@ const ProjectUnit = ProjectUnitModel(sequelize, Sequelize.DataTypes);
 const ProjectReraRegistration = ProjectReraRegistrationModel(sequelize, Sequelize.DataTypes);
 const MediaFolder = MediaFolderModel(sequelize, Sequelize.DataTypes);
 const MediaFile = MediaFileModel(sequelize, Sequelize.DataTypes);
+const Budget = BudgetModel(sequelize, Sequelize.DataTypes);
+const BudgetItem = BudgetItemModel(sequelize, Sequelize.DataTypes);
+const BudgetExpense = BudgetExpenseModel(sequelize, Sequelize.DataTypes);
 
 Company.hasMany(CompanyCredential, { foreignKey: 'companyId', as: 'credentials' });
 CompanyCredential.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
@@ -89,6 +95,30 @@ MediaFolder.hasMany(MediaFile, { foreignKey: 'folderId', as: 'files' });
 MediaFile.belongsTo(CompanyCredential, { foreignKey: 'uploadedById', as: 'uploadedBy' });
 CompanyCredential.hasMany(MediaFile, { foreignKey: 'uploadedById', as: 'uploadedMediaFiles' });
 
+Company.hasMany(Budget, { foreignKey: 'companyId', as: 'budgets' });
+Budget.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+
+Project.hasMany(Budget, { foreignKey: 'projectId', as: 'budgets' });
+Budget.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+
+Project.belongsTo(MediaFile, { foreignKey: 'avatarMediaFileId', as: 'avatarMedia' });
+MediaFile.hasMany(Project, { foreignKey: 'avatarMediaFileId', as: 'projects' });
+
+ProjectPhase.hasOne(Budget, { foreignKey: 'phaseId', as: 'budget' });
+Budget.belongsTo(ProjectPhase, { foreignKey: 'phaseId', as: 'phase' });
+
+Budget.hasMany(BudgetItem, { foreignKey: 'budgetId', as: 'items' });
+BudgetItem.belongsTo(Budget, { foreignKey: 'budgetId', as: 'budget' });
+
+BudgetItem.hasMany(BudgetItem, { foreignKey: 'parentId', as: 'children' });
+BudgetItem.belongsTo(BudgetItem, { foreignKey: 'parentId', as: 'parent' });
+
+BudgetItem.hasMany(BudgetExpense, { foreignKey: 'budgetItemId', as: 'expenses' });
+BudgetExpense.belongsTo(BudgetItem, { foreignKey: 'budgetItemId', as: 'budgetItem' });
+
+BudgetExpense.belongsTo(CompanyCredential, { foreignKey: 'createdByCredentialId', as: 'createdBy' });
+CompanyCredential.hasMany(BudgetExpense, { foreignKey: 'createdByCredentialId', as: 'budgetExpenses' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -110,4 +140,7 @@ module.exports = {
   ProjectReraRegistration,
   MediaFolder,
   MediaFile,
+  Budget,
+  BudgetItem,
+  BudgetExpense,
 };

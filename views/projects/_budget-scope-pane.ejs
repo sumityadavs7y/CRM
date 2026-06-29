@@ -1,0 +1,58 @@
+<%
+    const scopeTab = typeof scopeTabKey !== 'undefined' ? scopeTabKey : 'default';
+    const scopeLabel = typeof scopeLabelText !== 'undefined' ? scopeLabelText : 'Budget';
+    const budget = typeof scopeBudget !== 'undefined' ? scopeBudget : null;
+%>
+<div class="budget-scope-pane" data-budget-scope-tab="<%= scopeTab %>">
+    <% if (budget) { %>
+        <%- include('./_budget-summary', { budget: budget, formatBudgetCurrency: formatBudgetCurrency }) %>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Budget items</h6>
+            <% if (canEditBudget) { %>
+                <div class="d-flex gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-primary budget-action-btn" data-budget-action="add-item" data-budget-id="<%= budget.id %>">+ Item</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger budget-action-btn" data-budget-action="delete-budget" data-budget-id="<%= budget.id %>" data-scope-label="<%= scopeLabel %>">Delete budget</button>
+                </div>
+            <% } %>
+        </div>
+
+        <% if (!(budget.items || []).length) { %>
+            <p class="text-muted fs-13 mb-0">No budget items yet.</p>
+        <% } else { %>
+            <div class="budget-items-table">
+                <div class="budget-items-table__header<%= canEditBudget ? '' : ' budget-items-table__header--readonly' %>">
+                    <span>Item</span>
+                    <span class="text-end">Expected</span>
+                    <span class="text-end">Spent</span>
+                    <span class="text-end">Remaining</span>
+                    <% if (canEditBudget) { %><span class="text-end">Actions</span><% } %>
+                </div>
+                <% (budget.items || []).forEach(function(item) { %>
+                    <%- include('./_budget-item-row', {
+                        item: item,
+                        itemDepth: 0,
+                        budgetId: budget.id,
+                        canEditBudget: canEditBudget,
+                        formatBudgetCurrency: formatBudgetCurrency,
+                    }) %>
+                <% }); %>
+            </div>
+        <% } %>
+    <% } else { %>
+        <div class="budget-empty text-center py-4">
+            <p class="text-muted mb-2">No budget for <%= scopeLabel %> yet.</p>
+            <% if (canEditBudget) { %>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary budget-action-btn"
+                    data-budget-action="create-budget"
+                    data-budget-scope="<%= scopeTab === 'project' ? 'project' : (scopeTab === 'default' ? 'default' : 'phase') %>"
+                    data-phase-id="<%= scopeTab.indexOf('phase-') === 0 ? scopeTab.replace('phase-', '') : '' %>"
+                >
+                    Create budget
+                </button>
+            <% } %>
+        </div>
+    <% } %>
+</div>

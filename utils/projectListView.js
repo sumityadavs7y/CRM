@@ -22,8 +22,20 @@ function formatProjectListUnits(project) {
   return `${stats.availableUnits} / ${stats.totalUnits} avail.`;
 }
 
+function formatProjectListCurrency(value) {
+  if (value === undefined || value === null || value === '') {
+    return '—';
+  }
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) {
+    return '—';
+  }
+  return `₹${amount.toLocaleString('en-IN')}`;
+}
+
 module.exports = {
   formatProjectListDate,
   formatProjectListLocation,
   formatProjectListUnits,
+  formatProjectListCurrency,
 };

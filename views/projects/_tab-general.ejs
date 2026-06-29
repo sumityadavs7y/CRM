@@ -31,6 +31,15 @@
 
             <dt class="col-sm-4 text-muted">Possession date</dt>
             <dd class="col-sm-8"><%= project.possessionDate || '—' %></dd>
+
+            <dt class="col-sm-4 text-muted">Expected start date</dt>
+            <dd class="col-sm-8"><%= project.expectedStartDate || '—' %></dd>
+
+            <dt class="col-sm-4 text-muted">Expected end date</dt>
+            <dd class="col-sm-8"><%= project.expectedEndDate || '—' %></dd>
+
+            <dt class="col-sm-4 text-muted">Expected profits</dt>
+            <dd class="col-sm-8"><%= project.expectedProfits ? '₹' + Number(project.expectedProfits).toLocaleString('en-IN') : '—' %></dd>
         </dl>
     </div>
     <div class="col-lg-6">

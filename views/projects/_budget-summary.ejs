@@ -1,0 +1,28 @@
+<%
+    const expected = budget.expected || 0;
+    const spent = budget.spent || 0;
+    const remaining = budget.remaining || 0;
+    const utilized = budget.utilizedPercent;
+%>
+<div class="budget-summary card bg-light border-0 mb-3">
+    <div class="card-body py-3">
+        <div class="row g-3 text-center text-md-start">
+            <div class="col-md-3">
+                <div class="text-muted fs-12 text-uppercase">Expected</div>
+                <div class="fw-semibold fs-5"><%= formatBudgetCurrency(expected) %></div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted fs-12 text-uppercase">Spent</div>
+                <div class="fw-semibold fs-5"><%= formatBudgetCurrency(spent) %></div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted fs-12 text-uppercase">Remaining</div>
+                <div class="fw-semibold fs-5<%= budget.isOverBudget ? ' text-danger' : '' %>"><%= formatBudgetCurrency(remaining) %></div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted fs-12 text-uppercase">Utilized</div>
+                <div class="fw-semibold fs-5"><%= utilized != null ? utilized + '%' : '—' %></div>
+            </div>
+        </div>
+    </div>
+</div>

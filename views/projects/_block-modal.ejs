@@ -16,17 +16,7 @@
                         <label for="blockTotalFloors" class="form-label">Total floors (planned)</label>
                         <input type="number" class="form-control" id="blockTotalFloors" name="totalFloors" min="0">
                     </div>
-                    <% if ((project.phases || []).length) { %>
-                        <div class="mb-3">
-                            <label for="blockPhaseSelect" class="form-label">Phase (optional)</label>
-                            <select class="form-select" id="blockPhaseSelect" name="phaseId">
-                                <option value="">Direct under project</option>
-                                <% (project.phases || []).forEach(function(phase) { %>
-                                    <option value="<%= phase.id %>"><%= phase.name %></option>
-                                <% }); %>
-                            </select>
-                        </div>
-                    <% } %>
+                    <input type="hidden" id="blockPhaseId" name="phaseId" value="">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>

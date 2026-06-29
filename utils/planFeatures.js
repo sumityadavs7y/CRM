@@ -31,6 +31,11 @@ const AVAILABLE_PLAN_FEATURES = [
     label: 'Media Library',
     description: 'Upload and manage company files and images',
   },
+  {
+    key: 'budget_management',
+    label: 'Project Budget',
+    description: 'Track project and phase budgets with expenses',
+  },
 ];
 
 function getAvailablePlanFeatures() {

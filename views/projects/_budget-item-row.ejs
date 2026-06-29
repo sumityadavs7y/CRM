@@ -1,0 +1,76 @@
+<%
+    const depth = typeof itemDepth !== 'undefined' ? itemDepth : 0;
+    const itemId = 'budget-item-' + item.id;
+    const expensesId = 'budget-expenses-' + item.id;
+    const hasChildren = (item.children || []).length > 0;
+    const hasExpenses = (item.expenses || []).length > 0;
+    const canExpand = hasChildren || hasExpenses;
+%>
+<div class="budget-item" data-budget-item-id="<%= item.id %>" style="--budget-depth: <%= depth %>;">
+    <div class="budget-item__row<%= item.isOverBudget ? ' budget-item__row--over' : '' %><%= canEditBudget ? '' : ' budget-item__row--readonly' %>">
+        <div class="budget-item__name">
+            <% if (canExpand) { %>
+                <button
+                    type="button"
+                    class="budget-item__toggle"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#<%= itemId %>"
+                    aria-expanded="false"
+                    aria-controls="<%= itemId %>"
+                >
+                    <i class="ri-arrow-down-s-line"></i>
+                </button>
+            <% } else { %>
+                <span class="budget-item__toggle-spacer"></span>
+            <% } %>
+            <span class="fw-medium"><%= item.name %></span>
+        </div>
+        <div class="budget-item__amount text-end"><%= formatBudgetCurrency(item.expected) %></div>
+        <div class="budget-item__amount text-end"><%= formatBudgetCurrency(item.spent) %></div>
+        <div class="budget-item__amount text-end<%= item.isOverBudget ? ' text-danger' : '' %>"><%= formatBudgetCurrency(item.remaining) %></div>
+        <% if (canEditBudget) { %>
+            <div class="budget-item__actions text-end">
+                <button type="button" class="btn btn-sm btn-link budget-action-btn" data-budget-action="add-expense" data-budget-id="<%= budgetId %>" data-item-id="<%= item.id %>" data-item-name="<%= item.name %>">+ Expense</button>
+                <button type="button" class="btn btn-sm btn-link budget-action-btn" data-budget-action="add-child-item" data-budget-id="<%= budgetId %>" data-item-id="<%= item.id %>" data-item-name="<%= item.name %>">+ Sub-item</button>
+                <button type="button" class="btn btn-sm btn-link budget-action-btn" data-budget-action="edit-item" data-budget-id="<%= budgetId %>" data-item='<%= JSON.stringify({ id: item.id, name: item.name, expectedAmount: item.expectedAmount, description: item.description, parentId: item.parentId }) %>'>Edit</button>
+                <button type="button" class="btn btn-sm btn-link text-danger budget-action-btn" data-budget-action="delete-item" data-budget-id="<%= budgetId %>" data-item-id="<%= item.id %>" data-item-name="<%= item.name %>">Delete</button>
+            </div>
+        <% } %>
+    </div>
+
+    <% if (canExpand) { %>
+        <div class="collapse" id="<%= itemId %>">
+            <% if (hasExpenses) { %>
+                <div class="budget-expenses">
+                    <div class="budget-expenses__header text-muted fs-12">Expenses</div>
+                    <% (item.expenses || []).forEach(function(expense) { %>
+                        <div class="budget-expense-row">
+                            <span class="budget-expense-row__date"><%= expense.expenseDate %></span>
+                            <span class="budget-expense-row__desc"><%= expense.description || '—' %></span>
+                            <span class="budget-expense-row__amount"><%= formatBudgetCurrency(expense.amount) %></span>
+                            <% if (canEditBudget) { %>
+                                <span class="budget-expense-row__actions">
+                                    <button type="button" class="btn btn-sm btn-link p-0 budget-action-btn" data-budget-action="edit-expense" data-budget-id="<%= budgetId %>" data-item-id="<%= item.id %>" data-expense='<%= JSON.stringify({ id: expense.id, amount: expense.amount, expenseDate: expense.expenseDate, description: expense.description, notes: expense.notes }) %>'>Edit</button>
+                                    <button type="button" class="btn btn-sm btn-link p-0 text-danger budget-action-btn" data-budget-action="delete-expense" data-budget-id="<%= budgetId %>" data-expense-id="<%= expense.id %>">Delete</button>
+                                </span>
+                            <% } %>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+            <% if (hasChildren) { %>
+                <div class="budget-item__children">
+                    <% (item.children || []).forEach(function(child) { %>
+                        <%- include('./_budget-item-row', {
+                            item: child,
+                            itemDepth: depth + 1,
+                            budgetId: budgetId,
+                            canEditBudget: canEditBudget,
+                            formatBudgetCurrency: formatBudgetCurrency,
+                        }) %>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+    <% } %>
+</div>

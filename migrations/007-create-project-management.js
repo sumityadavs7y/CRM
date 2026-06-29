@@ -72,6 +72,18 @@ module.exports = {
         type: Sequelize.DATEONLY,
         allowNull: true,
       },
+      expectedStartDate: {
+        type: Sequelize.DATEONLY,
+        allowNull: true,
+      },
+      expectedEndDate: {
+        type: Sequelize.DATEONLY,
+        allowNull: true,
+      },
+      expectedProfits: {
+        type: Sequelize.DECIMAL(14, 2),
+        allowNull: true,
+      },
       isActive: {
         type: Sequelize.BOOLEAN,
         allowNull: false,

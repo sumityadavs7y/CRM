@@ -21,11 +21,16 @@ function parseBrowseFilters(query = {}) {
 
   const search = typeof query.search === 'string' ? query.search.trim() : '';
 
+  const imagesOnly = query.imagesOnly === '1'
+    || query.imagesOnly === 'true'
+    || query.imagesOnly === true;
+
   return {
     folderId,
     search,
     sort,
     view,
+    imagesOnly,
   };
 }
 

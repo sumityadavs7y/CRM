@@ -108,7 +108,60 @@
   }
 
   function reloadInventoryTab() {
-    window.location.href = `/company/projects/${projectId}?tab=inventory&success=Saved+successfully.`;
+    const params = new URLSearchParams({
+      tab: 'inventory',
+      success: 'Saved successfully.',
+    });
+    const activePhaseTab = getActivePhaseTabKey();
+    if (activePhaseTab) {
+      params.set('phaseTab', activePhaseTab);
+    }
+    window.location.href = `/company/projects/${projectId}?${params.toString()}`;
+  }
+
+  function getActivePhaseTabKey() {
+    const activeTab = document.querySelector('#inventoryPhaseTabs .nav-link.active');
+    return activeTab?.getAttribute('data-inventory-phase-tab') || config.inventoryPhaseTab || null;
+  }
+
+  function getPhaseIdForBlockModal(explicitPhaseId) {
+    if (explicitPhaseId !== undefined && explicitPhaseId !== null && explicitPhaseId !== '') {
+      return String(explicitPhaseId);
+    }
+
+    const activePhaseTab = getActivePhaseTabKey();
+    if (!activePhaseTab || activePhaseTab === 'default') {
+      return '';
+    }
+
+    const match = activePhaseTab.match(/^phase-(\d+)$/);
+    return match ? match[1] : '';
+  }
+
+  function activateInventoryPhaseTab(phaseTabKey) {
+    if (!phaseTabKey) {
+      return;
+    }
+
+    const tabButton = document.querySelector(`[data-inventory-phase-tab="${phaseTabKey}"]`);
+    if (!tabButton || !window.bootstrap) {
+      return;
+    }
+
+    window.bootstrap.Tab.getOrCreateInstance(tabButton).show();
+  }
+
+  function getActiveInventoryTree() {
+    const activePane = document.querySelector('#inventoryPhaseTabContent .tab-pane.active')
+      || document.querySelector('[data-inventory-phase-pane]');
+    if (!activePane) {
+      return document.getElementById('projectInventoryTree');
+    }
+    return activePane.querySelector('.inventory-tree');
+  }
+
+  function getAllInventoryTrees() {
+    return Array.from(document.querySelectorAll('.inventory-tree'));
   }
 
   function getFormData(form) {
@@ -259,68 +312,71 @@
   }
 
   function initInventoryCollapse() {
-    const tree = document.getElementById('projectInventoryTree');
-    if (!tree) {
+    const trees = getAllInventoryTrees();
+    if (!trees.length) {
       return;
     }
 
     const savedState = loadExpandedState();
     const focusNodeKeys = getFocusNodeKeys();
-    const collapseEls = tree.querySelectorAll('[data-inventory-collapse]');
 
-    collapseEls.forEach((collapseEl) => {
-      const nodeKey = collapseEl.dataset.inventoryNodeKey;
-      const defaultExpanded = collapseEl.dataset.inventoryDefaultExpanded === 'true';
-      let shouldExpand = Object.prototype.hasOwnProperty.call(savedState, nodeKey)
-        ? savedState[nodeKey]
-        : defaultExpanded;
+    trees.forEach((tree) => {
+      const collapseEls = tree.querySelectorAll('[data-inventory-collapse]');
 
-      if (nodeKey && focusNodeKeys.has(nodeKey)) {
-        shouldExpand = true;
-        savedState[nodeKey] = true;
-      }
+      collapseEls.forEach((collapseEl) => {
+        const nodeKey = collapseEl.dataset.inventoryNodeKey;
+        const defaultExpanded = collapseEl.dataset.inventoryDefaultExpanded === 'true';
+        let shouldExpand = Object.prototype.hasOwnProperty.call(savedState, nodeKey)
+          ? savedState[nodeKey]
+          : defaultExpanded;
 
-      setCollapseExpanded(collapseEl, shouldExpand, { persist: false });
-
-      if (!window.bootstrap) {
-        return;
-      }
-
-      collapseEl.addEventListener('shown.bs.collapse', () => {
-        syncCollapseUi(collapseEl, true);
-        const state = loadExpandedState();
-        if (nodeKey) {
-          state[nodeKey] = true;
-          saveExpandedState(state);
+        if (nodeKey && focusNodeKeys.has(nodeKey)) {
+          shouldExpand = true;
+          savedState[nodeKey] = true;
         }
+
+        setCollapseExpanded(collapseEl, shouldExpand, { persist: false });
+
+        if (!window.bootstrap) {
+          return;
+        }
+
+        collapseEl.addEventListener('shown.bs.collapse', () => {
+          syncCollapseUi(collapseEl, true);
+          const state = loadExpandedState();
+          if (nodeKey) {
+            state[nodeKey] = true;
+            saveExpandedState(state);
+          }
+        });
+
+        collapseEl.addEventListener('hidden.bs.collapse', () => {
+          syncCollapseUi(collapseEl, false);
+          const state = loadExpandedState();
+          if (nodeKey) {
+            state[nodeKey] = false;
+            saveExpandedState(state);
+          }
+        });
       });
 
-      collapseEl.addEventListener('hidden.bs.collapse', () => {
-        syncCollapseUi(collapseEl, false);
-        const state = loadExpandedState();
-        if (nodeKey) {
-          state[nodeKey] = false;
-          saveExpandedState(state);
-        }
+      tree.querySelectorAll('.inventory-node__title--toggle').forEach((titleEl) => {
+        titleEl.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            titleEl.click();
+          }
+        });
       });
     });
 
     if (focusNodeKeys.size) {
       saveExpandedState(savedState);
     }
-
-    tree.querySelectorAll('.inventory-node__title--toggle').forEach((titleEl) => {
-      titleEl.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          titleEl.click();
-        }
-      });
-    });
   }
 
   function setAllInventoryCollapsed(expanded) {
-    const tree = document.getElementById('projectInventoryTree');
+    const tree = getActiveInventoryTree();
     if (!tree || !window.bootstrap) {
       return;
     }
@@ -379,9 +435,13 @@
     document.getElementById('blockModalLabel').textContent = block ? 'Edit Block' : 'Add Block';
     document.getElementById('blockName').value = block ? block.name : '';
     document.getElementById('blockTotalFloors').value = block && block.totalFloors != null ? block.totalFloors : '';
-    const phaseSelect = document.getElementById('blockPhaseSelect');
-    if (phaseSelect) {
-      phaseSelect.value = block ? (block.phaseId || '') : (phaseId || '');
+    const phaseIdInput = document.getElementById('blockPhaseId');
+    if (phaseIdInput) {
+      if (block) {
+        phaseIdInput.value = block.phaseId || '';
+      } else {
+        phaseIdInput.value = getPhaseIdForBlockModal(phaseId);
+      }
     }
     clearFormError(document.getElementById('blockFormError'));
     blockModal.show();
@@ -582,7 +642,7 @@
       }
 
       if (action === 'add-block') {
-        openBlockModal(null, button.getAttribute('data-phase-id') || '');
+        openBlockModal(null);
         return;
       }
 
@@ -672,6 +732,21 @@
     const activeTab = config.activeTab || new URLSearchParams(window.location.search).get('tab') || 'general';
     if (!unitId || activeTab !== 'inventory') {
       return;
+    }
+
+    const phaseTabKey = config.inventoryPhaseTab
+      || new URLSearchParams(window.location.search).get('phaseTab');
+    if (phaseTabKey) {
+      activateInventoryPhaseTab(phaseTabKey);
+      if (window.bootstrap) {
+        const tabButton = document.querySelector(`[data-inventory-phase-tab="${phaseTabKey}"]`);
+        if (tabButton) {
+          await new Promise((resolve) => {
+            tabButton.addEventListener('shown.bs.tab', resolve, { once: true });
+            window.setTimeout(resolve, 200);
+          });
+        }
+      }
     }
 
     const unitRow = resolveFocusUnitRow();
