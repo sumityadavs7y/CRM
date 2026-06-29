@@ -5,24 +5,6 @@
 
 <link href="/css/custom.css" rel="stylesheet">
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center gap-3">
-                                    <%- include('./_project-avatar', { project, size: 'lg' }) %>
-                                    <h4 class="mb-sm-0"><%= project.name %></h4>
-                                </div>
-                                <div class="page-title-right">
-                                    <ol class="breadcrumb m-0">
-                                        <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
-                                        <li class="breadcrumb-item"><a href="/company/projects">Projects</a></li>
-                                        <li class="breadcrumb-item active">View</li>
-                                    </ol>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <% if (typeof success !== 'undefined' && success) { %>
                         <div class="row">
                             <div class="col-12">
@@ -39,22 +21,8 @@
                         </div>
                     <% } %>
 
-                    <div class="row mb-3">
-                        <div class="col-12 d-flex gap-2">
-                            <a href="/company/projects" class="btn btn-light btn-sm">Back to Projects</a>
-                            <% if (canEdit) { %>
-                                <form action="/company/projects/<%= project.id %>/delete" method="post" class="d-inline" onsubmit="return confirm('Delete this project and all inventory? This cannot be undone.');">
-                                    <button type="submit" class="btn btn-soft-danger btn-sm">Delete</button>
-                                </form>
-                            <% } %>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <%- include('./_project-tabs') %>
-                        </div>
-                    </div>
+                    <%- include('./_project-hero') %>
+                    <%- include('./_project-tab-content') %>
 
                     <% if (canEdit) { %>
                         <%- include('./_phase-modal') %>

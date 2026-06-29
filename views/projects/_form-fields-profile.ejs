@@ -1,0 +1,30 @@
+<%- include('./_project-avatar-field') %>
+
+<div class="mb-3">
+    <label for="name" class="form-label">Project name <span class="text-danger">*</span></label>
+    <input type="text" class="form-control" id="name" name="name" value="<%= values.name || '' %>" placeholder="Enter project name" required>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="projectType" class="form-label">Project type</label>
+        <select class="form-select" id="projectType" name="projectType">
+            <% projectTypes.forEach(function(type) { %>
+                <option value="<%= type %>"<%= String(values.projectType || '') === type ? 'selected' : '' %>><%= formatProjectType(type) %></option>
+            <% }); %>
+        </select>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="projectStatus" class="form-label">Status</label>
+        <select class="form-select" id="projectStatus" name="status">
+            <% projectStatuses.forEach(function(status) { %>
+                <option value="<%= status %>"<%= String(values.status || '') === status ? 'selected' : '' %>><%= formatProjectStatus(status) %></option>
+            <% }); %>
+        </select>
+    </div>
+</div>
+
+<div class="mb-0">
+    <label for="description" class="form-label">Project description</label>
+    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe the project"><%= values.description || '' %></textarea>
+</div>

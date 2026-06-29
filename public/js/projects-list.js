@@ -54,26 +54,6 @@
       });
     });
 
-    document.querySelectorAll('[data-project-card-url]').forEach((card) => {
-      card.addEventListener('click', (event) => {
-        if (event.target.closest('a, button')) {
-          return;
-        }
-        window.location.href = card.dataset.projectCardUrl;
-      });
-
-      card.addEventListener('keydown', (event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') {
-          return;
-        }
-        if (event.target.closest('a, button')) {
-          return;
-        }
-        event.preventDefault();
-        window.location.href = card.dataset.projectCardUrl;
-      });
-    });
-
     applyView(view);
   }
 

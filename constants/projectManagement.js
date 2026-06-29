@@ -34,6 +34,15 @@ const PROJECT_STATUS_BADGE_CLASSES = {
   on_hold: 'bg-danger-subtle text-danger',
 };
 
+const PROJECT_STATUS_HERO_BG_CLASSES = {
+  planning: 'bg-secondary-subtle',
+  pre_launch: 'bg-info-subtle',
+  under_construction: 'bg-warning-subtle',
+  ready_to_move: 'bg-success-subtle',
+  completed: 'bg-primary-subtle',
+  on_hold: 'bg-danger-subtle',
+};
+
 const PHASE_STATUSES = ['planning', 'under_construction', 'completed', 'on_hold'];
 
 const PHASE_STATUS_LABELS = {
@@ -164,6 +173,14 @@ function getProjectStatusBadgeClass(value) {
   return PROJECT_STATUS_BADGE_CLASSES[value] || 'bg-secondary-subtle text-secondary';
 }
 
+function getProjectStatusAvatarBgClass(value) {
+  return getProjectStatusBadgeClass(value);
+}
+
+function getProjectStatusHeroBgClass(value) {
+  return PROJECT_STATUS_HERO_BG_CLASSES[value] || 'bg-secondary-subtle';
+}
+
 function formatPhaseStatus(value) {
   return PHASE_STATUS_LABELS[value] || value || '—';
 }
@@ -222,6 +239,8 @@ module.exports = {
   formatProjectType,
   formatProjectStatus,
   getProjectStatusBadgeClass,
+  getProjectStatusAvatarBgClass,
+  getProjectStatusHeroBgClass,
   formatPhaseStatus,
   formatUnitType,
   formatUnitStatus,

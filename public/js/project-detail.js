@@ -21,6 +21,9 @@
         if (tabKey !== 'inventory') {
           url.searchParams.delete('unitId');
         }
+        if (tabKey !== 'inventory' && tabKey !== 'budget') {
+          url.searchParams.delete('phaseTab');
+        }
         url.searchParams.delete('success');
         url.searchParams.delete('error');
         window.history.replaceState({}, '', url.toString());

@@ -143,7 +143,7 @@
       return;
     }
 
-    const tabButton = document.querySelector(`[data-inventory-phase-tab="${phaseTabKey}"]`);
+    const tabButton = document.querySelector(`#inventoryPhaseTabs [data-inventory-phase-tab="${phaseTabKey}"]`);
     if (!tabButton || !window.bootstrap) {
       return;
     }
@@ -739,7 +739,7 @@
     if (phaseTabKey) {
       activateInventoryPhaseTab(phaseTabKey);
       if (window.bootstrap) {
-        const tabButton = document.querySelector(`[data-inventory-phase-tab="${phaseTabKey}"]`);
+        const tabButton = document.querySelector(`#inventoryPhaseTabs [data-inventory-phase-tab="${phaseTabKey}"]`);
         if (tabButton) {
           await new Promise((resolve) => {
             tabButton.addEventListener('shown.bs.tab', resolve, { once: true });

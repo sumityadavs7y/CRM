@@ -4,24 +4,53 @@
     const remaining = budget.remaining || 0;
     const utilized = budget.utilizedPercent;
 %>
-<div class="budget-summary card bg-light border-0 mb-3">
-    <div class="card-body py-3">
-        <div class="row g-3 text-center text-md-start">
-            <div class="col-md-3">
-                <div class="text-muted fs-12 text-uppercase">Expected</div>
-                <div class="fw-semibold fs-5"><%= formatBudgetCurrency(expected) %></div>
+<div class="row g-3 mb-3 budget-summary">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card card-animate mb-0 h-100">
+            <div class="card-body budget-summary__body">
+                <p class="text-uppercase fw-medium text-muted text-truncate mb-2">Expected</p>
+                <h4 class="fs-4 mb-0"><%= formatBudgetCurrency(expected) %></h4>
+                <div class="budget-summary__footer" aria-hidden="true"></div>
             </div>
-            <div class="col-md-3">
-                <div class="text-muted fs-12 text-uppercase">Spent</div>
-                <div class="fw-semibold fs-5"><%= formatBudgetCurrency(spent) %></div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card card-animate mb-0 h-100">
+            <div class="card-body budget-summary__body">
+                <p class="text-uppercase fw-medium text-muted text-truncate mb-2">Spent</p>
+                <h4 class="fs-4 mb-0"><%= formatBudgetCurrency(spent) %></h4>
+                <div class="budget-summary__footer" aria-hidden="true"></div>
             </div>
-            <div class="col-md-3">
-                <div class="text-muted fs-12 text-uppercase">Remaining</div>
-                <div class="fw-semibold fs-5<%= budget.isOverBudget ? ' text-danger' : '' %>"><%= formatBudgetCurrency(remaining) %></div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card card-animate mb-0 h-100">
+            <div class="card-body budget-summary__body">
+                <p class="text-uppercase fw-medium text-muted text-truncate mb-2">Remaining</p>
+                <h4 class="fs-4 mb-0<%= budget.isOverBudget ? ' text-danger' : '' %>"><%= formatBudgetCurrency(remaining) %></h4>
+                <div class="budget-summary__footer" aria-hidden="true"></div>
             </div>
-            <div class="col-md-3">
-                <div class="text-muted fs-12 text-uppercase">Utilized</div>
-                <div class="fw-semibold fs-5"><%= utilized != null ? utilized + '%' : '—' %></div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card card-animate mb-0 h-100">
+            <div class="card-body budget-summary__body">
+                <p class="text-uppercase fw-medium text-muted text-truncate mb-2">Utilized</p>
+                <h4 class="fs-4 mb-0"><%= utilized != null ? utilized + '%' : '—' %></h4>
+                <div class="budget-summary__footer">
+                    <% if (utilized != null) { %>
+                        <div class="progress progress-sm">
+                            <div
+                                class="progress-bar <%= budget.isOverBudget ? 'bg-danger' : 'bg-success' %>"
+                                role="progressbar"
+                                style="width: <%= Math.min(100, utilized) %>%;"
+                                aria-valuenow="<%= utilized %>"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                            ></div>
+                        </div>
+                    <% } %>
+                </div>
             </div>
         </div>
     </div>

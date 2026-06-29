@@ -3,43 +3,78 @@
     activeNav: 'projects'
 }) %>
 
+<link href="/css/custom.css" rel="stylesheet">
+
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                <h4 class="mb-sm-0">Add Project</h4>
+                                <h4 class="mb-sm-0">Create Project</h4>
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
                                         <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
                                         <li class="breadcrumb-item"><a href="/company/projects">Projects</a></li>
-                                        <li class="breadcrumb-item active">Add</li>
+                                        <li class="breadcrumb-item active">Create Project</li>
                                     </ol>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row justify-content-center">
-                        <div class="col-lg-8">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h4 class="card-title mb-0">New Project</h4>
-                                </div>
-                                <div class="card-body">
-                                    <% if (error) { %>
-                                        <div class="alert alert-danger" role="alert"><%= error %></div>
-                                    <% } %>
+                    <form action="/company/projects" method="post">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <% if (error) { %>
+                                    <div class="alert alert-danger" role="alert"><%= error %></div>
+                                <% } %>
 
-                                    <form action="/company/projects" method="post">
-                                        <%- include('./_form-fields') %>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn btn-success" type="submit">Create Project</button>
-                                            <a href="/company/projects" class="btn btn-light">Cancel</a>
-                                        </div>
-                                    </form>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <%- include('./_form-fields-profile') %>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Location</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <%- include('./_form-fields-location') %>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Schedule & financials</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <%- include('./_form-fields-schedule') %>
+                                    </div>
+                                </div>
+
+                                <div class="text-end mb-4">
+                                    <a href="/company/projects" class="btn btn-light w-sm">Cancel</a>
+                                    <button class="btn btn-success w-sm" type="submit">Create</button>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Project settings</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted mb-3">Set the project type and status from the main form. You can add inventory, RERA details, and budgets after creation.</p>
+                                        <ul class="list-unstyled vstack gap-2 mb-0 text-muted fs-13">
+                                            <li><i class="ri-checkbox-circle-line text-success me-1"></i> Avatar & description</li>
+                                            <li><i class="ri-checkbox-circle-line text-success me-1"></i> Location & dates</li>
+                                            <li><i class="ri-checkbox-circle-line text-success me-1"></i> Inventory structure</li>
+                                            <li><i class="ri-checkbox-circle-line text-success me-1"></i> Budget tracking</li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
 
 <script type="application/json" id="projectFormConfig"><%- JSON.stringify({
     canUploadMedia: typeof canUploadMedia !== 'undefined' ? canUploadMedia : false

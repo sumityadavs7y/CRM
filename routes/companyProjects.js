@@ -8,6 +8,8 @@ const {
   formatProjectType,
   formatProjectStatus,
   getProjectStatusBadgeClass,
+  getProjectStatusAvatarBgClass,
+  getProjectStatusHeroBgClass,
   formatPhaseStatus,
   formatUnitType,
   formatUnitStatus,
@@ -50,6 +52,9 @@ const {
   formatProjectListLocation,
   formatProjectListUnits,
   formatProjectListCurrency,
+  formatProjectListUpdatedAt,
+  getProjectUnitProgress,
+  getProjectCardDescription,
 } = require('../utils/projectListView');
 const {
   findCompanyProjectWithDetails,
@@ -239,6 +244,11 @@ async function renderProjectShow(req, res, project, extras = {}) {
     formatProjectType,
     formatProjectStatus,
     getProjectStatusBadgeClass,
+    getProjectStatusAvatarBgClass,
+    getProjectStatusHeroBgClass,
+    formatProjectListLocation,
+    getProjectUnitProgress,
+    formatProjectListUpdatedAt,
     formatPhaseStatus,
     formatUnitType,
     formatUnitStatus,
@@ -274,16 +284,19 @@ async function renderCreateForm(req, res, { error, values }) {
 async function renderEditForm(req, res, project, { error, values }) {
   const user = buildUserContext(req);
   const formOptions = getProjectFormOptions();
+  const canLoadMedia = user.can('media_library', 'view');
+  const enrichedProject = enrichProjectAvatar(project, { canLoadMedia });
 
   res.render('projects/edit', withTheme(req, {
     user,
-    project,
+    project: enrichedProject,
     error,
     values,
     ...formOptions,
     ...getAvatarFormContext(user, values, project),
     formatProjectType,
     formatProjectStatus,
+    getProjectStatusBadgeClass,
     activeNav: 'projects',
   }));
 }
@@ -339,12 +352,17 @@ router.get('/', isCompanyAuthenticated, requirePermission('project_management', 
     formatProjectType,
     formatProjectStatus,
     getProjectStatusBadgeClass,
+    getProjectStatusAvatarBgClass,
     formatReraStatus,
     getReraStatusBadgeClass,
     formatProjectListDate,
     formatProjectListLocation,
     formatProjectListUnits,
     formatProjectListCurrency,
+    formatProjectListUpdatedAt,
+    getProjectUnitProgress,
+    getProjectCardDescription,
+    formatProjectListLocation,
     success: req.query.success || null,
     activeNav: 'projects',
   }));

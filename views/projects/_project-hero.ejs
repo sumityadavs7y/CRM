@@ -1,0 +1,100 @@
+<%
+    const heroBg = getProjectStatusHeroBgClass(project.status);
+    const statusAvatarBg = getProjectStatusAvatarBgClass(project.status);
+    const location = formatProjectListLocation(project);
+    const tabButtonId = function(key) {
+        return 'project-tab-' + key;
+    };
+    const tabPaneId = function(key) {
+        return 'project-pane-' + key;
+    };
+%>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card mt-n4 mx-n4 project-hero">
+            <div class="<%= heroBg %>">
+                <div class="card-body pb-0 px-4">
+                    <div class="row mb-3">
+                        <div class="col-md">
+                            <div class="row align-items-center g-3">
+                                <div class="col-md-auto">
+                                    <div class="avatar-md">
+                                        <% if (project.hasAvatar && project.avatarThumbUrl) { %>
+                                            <div class="avatar-title bg-white rounded-circle p-1">
+                                                <img src="<%= project.avatarThumbUrl %>" alt="" class="avatar-sm rounded-circle">
+                                            </div>
+                                        <% } else { %>
+                                            <div class="avatar-title <%= statusAvatarBg %> rounded-circle fs-4 fw-semibold">
+                                                <%= project.avatarInitials %>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <div class="col-md">
+                                    <div>
+                                        <h4 class="fw-bold mb-2"><%= project.name %></h4>
+                                        <div class="hstack gap-3 flex-wrap text-muted">
+                                            <% if (location !== '—') { %>
+                                                <div><i class="ri-map-pin-line align-bottom me-1"></i><%= location %></div>
+                                                <div class="vr"></div>
+                                            <% } %>
+                                            <% if (project.launchDate) { %>
+                                                <div>Launch : <span class="fw-medium text-body"><%= project.launchDate %></span></div>
+                                                <div class="vr"></div>
+                                            <% } %>
+                                            <% if (project.possessionDate) { %>
+                                                <div>Possession : <span class="fw-medium text-body"><%= project.possessionDate %></span></div>
+                                                <div class="vr"></div>
+                                            <% } %>
+                                            <div class="badge rounded-pill <%= getProjectStatusBadgeClass(project.status) %> fs-12"><%= formatProjectStatus(project.status) %></div>
+                                            <div class="badge rounded-pill bg-light text-body fs-12"><%= formatProjectType(project.projectType) %></div>
+                                            <% if (!project.isActive) { %>
+                                                <div class="badge rounded-pill bg-secondary-subtle text-secondary fs-12">Inactive</div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-auto">
+                            <div class="hstack gap-1 flex-wrap">
+                                <a href="/company/projects" class="btn btn-light btn-sm">
+                                    <i class="ri-arrow-left-line align-bottom me-1"></i> Back
+                                </a>
+                                <% if (canEdit) { %>
+                                    <a href="/company/projects/<%= project.id %>/edit" class="btn btn-success btn-sm">
+                                        <i class="ri-pencil-fill align-bottom me-1"></i> Edit
+                                    </a>
+                                    <form action="/company/projects/<%= project.id %>/delete" method="post" class="d-inline" onsubmit="return confirm('Delete this project and all inventory? This cannot be undone.');">
+                                        <button type="submit" class="btn btn-soft-danger btn-sm">Delete</button>
+                                    </form>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="nav nav-tabs-custom border-bottom-0" role="tablist">
+                        <% projectTabs.forEach(function(tab) { %>
+                            <% const isActive = activeTab === tab.key; %>
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link fw-semibold<%= isActive ? ' active' : '' %>"
+                                    id="<%= tabButtonId(tab.key) %>"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#<%= tabPaneId(tab.key) %>"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="<%= tabPaneId(tab.key) %>"
+                                    aria-selected="<%= isActive %>"
+                                    data-project-tab="<%= tab.key %>"
+                                >
+                                    <%= tab.label %>
+                                </button>
+                            </li>
+                        <% }); %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

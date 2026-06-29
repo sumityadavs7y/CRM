@@ -1,49 +1,137 @@
-<div class="d-flex justify-content-between align-items-start mb-3">
-    <div>
-        <h5 class="mb-1"><%= project.name %></h5>
-        <div class="d-flex flex-wrap gap-2">
-            <span class="badge <%= getProjectStatusBadgeClass(project.status) %>"><%= formatProjectStatus(project.status) %></span>
-            <span class="badge bg-light text-body"><%= formatProjectType(project.projectType) %></span>
-            <% if (!project.isActive) { %>
-                <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
-            <% } %>
+<%
+    const addressParts = [project.addressLine1, project.addressLine2, project.city, project.state, project.pincode].filter(Boolean);
+    const unitProgress = getProjectUnitProgress(project);
+    const stats = project.unitStats || {};
+%>
+<div class="row gx-3 gy-0">
+    <div class="col-xl-9 col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-muted">
+                    <h6 class="mb-3 fw-semibold text-uppercase">Summary</h6>
+                    <p class="mb-0"><%= project.description || 'No description provided for this project.' %></p>
+
+                    <div class="pt-3 border-top border-top-dashed mt-4">
+                        <div class="row gy-3">
+                            <div class="col-lg-3 col-sm-6">
+                                <div>
+                                    <p class="mb-2 text-uppercase fw-medium">Launch date</p>
+                                    <h5 class="fs-15 mb-0"><%= project.launchDate || '—' %></h5>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-6">
+                                <div>
+                                    <p class="mb-2 text-uppercase fw-medium">Possession</p>
+                                    <h5 class="fs-15 mb-0"><%= project.possessionDate || '—' %></h5>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-6">
+                                <div>
+                                    <p class="mb-2 text-uppercase fw-medium">Status</p>
+                                    <div class="badge <%= getProjectStatusBadgeClass(project.status) %> fs-12"><%= formatProjectStatus(project.status) %></div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-6">
+                                <div>
+                                    <p class="mb-2 text-uppercase fw-medium">Type</p>
+                                    <div class="badge bg-light text-body fs-12"><%= formatProjectType(project.projectType) %></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-top border-top-dashed mt-4">
+                        <div class="row gy-3">
+                            <div class="col-lg-3 col-sm-6">
+                                <div>
+                                    <p class="mb-2 text-uppercase fw-medium">Expected start</p>
+                                    <h5 class="fs-15 mb-0"><%= project.expectedStartDate || '—' %></h5>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-6">
+                                <div>
+                                    <p class="mb-2 text-uppercase fw-medium">Expected end</p>
+                                    <h5 class="fs-15 mb-0"><%= project.expectedEndDate || '—' %></h5>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-6">
+                                <div>
+                                    <p class="mb-2 text-uppercase fw-medium">Land area</p>
+                                    <h5 class="fs-15 mb-0"><%= project.totalLandAreaSqft ? project.totalLandAreaSqft + ' sq ft' : '—' %></h5>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-6">
+                                <div>
+                                    <p class="mb-2 text-uppercase fw-medium">Expected profits</p>
+                                    <h5 class="fs-15 mb-0"><%= project.expectedProfits ? '₹' + Number(project.expectedProfits).toLocaleString('en-IN') : '—' %></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (addressParts.length) { %>
+                        <div class="pt-3 border-top border-top-dashed mt-4">
+                            <h6 class="mb-3 fw-semibold text-uppercase">Location</h6>
+                            <p class="mb-0"><%= addressParts.join(', ') %></p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
         </div>
     </div>
-    <% if (canEdit) { %>
-        <a href="/company/projects/<%= project.id %>/edit" class="btn btn-soft-primary btn-sm">Edit Project</a>
-    <% } %>
-</div>
 
-<div class="row g-4">
-    <div class="col-lg-6">
-        <dl class="row mb-0">
-            <dt class="col-sm-4 text-muted">Location</dt>
-            <dd class="col-sm-8">
-                <% const addressParts = [project.addressLine1, project.addressLine2, project.city, project.state, project.pincode].filter(Boolean); %>
-                <%= addressParts.length ? addressParts.join(', ') : '—' %>
-            </dd>
+    <div class="col-xl-3 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Project details</h5>
+                <div class="d-flex flex-wrap gap-2 fs-16 mb-3">
+                    <div class="badge fw-medium <%= getProjectStatusBadgeClass(project.status) %>"><%= formatProjectStatus(project.status) %></div>
+                    <div class="badge fw-medium bg-light text-body"><%= formatProjectType(project.projectType) %></div>
+                    <% if (!project.isActive) { %>
+                        <div class="badge fw-medium bg-secondary-subtle text-secondary">Inactive</div>
+                    <% } %>
+                    <% if (project.reraStatus) { %>
+                        <div class="badge fw-medium <%= getReraStatusBadgeClass(project.reraStatus) %>"><%= formatReraStatus(project.reraStatus) %></div>
+                    <% } %>
+                </div>
+                <dl class="mb-0">
+                    <dt class="text-muted fs-12 text-uppercase mb-1">Units</dt>
+                    <dd class="mb-3">
+                        <% if (stats.totalUnits) { %>
+                            <%= stats.availableUnits %> available / <%= stats.totalUnits %> total
+                        <% } else { %>
+                            —
+                        <% } %>
+                    </dd>
+                    <% if (unitProgress.hasUnits) { %>
+                        <dt class="text-muted fs-12 text-uppercase mb-1">Occupancy</dt>
+                        <dd class="mb-3">
+                            <div class="progress progress-sm animated-progress">
+                                <div class="progress-bar <%= unitProgress.barClass %>" role="progressbar" style="width: <%= unitProgress.percent %>%;" aria-valuenow="<%= unitProgress.percent %>" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="text-muted fs-12 mt-1"><%= unitProgress.text %> occupied</div>
+                        </dd>
+                    <% } %>
+                    <dt class="text-muted fs-12 text-uppercase mb-1">Last updated</dt>
+                    <dd class="mb-0"><%= formatProjectListUpdatedAt(project.updatedAt) %></dd>
+                </dl>
+            </div>
+        </div>
 
-            <dt class="col-sm-4 text-muted">Land area</dt>
-            <dd class="col-sm-8"><%= project.totalLandAreaSqft ? project.totalLandAreaSqft + ' sq ft' : '—' %></dd>
-
-            <dt class="col-sm-4 text-muted">Launch date</dt>
-            <dd class="col-sm-8"><%= project.launchDate || '—' %></dd>
-
-            <dt class="col-sm-4 text-muted">Possession date</dt>
-            <dd class="col-sm-8"><%= project.possessionDate || '—' %></dd>
-
-            <dt class="col-sm-4 text-muted">Expected start date</dt>
-            <dd class="col-sm-8"><%= project.expectedStartDate || '—' %></dd>
-
-            <dt class="col-sm-4 text-muted">Expected end date</dt>
-            <dd class="col-sm-8"><%= project.expectedEndDate || '—' %></dd>
-
-            <dt class="col-sm-4 text-muted">Expected profits</dt>
-            <dd class="col-sm-8"><%= project.expectedProfits ? '₹' + Number(project.expectedProfits).toLocaleString('en-IN') : '—' %></dd>
-        </dl>
-    </div>
-    <div class="col-lg-6">
-        <dt class="text-muted mb-1">Description</dt>
-        <dd class="mb-0"><%= project.description || '—' %></dd>
+        <% if (canEdit) { %>
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Quick actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="/company/projects/<%= project.id %>/edit" class="btn btn-success btn-sm">
+                            <i class="ri-pencil-fill align-bottom me-1"></i> Edit project
+                        </a>
+                        <a href="/company/projects/<%= project.id %>?tab=inventory" class="btn btn-soft-primary btn-sm">
+                            <i class="ri-building-2-line align-bottom me-1"></i> View inventory
+                        </a>
+                    </div>
+                </div>
+            </div>
+        <% } %>
     </div>
 </div>

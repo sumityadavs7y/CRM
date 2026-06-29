@@ -1,0 +1,24 @@
+<div class="mb-3">
+    <label for="addressLine1" class="form-label">Address line 1</label>
+    <input type="text" class="form-control" id="addressLine1" name="addressLine1" value="<%= values.addressLine1 || '' %>">
+</div>
+
+<div class="mb-3">
+    <label for="addressLine2" class="form-label">Address line 2</label>
+    <input type="text" class="form-control" id="addressLine2" name="addressLine2" value="<%= values.addressLine2 || '' %>">
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label for="city" class="form-label">City</label>
+        <input type="text" class="form-control" id="city" name="city" value="<%= values.city || '' %>">
+    </div>
+    <div class="col-md-4 mb-3">
+        <label for="state" class="form-label">State</label>
+        <input type="text" class="form-control" id="state" name="state" value="<%= values.state || '' %>">
+    </div>
+    <div class="col-md-4 mb-3">
+        <label for="pincode" class="form-label">Pincode</label>
+        <input type="text" class="form-control" id="pincode" name="pincode" value="<%= values.pincode || '' %>">
+    </div>
+</div>

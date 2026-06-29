@@ -39,9 +39,10 @@
     }
 %>
 
-<div class="inventory-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <p class="text-muted mb-0 fs-13">Blocks → Floors → Units</p>
-    <div class="d-flex flex-wrap gap-2 align-items-center">
+<div class="card">
+    <div class="card-header align-items-center d-flex">
+        <h5 class="card-title mb-0 flex-grow-1">Inventory</h5>
+        <div class="flex-shrink-0 d-flex flex-wrap gap-2 align-items-center">
         <% if (phases.length || directBlocks.length) { %>
             <div class="btn-group btn-group-sm" role="group" aria-label="Expand or collapse inventory">
                 <button type="button" class="btn btn-soft-secondary" data-inventory-action="expand-all">Expand all</button>
@@ -56,8 +57,10 @@
                 <i class="ri-add-line align-middle"></i> Block
             </button>
         <% } %>
+        </div>
     </div>
-</div>
+    <div class="card-body">
+        <p class="text-muted fs-13 mb-3">Blocks → Floors → Units</p>
 
 <% if (!phases.length && !directBlocks.length) { %>
     <div class="inventory-empty text-center py-4">
@@ -206,3 +209,5 @@
         emptyMessage: 'No blocks yet.',
     }) %>
 <% } %>
+    </div>
+</div>

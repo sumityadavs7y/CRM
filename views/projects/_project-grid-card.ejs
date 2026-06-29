@@ -1,60 +1,135 @@
 <%
     const cardUrl = '/company/projects/' + project.id;
     const editUrl = '/company/projects/' + project.id + '/edit';
+    const deleteUrl = '/company/projects/' + project.id + '/delete';
     const location = formatProjectListLocation(project);
-    const unitsLabel = formatProjectListUnits(project);
-    const showEdit = typeof canEdit !== 'undefined' && canEdit;
+    const unitProgress = getProjectUnitProgress(project);
+    const cardDescription = getProjectCardDescription(project);
+    const statusAvatarBg = getProjectStatusAvatarBgClass(project.status);
+    const footerDate = project.launchDate || project.updatedAt;
+    const showActions = typeof canEdit !== 'undefined' && canEdit;
 %>
-<div class="col">
-    <article
-        class="project-card<%= project.isActive === false ? ' project-card--inactive' : '' %>"
-        data-project-card-url="<%= cardUrl %>"
-        tabindex="0"
-        role="link"
-        aria-label="<%= project.name %>"
-    >
-        <div class="project-card__status-strip project-card__status-strip--<%= project.status %>"></div>
-        <div class="project-card__media">
-            <% if (showEdit) { %>
-                <a
-                    href="<%= editUrl %>"
-                    class="btn btn-sm btn-light project-card__edit"
-                    title="Edit project"
-                    aria-label="Edit <%= project.name %>"
-                >
-                    <i class="ri-pencil-line"></i>
-                </a>
-            <% } %>
-            <% if (project.hasAvatar && project.avatarThumbUrl) { %>
-                <img src="<%= project.avatarThumbUrl %>" alt="" class="project-card__image" loading="lazy" decoding="async">
-            <% } else { %>
-                <div class="project-card__placeholder" style="--project-avatar-accent: <%= project.avatarAccent %>">
-                    <span class="project-card__initials"><%= project.avatarInitials %></span>
+<div class="col-xxl-3 col-sm-6 project-card<%= project.isActive === false ? ' project-card--inactive' : '' %>">
+    <div class="card card-height-100">
+        <div class="card-body">
+            <div class="d-flex flex-column h-100">
+                <div class="d-flex">
+                    <div class="flex-grow-1">
+                        <p class="text-muted mb-4"><%= formatProjectListUpdatedAt(project.updatedAt) %></p>
+                    </div>
+                    <% if (showActions) { %>
+                        <div class="flex-shrink-0">
+                            <div class="dropdown">
+                                <button
+                                    type="button"
+                                    class="btn btn-link text-muted p-1 mt-n2 py-0 text-decoration-none fs-15"
+                                    data-bs-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                    aria-label="Project actions"
+                                >
+                                    <i class="ri-more-fill"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" href="<%= cardUrl %>">
+                                        <i class="ri-eye-fill align-bottom me-2 text-muted"></i> View
+                                    </a>
+                                    <a class="dropdown-item" href="<%= editUrl %>">
+                                        <i class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <form action="<%= deleteUrl %>" method="post" class="px-0 m-0" onsubmit="return confirm('Delete this project and all inventory? This cannot be undone.');">
+                                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
+                                            <i class="ri-delete-bin-fill align-bottom me-2"></i> Remove
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
                 </div>
-            <% } %>
+
+                <div class="d-flex mb-2">
+                    <div class="flex-shrink-0 me-3">
+                        <a href="<%= cardUrl %>" class="project-card__avatar" title="View <%= project.name %>">
+                            <% if (project.hasAvatar && project.avatarThumbUrl) { %>
+                                <span class="avatar-title <%= statusAvatarBg %> rounded p-1">
+                                    <img src="<%= project.avatarThumbUrl %>" alt="" class="project-card__avatar-image">
+                                </span>
+                            <% } else { %>
+                                <span class="avatar-title <%= statusAvatarBg %> rounded fw-semibold project-card__avatar-initials">
+                                    <%= project.avatarInitials %>
+                                </span>
+                            <% } %>
+                        </a>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-1 fs-15">
+                            <a href="<%= cardUrl %>" class="text-body"><%= project.name %></a>
+                        </h5>
+                        <p class="text-muted text-truncate-two-lines mb-3"><%= cardDescription %></p>
+                    </div>
+                </div>
+
+                <div class="mt-auto">
+                    <div class="d-flex mb-2">
+                        <div class="flex-grow-1">
+                            <div><%= unitProgress.label %></div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <% if (unitProgress.hasUnits) { %>
+                                <div><i class="ri-list-check align-bottom me-1 text-muted"></i> <%= unitProgress.text %></div>
+                            <% } else { %>
+                                <div class="text-muted">—</div>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% if (unitProgress.hasUnits) { %>
+                        <div class="progress progress-sm animated-progress">
+                            <div
+                                class="progress-bar <%= unitProgress.barClass %>"
+                                role="progressbar"
+                                aria-valuenow="<%= unitProgress.percent %>"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                style="width: <%= unitProgress.percent %>%;"
+                            ></div>
+                        </div>
+                    <% } else { %>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-light" role="progressbar" style="width: 0%;"></div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
         </div>
-        <div class="project-card__body">
-            <h3 class="project-card__title mb-0"><%= project.name %></h3>
-            <div class="project-card__meta">
-                <span class="badge bg-light text-body"><%= formatProjectType(project.projectType) %></span>
-                <% if (project.isActive === false) { %>
-                    <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
-                <% } %>
-            </div>
-            <% if (location !== '—') { %>
-                <p class="project-card__location text-muted mb-0"><i class="ri-map-pin-line me-1"></i><%= location %></p>
-            <% } %>
-            <div class="project-card__stats">
-                <% if (unitsLabel !== '—') { %>
-                    <span class="project-card__stat"><i class="ri-building-2-line me-1"></i><%= unitsLabel %></span>
-                <% } %>
-                <% if (project.reraStatus) { %>
-                    <span class="badge <%= getReraStatusBadgeClass(project.reraStatus) %>"><%= formatReraStatus(project.reraStatus) %></span>
-                <% } %>
-            </div>
-            <div class="project-card__status">
-                <span class="badge <%= getProjectStatusBadgeClass(project.status) %>"><%= formatProjectStatus(project.status) %></span>
+
+        <div class="card-footer bg-transparent border-top-dashed py-2">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <span class="badge <%= getProjectStatusBadgeClass(project.status) %>"><%= formatProjectStatus(project.status) %></span>
+                        <span class="badge bg-light text-body"><%= formatProjectType(project.projectType) %></span>
+                        <% if (project.isActive === false) { %>
+                            <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                        <% } %>
+                        <% if (project.reraStatus) { %>
+                            <span class="badge <%= getReraStatusBadgeClass(project.reraStatus) %>"><%= formatReraStatus(project.reraStatus) %></span>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="flex-shrink-0">
+                    <div class="text-muted">
+                        <% if (location !== '—') { %>
+                            <i class="ri-map-pin-line me-1 align-bottom"></i><%= location %>
+                        <% } else if (footerDate) { %>
+                            <i class="ri-calendar-event-fill me-1 align-bottom"></i> <%= formatProjectListDate(footerDate) %>
+                        <% } else { %>
+                            —
+                        <% } %>
+                    </div>
+                </div>
             </div>
         </div>
-    </article>
+    </div>
 </div>

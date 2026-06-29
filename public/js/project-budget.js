@@ -8,6 +8,8 @@
   let editingItemId = null;
   let editingExpenseId = null;
 
+  const SCROLL_STORAGE_KEY = `crm.project-budget.scroll.${projectId}`;
+
   function getModal(id) {
     const el = document.getElementById(id);
     if (!el || !window.bootstrap) {
@@ -57,12 +59,53 @@
 
   function getActivePhaseTabKey() {
     const activeTab = document.querySelector('#budgetPhaseTabs .nav-link.active');
-    return activeTab?.getAttribute('data-inventory-phase-tab')
+    return activeTab?.getAttribute('data-budget-phase-tab')
       || config.inventoryPhaseTab
       || null;
   }
 
+  function saveScrollPosition() {
+    try {
+      sessionStorage.setItem(SCROLL_STORAGE_KEY, String(window.scrollY));
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  function restoreScrollPosition() {
+    try {
+      const raw = sessionStorage.getItem(SCROLL_STORAGE_KEY);
+      if (raw == null) {
+        return;
+      }
+      sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+      const scrollY = Number.parseInt(raw, 10);
+      if (!Number.isFinite(scrollY)) {
+        return;
+      }
+      window.requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  function updateBudgetPhaseTabUrl(phaseTabKey) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', 'budget');
+    if (phaseTabKey) {
+      url.searchParams.set('phaseTab', phaseTabKey);
+    } else {
+      url.searchParams.delete('phaseTab');
+    }
+    url.searchParams.delete('success');
+    url.searchParams.delete('error');
+    window.history.replaceState({}, '', url.toString());
+  }
+
   function reloadBudgetTab() {
+    saveScrollPosition();
     const params = new URLSearchParams({
       tab: 'budget',
       success: 'Saved successfully.',
@@ -294,12 +337,43 @@
   }
 
   function initBudgetPhaseTabs() {
+    const phaseTabs = document.getElementById('budgetPhaseTabs');
+    if (!phaseTabs) {
+      return;
+    }
+
+    let pendingScrollY = null;
+
+    phaseTabs.querySelectorAll('[data-bs-toggle="tab"][data-budget-phase-tab]').forEach((button) => {
+      button.addEventListener('show.bs.tab', () => {
+        pendingScrollY = window.scrollY;
+      });
+
+      button.addEventListener('shown.bs.tab', () => {
+        const phaseTabKey = button.getAttribute('data-budget-phase-tab');
+        if (phaseTabKey) {
+          updateBudgetPhaseTabUrl(phaseTabKey);
+        }
+        if (pendingScrollY != null) {
+          window.scrollTo(0, pendingScrollY);
+          pendingScrollY = null;
+        }
+      });
+    });
+
     const phaseTab = config.inventoryPhaseTab || new URLSearchParams(window.location.search).get('phaseTab');
     if (!phaseTab) {
       return;
     }
-    const tabButton = document.querySelector(`#budgetPhaseTabs [data-inventory-phase-tab="${phaseTab}"]`);
-    if (tabButton && window.bootstrap) {
+
+    const tabButton = phaseTabs.querySelector(`[data-budget-phase-tab="${phaseTab}"]`);
+    const pane = tabButton?.getAttribute('data-bs-target');
+    const paneEl = pane ? document.querySelector(pane) : null;
+    if (!tabButton || !paneEl || paneEl.classList.contains('active')) {
+      return;
+    }
+
+    if (window.bootstrap) {
       window.bootstrap.Tab.getOrCreateInstance(tabButton).show();
     }
   }
@@ -307,6 +381,7 @@
   function init() {
     initBudgetForms();
     initBudgetActions();
+    restoreScrollPosition();
     if ((config.activeTab || new URLSearchParams(window.location.search).get('tab')) === 'budget') {
       initBudgetPhaseTabs();
     }

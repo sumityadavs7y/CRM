@@ -8,16 +8,13 @@
 %>
 
 <div class="budget-toolbar mb-3">
-    <p class="text-muted mb-0 fs-13">Track expected spend vs actual expenses by scope.</p>
+    <p class="text-muted mb-0">Track expected spend vs actual expenses by scope.</p>
 </div>
 
 <% if (typeof projectBudget !== 'undefined' && projectBudget) { %>
     <div class="card border mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center py-2">
-            <h6 class="mb-0">Project-wide budget</h6>
-            <% if (canEditBudget && !projectBudget) { %>
-                <button type="button" class="btn btn-sm btn-outline-primary budget-action-btn" data-budget-action="create-budget" data-budget-scope="project">Create</button>
-            <% } %>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Project-wide budget</h5>
         </div>
         <div class="card-body">
             <%- include('./_budget-scope-pane', {
@@ -30,94 +27,105 @@
         </div>
     </div>
 <% } else if (canEditBudget) { %>
-    <div class="card border mb-4">
-        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
+    <div class="card border border-dashed mb-4">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3 py-4">
             <div>
-                <h6 class="mb-1">Project-wide budget</h6>
-                <p class="text-muted fs-13 mb-0">Optional budget covering the entire project.</p>
+                <h5 class="mb-1">Project-wide budget</h5>
+                <p class="text-muted mb-0">Optional budget covering the entire project.</p>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-primary budget-action-btn" data-budget-action="create-budget" data-budget-scope="project">Create project budget</button>
+            <button type="button" class="btn btn-success budget-action-btn" data-budget-action="create-budget" data-budget-scope="project">
+                <i class="ri-add-line align-bottom me-1"></i> Create project budget
+            </button>
         </div>
     </div>
 <% } %>
 
 <% if (hasPhases) { %>
-    <ul class="nav nav-tabs nav-tabs-custom inventory-phase-tabs mb-3" id="budgetPhaseTabs" role="tablist">
-        <% phases.forEach(function(phase) {
-            const phaseTabKey = 'phase-' + phase.id;
-            const isActive = activeTab === phaseTabKey;
-        %>
-            <li class="nav-item" role="presentation">
-                <button
-                    class="nav-link<%= isActive ? ' active' : '' %>"
-                    id="budget-phase-tab-<%= phase.id %>"
-                    data-bs-toggle="tab"
-                    data-bs-target="#budget-phase-pane-<%= phase.id %>"
-                    type="button"
-                    role="tab"
-                    data-inventory-phase-tab="<%= phaseTabKey %>"
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs-custom card-header-tabs" id="budgetPhaseTabs" role="tablist">
+                <% phases.forEach(function(phase) {
+                    const phaseTabKey = 'phase-' + phase.id;
+                    const isActive = activeTab === phaseTabKey;
+                %>
+                    <li class="nav-item" role="presentation">
+                        <button
+                            class="nav-link<%= isActive ? ' active' : '' %>"
+                            id="budget-phase-tab-<%= phase.id %>"
+                            data-bs-toggle="tab"
+                            data-bs-target="#budget-phase-pane-<%= phase.id %>"
+                            type="button"
+                            role="tab"
+                            data-budget-phase-tab="<%= phaseTabKey %>"
+                        >
+                            <%= phase.name %>
+                        </button>
+                    </li>
+                <% }); %>
+                <li class="nav-item" role="presentation">
+                    <button
+                        class="nav-link<%= activeTab === 'default' ? ' active' : '' %>"
+                        id="budget-phase-tab-default"
+                        data-bs-toggle="tab"
+                        data-bs-target="#budget-phase-pane-default"
+                        type="button"
+                        role="tab"
+                        data-budget-phase-tab="default"
+                    >
+                        Default
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="budgetPhaseTabContent">
+                <% phases.forEach(function(phase) {
+                    const phaseTabKey = 'phase-' + phase.id;
+                    const isActive = activeTab === phaseTabKey;
+                    const phaseBudget = budgets[phaseTabKey] || null;
+                %>
+                    <div
+                        class="tab-pane fade<%= isActive ? ' show active' : '' %>"
+                        id="budget-phase-pane-<%= phase.id %>"
+                        role="tabpanel"
+                        data-budget-phase-pane="<%= phaseTabKey %>"
+                    >
+                        <%- include('./_budget-scope-pane', {
+                            scopeTabKey: phaseTabKey,
+                            scopeLabelText: phase.name,
+                            scopeBudget: phaseBudget,
+                            canEditBudget: canEditBudget,
+                            formatBudgetCurrency: formatBudgetCurrency,
+                        }) %>
+                    </div>
+                <% }); %>
+                <div
+                    class="tab-pane fade<%= activeTab === 'default' ? ' show active' : '' %>"
+                    id="budget-phase-pane-default"
+                    role="tabpanel"
+                    data-budget-phase-pane="default"
                 >
-                    <%= phase.name %>
-                </button>
-            </li>
-        <% }); %>
-        <li class="nav-item" role="presentation">
-            <button
-                class="nav-link<%= activeTab === 'default' ? ' active' : '' %>"
-                id="budget-phase-tab-default"
-                data-bs-toggle="tab"
-                data-bs-target="#budget-phase-pane-default"
-                type="button"
-                role="tab"
-                data-inventory-phase-tab="default"
-            >
-                Default
-            </button>
-        </li>
-    </ul>
-
-    <div class="tab-content" id="budgetPhaseTabContent">
-        <% phases.forEach(function(phase) {
-            const phaseTabKey = 'phase-' + phase.id;
-            const isActive = activeTab === phaseTabKey;
-            const phaseBudget = budgets[phaseTabKey] || null;
-        %>
-            <div
-                class="tab-pane fade<%= isActive ? ' show active' : '' %>"
-                id="budget-phase-pane-<%= phase.id %>"
-                role="tabpanel"
-                data-inventory-phase-pane="<%= phaseTabKey %>"
-            >
-                <%- include('./_budget-scope-pane', {
-                    scopeTabKey: phaseTabKey,
-                    scopeLabelText: phase.name,
-                    scopeBudget: phaseBudget,
-                    canEditBudget: canEditBudget,
-                    formatBudgetCurrency: formatBudgetCurrency,
-                }) %>
+                    <%- include('./_budget-scope-pane', {
+                        scopeTabKey: 'default',
+                        scopeLabelText: 'Default',
+                        scopeBudget: budgets.default || null,
+                        canEditBudget: canEditBudget,
+                        formatBudgetCurrency: formatBudgetCurrency,
+                    }) %>
+                </div>
             </div>
-        <% }); %>
-        <div
-            class="tab-pane fade<%= activeTab === 'default' ? ' show active' : '' %>"
-            id="budget-phase-pane-default"
-            role="tabpanel"
-            data-inventory-phase-pane="default"
-        >
+        </div>
+    </div>
+<% } else { %>
+    <div class="card">
+        <div class="card-body">
             <%- include('./_budget-scope-pane', {
                 scopeTabKey: 'default',
-                scopeLabelText: 'Default',
+                scopeLabelText: 'this project',
                 scopeBudget: budgets.default || null,
                 canEditBudget: canEditBudget,
                 formatBudgetCurrency: formatBudgetCurrency,
             }) %>
         </div>
     </div>
-<% } else { %>
-    <%- include('./_budget-scope-pane', {
-        scopeTabKey: 'default',
-        scopeLabelText: 'this project',
-        scopeBudget: budgets.default || null,
-        canEditBudget: canEditBudget,
-        formatBudgetCurrency: formatBudgetCurrency,
-    }) %>
 <% } %>

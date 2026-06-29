@@ -1,0 +1,27 @@
+<%
+    const tabPaneId = function(key) {
+        return 'project-pane-' + key;
+    };
+%>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="tab-content text-muted project-tab-content">
+            <% projectTabs.forEach(function(tab) { %>
+                <% const isActive = activeTab === tab.key; %>
+                <% const panePartial = '_tab-' + (tab.key === 'general' ? 'general' : tab.key === 'milestones' ? 'milestones-placeholder' : tab.key === 'approvals' ? 'approvals-placeholder' : tab.key); %>
+                <div
+                    class="tab-pane fade<%= isActive ? ' show active' : '' %>"
+                    id="<%= tabPaneId(tab.key) %>"
+                    role="tabpanel"
+                    aria-labelledby="project-tab-<%= tab.key %>"
+                >
+                    <div class="row project-tab-pane-layout">
+                        <div class="col-12">
+                            <%- include('./' + panePartial) %>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</div>

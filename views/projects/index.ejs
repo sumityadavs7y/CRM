@@ -1,5 +1,5 @@
 <%- include('../partials/velzon/app-layout-open', {
-    pageTitle: 'Project Management - CRM',
+    pageTitle: 'Project List - CRM',
     activeNav: 'projects'
 }) %>
 
@@ -8,11 +8,12 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                <h4 class="mb-sm-0">Project Management</h4>
+                                <h4 class="mb-sm-0">Project List</h4>
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
                                         <li class="breadcrumb-item"><a href="/dashboard">CRM</a></li>
-                                        <li class="breadcrumb-item active">Projects</li>
+                                        <li class="breadcrumb-item"><a href="/company/projects">Projects</a></li>
+                                        <li class="breadcrumb-item active">Project List</li>
                                     </ol>
                                 </div>
                             </div>
@@ -27,102 +28,111 @@
                         </div>
                     <% } %>
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header align-items-center d-flex">
-                                    <h4 class="card-title mb-0 flex-grow-1">Project List</h4>
-                                    <div class="flex-shrink-0 d-flex gap-2 align-items-center">
-                                        <div class="btn-group projects-list-view-toggle" role="group" aria-label="Project list view">
-                                            <button type="button" class="btn btn-light btn-sm" data-project-list-view="list" title="List view" aria-pressed="false">
-                                                <i class="ri-list-check"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-light btn-sm" data-project-list-view="grid" title="Grid view" aria-pressed="false">
-                                                <i class="ri-grid-fill"></i>
-                                            </button>
-                                        </div>
-                                        <%- include('../partials/list/filters-toggle', { filtersPanelId: 'projectsListFiltersPanel', hasActiveFilters }) %>
-                                        <% if (user.can('project_management', 'edit')) { %>
-                                            <a href="/company/projects/new" class="btn btn-success btn-sm">
-                                                <i class="ri-add-line align-middle me-1"></i> Add Project
-                                            </a>
-                                        <% } %>
-                                    </div>
+                    <div class="row g-4 mb-3">
+                        <div class="col-sm-auto">
+                            <% if (user.can('project_management', 'edit')) { %>
+                                <a href="/company/projects/new" class="btn btn-success">
+                                    <i class="ri-add-line align-bottom me-1"></i> Add New
+                                </a>
+                            <% } %>
+                        </div>
+                        <div class="col-sm">
+                            <div class="d-flex justify-content-sm-end gap-2 align-items-center flex-wrap">
+                                <div class="btn-group projects-list-view-toggle" role="group" aria-label="Project list view">
+                                    <button type="button" class="btn btn-light" data-project-list-view="list" title="List view" aria-pressed="false">
+                                        <i class="ri-list-check"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-light" data-project-list-view="grid" title="Grid view" aria-pressed="false">
+                                        <i class="ri-grid-fill"></i>
+                                    </button>
                                 </div>
-                                <div class="card-body">
-                                    <%- include('./_list-filters') %>
-
-                                    <% if (pagination.total === 0) { %>
-                                        <% if (hasActiveFilters) { %>
-                                            <p class="text-muted mb-0">No projects match your filters.</p>
-                                        <% } else { %>
-                                            <p class="text-muted mb-0">No projects yet.</p>
-                                        <% } %>
-                                    <% } else { %>
-                                        <%- include('../partials/pagination-bar', { position: 'top' }) %>
-
-                                        <div id="projectsListView">
-                                            <div class="table-responsive">
-                                                <table class="table table-hover align-middle mb-0 table-sortable">
-                                                    <thead class="table-light">
-                                                        <tr>
-                                                            <% listColumns.forEach(function(column) {
-                                                                const isSortable = listSortColumns.has(column.key);
-                                                                const isActive = pagination.sort === column.key;
-                                                                const nextDir = isActive && pagination.dir === 'asc' ? 'desc' : 'asc';
-                                                                const sortHref = buildListUrl({ page: 1, sort: column.key, dir: nextDir });
-                                                                const ariaSort = isActive ? (pagination.dir === 'asc' ? 'ascending' : 'descending') : 'none';
-                                                                const sortIcon = isActive
-                                                                    ? (pagination.dir === 'asc' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line')
-                                                                    : 'ri-arrow-up-down-line';
-                                                            %>
-                                                                <th scope="col" data-list-column="<%= column.key %>" aria-sort="<%= isSortable ? ariaSort : 'none' %>">
-                                                                    <% if (isSortable) { %>
-                                                                        <a href="<%= sortHref %>" class="text-body text-decoration-none d-inline-flex align-items-center">
-                                                                            <%= column.label %>
-                                                                            <i class="sort-indicator <%= sortIcon %>" aria-hidden="true"></i>
-                                                                        </a>
-                                                                    <% } else { %>
-                                                                        <%= column.label %>
-                                                                    <% } %>
-                                                                </th>
-                                                            <% }); %>
-                                                            <th scope="col">Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <% projects.forEach(function(project) { %>
-                                                            <tr>
-                                                                <% listColumns.forEach(function(column) { %>
-                                                                    <%- include('./_list-cell', { project, column }) %>
-                                                                <% }); %>
-                                                                <td>
-                                                                    <a href="/company/projects/<%= project.id %>" class="btn btn-soft-primary btn-sm">View</a>
-                                                                </td>
-                                                            </tr>
-                                                        <% }); %>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-
-                                        <div id="projectsGridView" class="d-none">
-                                            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-2 projects-grid">
-                                                <% projects.forEach(function(project) { %>
-                                                    <%- include('./_project-grid-card', {
-                                                        project,
-                                                        canEdit: user.can('project_management', 'edit')
-                                                    }) %>
-                                                <% }); %>
-                                            </div>
-                                        </div>
-
-                                        <%- include('../partials/pagination-bar', { position: 'bottom' }) %>
-                                    <% } %>
-                                </div>
+                                <%- include('../partials/list/filters-toggle', { filtersPanelId: 'projectsListFiltersPanel', hasActiveFilters }) %>
                             </div>
                         </div>
                     </div>
+
+                    <%- include('./_list-filters') %>
+
+                    <% if (pagination.total === 0) { %>
+                        <div class="row">
+                            <div class="col-12">
+                                <% if (hasActiveFilters) { %>
+                                    <p class="text-muted mb-0">No projects match your filters.</p>
+                                <% } else { %>
+                                    <p class="text-muted mb-0">No projects yet.</p>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <%- include('../partials/pagination-bar', { position: 'top' }) %>
+
+                        <div id="projectsListView" class="d-none">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0 table-sortable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <% listColumns.forEach(function(column) {
+                                                        const isSortable = listSortColumns.has(column.key);
+                                                        const isActive = pagination.sort === column.key;
+                                                        const nextDir = isActive && pagination.dir === 'asc' ? 'desc' : 'asc';
+                                                        const sortHref = buildListUrl({ page: 1, sort: column.key, dir: nextDir });
+                                                        const ariaSort = isActive ? (pagination.dir === 'asc' ? 'ascending' : 'descending') : 'none';
+                                                        const sortIcon = isActive
+                                                            ? (pagination.dir === 'asc' ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line')
+                                                            : 'ri-arrow-up-down-line';
+                                                    %>
+                                                        <th scope="col" data-list-column="<%= column.key %>" aria-sort="<%= isSortable ? ariaSort : 'none' %>">
+                                                            <% if (isSortable) { %>
+                                                                <a href="<%= sortHref %>" class="text-body text-decoration-none d-inline-flex align-items-center">
+                                                                    <%= column.label %>
+                                                                    <i class="sort-indicator <%= sortIcon %>" aria-hidden="true"></i>
+                                                                </a>
+                                                            <% } else { %>
+                                                                <%= column.label %>
+                                                            <% } %>
+                                                        </th>
+                                                    <% }); %>
+                                                    <th scope="col">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% projects.forEach(function(project) { %>
+                                                    <tr>
+                                                        <% listColumns.forEach(function(column) { %>
+                                                            <%- include('./_list-cell', { project, column }) %>
+                                                        <% }); %>
+                                                        <td>
+                                                            <div class="d-flex gap-1">
+                                                                <a href="/company/projects/<%= project.id %>" class="btn btn-soft-primary btn-sm">View</a>
+                                                                <% if (user.can('project_management', 'edit')) { %>
+                                                                    <a href="/company/projects/<%= project.id %>/edit" class="btn btn-soft-secondary btn-sm">Edit</a>
+                                                                <% } %>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="projectsGridView">
+                            <div class="row">
+                                <% projects.forEach(function(project) { %>
+                                    <%- include('./_project-grid-card', {
+                                        project,
+                                        canEdit: user.can('project_management', 'edit')
+                                    }) %>
+                                <% }); %>
+                            </div>
+                        </div>
+
+                        <%- include('../partials/pagination-bar', { position: 'bottom' }) %>
+                    <% } %>
 
 <script type="application/json" id="entity-list-config"><%- JSON.stringify({
     filtersPanelId: 'projectsListFiltersPanel',

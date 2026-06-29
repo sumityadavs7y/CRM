@@ -3,6 +3,8 @@
     activeNav: 'projects'
 }) %>
 
+<link href="/css/custom.css" rel="stylesheet">
+
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
@@ -19,28 +21,62 @@
                         </div>
                     </div>
 
-                    <div class="row justify-content-center">
-                        <div class="col-lg-8">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h4 class="card-title mb-0"><%= project.name %></h4>
-                                </div>
-                                <div class="card-body">
-                                    <% if (error) { %>
-                                        <div class="alert alert-danger" role="alert"><%= error %></div>
-                                    <% } %>
+                    <form action="/company/projects/<%= project.id %>" method="post">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <% if (error) { %>
+                                    <div class="alert alert-danger" role="alert"><%= error %></div>
+                                <% } %>
 
-                                    <form action="/company/projects/<%= project.id %>" method="post">
-                                        <%- include('./_form-fields') %>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn btn-success" type="submit">Save Changes</button>
-                                            <a href="/company/projects/<%= project.id %>" class="btn btn-light">Cancel</a>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <%- include('./_form-fields-profile') %>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Location</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <%- include('./_form-fields-location') %>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Schedule & financials</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <%- include('./_form-fields-schedule') %>
+                                    </div>
+                                </div>
+
+                                <div class="text-end mb-4">
+                                    <a href="/company/projects/<%= project.id %>" class="btn btn-light w-sm">Cancel</a>
+                                    <button class="btn btn-success w-sm" type="submit">Save Changes</button>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Current project</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center gap-3 mb-3">
+                                            <%- include('./_project-avatar', { project, size: 'md' }) %>
+                                            <div>
+                                                <h6 class="mb-1"><%= project.name %></h6>
+                                                <span class="badge <%= getProjectStatusBadgeClass(project.status) %>"><%= formatProjectStatus(project.status) %></span>
+                                            </div>
                                         </div>
-                                    </form>
+                                        <p class="text-muted fs-13 mb-0">Changes here update the project profile. Inventory, RERA, and budget are managed from the project detail page.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
 
 <script type="application/json" id="projectFormConfig"><%- JSON.stringify({
     canUploadMedia: typeof canUploadMedia !== 'undefined' ? canUploadMedia : false
