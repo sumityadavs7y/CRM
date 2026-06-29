@@ -48,7 +48,7 @@
                                     <% } %>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted">Each pipeline defines lead stages, deal stages, and labels used across your CRM.</p>
+                                    <p class="text-muted">Each pipeline defines deal stages and labels used across your CRM.</p>
                                     <% if (pipelines.length === 0) { %>
                                         <p class="text-muted mb-0">No pipelines configured.</p>
                                     <% } else { %>
@@ -57,7 +57,6 @@
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Name</th>
-                                                        <th>Lead Stages</th>
                                                         <th>Deal Stages</th>
                                                         <th>Labels</th>
                                                         <th>Type</th>
@@ -81,7 +80,6 @@
                                                                     </button>
                                                                 <% } %>
                                                             </td>
-                                                            <td><span class="badge bg-primary-subtle text-primary"><%= pipeline.leadStageCount %></span></td>
                                                             <td><span class="badge bg-success-subtle text-success"><%= pipeline.dealStageCount %></span></td>
                                                             <td><span class="badge bg-warning-subtle text-warning"><%= pipeline.labelCount %></span></td>
                                                             <td>

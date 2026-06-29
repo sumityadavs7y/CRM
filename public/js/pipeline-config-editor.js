@@ -170,7 +170,7 @@
         }
 
         const url = new URL(window.location.href);
-        if (tabKey === 'lead') {
+        if (tabKey === 'deal') {
           url.searchParams.delete('tab');
         } else {
           url.searchParams.set('tab', tabKey);

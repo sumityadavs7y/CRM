@@ -20,7 +20,7 @@
         </table>
     <% } %>
 <% } else { %>
-    <% const saveLabel = stageType === 'lead' ? 'Save Lead Stages' : 'Save Deal Stages'; %>
+    <% const saveLabel = 'Save Deal Stages'; %>
     <form method="post"
           action="/company/crm-setup/pipelines/<%= pipelineId %>/stages/sync"
           class="pipeline-tab-form"

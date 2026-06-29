@@ -19,12 +19,7 @@ const AVAILABLE_PLAN_FEATURES = [
   {
     key: 'crm_setup',
     label: 'CRM Setup',
-    description: 'Configure pipelines, lead stages, deal stages, and lead sources',
-  },
-  {
-    key: 'leads',
-    label: 'Leads',
-    description: 'View and manage customer leads',
+    description: 'Configure pipelines and deal stages',
   },
   {
     key: 'project_management',
@@ -35,26 +30,6 @@ const AVAILABLE_PLAN_FEATURES = [
     key: 'media_library',
     label: 'Media Library',
     description: 'Upload and manage company files and images',
-  },
-  {
-    key: 'quotations',
-    label: 'Quotations',
-    description: 'Create and manage sales quotations',
-  },
-  {
-    key: 'invoices',
-    label: 'Invoices',
-    description: 'Create and manage customer invoices',
-  },
-  {
-    key: 'transactions',
-    label: 'Transactions',
-    description: 'Record money in and out, and view income and expense transactions',
-  },
-  {
-    key: 'reconciliations',
-    label: 'Reconciliation',
-    description: 'Reconcile bank and account transactions',
   },
 ];
 

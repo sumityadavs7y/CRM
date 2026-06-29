@@ -62,45 +62,15 @@
     return data;
   }
 
-  async function fetchDeleteImpact(unitId) {
-    const response = await fetch(`/company/projects/${projectId}/units/${unitId}/delete-impact`, {
-      headers: {
-        Accept: 'application/json',
-        'X-Requested-With': 'fetch',
-      },
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || 'Failed to check related records.');
-    }
-    return data.impact;
-  }
-
-  function openUnitDeleteModal(impact) {
+  function openUnitDeleteModal(unitNumber) {
     return new Promise((resolve) => {
       const modalEl = document.getElementById('unitDeleteModal');
       if (!modalEl || !window.bootstrap) {
-        if (!confirm(
-          `Unit ${impact.unitNumber} is linked to ${impact.quotations} quotation(s), `
-          + `${impact.invoices} invoice(s), and ${impact.receipts} receipt(s). Delete this unit?`
-        )) {
-          resolve(null);
-          return;
-        }
-        resolve(confirm(
-          'Delete ALL related quotations, invoices, and receipts too?\n\n'
-          + 'OK = delete everything\nCancel = keep records (unlink only)'
-        ));
+        resolve(confirm(`Delete unit ${unitNumber}?`));
         return;
       }
 
-      document.getElementById('unitDeleteModalUnitNumber').textContent = impact.unitNumber;
-      document.getElementById('unitDeleteModalQuotationCount').textContent = String(impact.quotations);
-      document.getElementById('unitDeleteModalInvoiceCount').textContent = String(impact.invoices);
-      document.getElementById('unitDeleteModalReceiptCount').textContent = String(impact.receipts);
-
-      const checkbox = document.getElementById('unitDeleteModalDeleteRelated');
-      checkbox.checked = false;
+      document.getElementById('unitDeleteModalUnitNumber').textContent = unitNumber;
 
       const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
       const confirmBtn = document.getElementById('unitDeleteModalConfirm');
@@ -111,15 +81,14 @@
       };
 
       const onConfirm = () => {
-        const deleteRelated = checkbox.checked;
         cleanup();
         modal.hide();
-        resolve(deleteRelated);
+        resolve(true);
       };
 
       const onHidden = () => {
         cleanup();
-        resolve(null);
+        resolve(false);
       };
 
       confirmBtn.addEventListener('click', onConfirm);
@@ -128,21 +97,13 @@
     });
   }
 
-  async function confirmAndDeleteUnit(unitId) {
-    const impact = await fetchDeleteImpact(unitId);
-    let deleteRelated = false;
-
-    if (impact.hasRelated) {
-      const choice = await openUnitDeleteModal(impact);
-      if (choice === null) {
-        return;
-      }
-      deleteRelated = choice;
-    } else if (!confirm(`Delete unit ${impact.unitNumber}?`)) {
+  async function confirmAndDeleteUnit(unitId, unitNumber) {
+    const confirmed = await openUnitDeleteModal(unitNumber);
+    if (!confirmed) {
       return;
     }
 
-    await submitJson(`/company/projects/${projectId}/units/${unitId}/delete`, 'POST', { deleteRelated });
+    await submitJson(`/company/projects/${projectId}/units/${unitId}/delete`, 'POST', {});
     reloadInventoryTab();
   }
 
@@ -674,8 +635,9 @@
 
       if (action === 'delete-unit') {
         const unitId = button.getAttribute('data-unit-id');
+        const unitNumber = button.getAttribute('data-unit-number') || unitId;
         try {
-          await confirmAndDeleteUnit(unitId);
+          await confirmAndDeleteUnit(unitId, unitNumber);
         } catch (error) {
           alert(error.message);
         }

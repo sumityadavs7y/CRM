@@ -2,7 +2,6 @@ const { Op, fn, col, where } = require('sequelize');
 const { Pipeline, PipelineStage, PipelineLabel, sequelize } = require('../models');
 const {
   DEFAULT_PIPELINES,
-  CUSTOM_PIPELINE_LEAD_STAGES,
   CUSTOM_PIPELINE_DEAL_STAGES,
 } = require('../constants/defaultPipelines');
 const {
@@ -116,7 +115,7 @@ function normalizeDescription(description) {
   return trimmed || null;
 }
 
-async function createPipelineWithStages(companyId, { name, description, slug, isSystem, sortOrder, leadStages, dealStages }, transaction) {
+async function createPipelineWithStages(companyId, { name, description, slug, isSystem, sortOrder, dealStages }, transaction) {
   const pipeline = await Pipeline.create({
     companyId,
     name,
@@ -127,7 +126,6 @@ async function createPipelineWithStages(companyId, { name, description, slug, is
     isActive: true,
   }, { transaction });
 
-  await createStagesForPipeline(pipeline.id, 'lead', leadStages, transaction);
   await createStagesForPipeline(pipeline.id, 'deal', dealStages, transaction);
   await seedDefaultLabelsForPipeline(pipeline.id, transaction);
 
@@ -150,7 +148,6 @@ async function seedDefaultPipelines(companyId, transaction = null) {
         slug: config.slug,
         isSystem: true,
         sortOrder: i,
-        leadStages: config.leadStages,
         dealStages: config.dealStages,
       }, tx);
       pipelines.push(pipeline);
@@ -249,7 +246,6 @@ async function createPipeline(companyId, { name, description }) {
       slug,
       isSystem: false,
       sortOrder,
-      leadStages: CUSTOM_PIPELINE_LEAD_STAGES,
       dealStages: CUSTOM_PIPELINE_DEAL_STAGES,
     }, transaction);
   });
@@ -336,7 +332,7 @@ async function createStage(companyId, pipelineId, { stageType, name }) {
     throw new Error('Pipeline not found.');
   }
 
-  if (!['lead', 'deal'].includes(stageType)) {
+  if (stageType !== 'deal') {
     throw new Error('Invalid stage type.');
   }
 
@@ -702,7 +698,7 @@ async function syncStages(companyId, pipelineId, stageType, { items, deletedIds 
     throw new Error('Pipeline not found.');
   }
 
-  if (!['lead', 'deal'].includes(stageType)) {
+  if (stageType !== 'deal') {
     throw new Error('Invalid stage type.');
   }
 

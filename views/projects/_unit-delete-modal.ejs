@@ -6,22 +6,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-3">
-                    Unit <strong id="unitDeleteModalUnitNumber"></strong> is linked to accounts records:
-                </p>
-                <ul class="list-unstyled mb-3 fs-14">
-                    <li><span id="unitDeleteModalQuotationCount">0</span> quotation(s)</li>
-                    <li><span id="unitDeleteModalInvoiceCount">0</span> invoice(s)</li>
-                    <li><span id="unitDeleteModalReceiptCount">0</span> receipt(s)</li>
-                </ul>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="unitDeleteModalDeleteRelated">
-                    <label class="form-check-label" for="unitDeleteModalDeleteRelated">
-                        Delete all related quotations, invoices, and receipts
-                    </label>
-                </div>
-                <p class="text-muted fs-13 mt-2 mb-0" id="unitDeleteModalUnlinkNote">
-                    If unchecked, records are kept and only unlinked from this unit.
+                <p class="mb-0">
+                    Delete unit <strong id="unitDeleteModalUnitNumber"></strong>? This cannot be undone.
                 </p>
             </div>
             <div class="modal-footer">

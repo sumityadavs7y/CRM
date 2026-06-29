@@ -159,13 +159,11 @@ button.color-picker-trigger:hover {
     opacity: 1;
 }
 
-.entity-list-column-picker__menu,
-.leads-column-picker__menu {
+.entity-list-column-picker__menu {
     min-width: 11rem;
 }
 
-.entity-list-column-picker__item,
-.leads-column-picker__item {
+.entity-list-column-picker__item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -175,48 +173,40 @@ button.color-picker-trigger:hover {
     user-select: none;
 }
 
-.entity-list-column-picker__item .form-check-input,
-.leads-column-picker__item .form-check-input {
+.entity-list-column-picker__item .form-check-input {
     margin: 0;
     float: none;
     flex-shrink: 0;
 }
 
-.entity-list-column-picker__label,
-.leads-column-picker__label {
+.entity-list-column-picker__label {
     line-height: 1.4;
 }
 
-.entity-list-filters,
-.leads-list-filters {
+.entity-list-filters {
     margin-bottom: 0.75rem;
 }
 
-.entity-list-filters:not(:has(.collapse.show)),
-.leads-list-filters:not(:has(.collapse.show)) {
+.entity-list-filters:not(:has(.collapse.show)) {
     margin-bottom: 0;
 }
 
-.entity-list-filters__toggle[aria-expanded="true"] .entity-list-filters__chevron,
-.leads-list-filters__toggle[aria-expanded="true"] .leads-list-filters__chevron {
+.entity-list-filters__toggle[aria-expanded="true"] .entity-list-filters__chevron {
     transform: rotate(180deg);
 }
 
-.entity-list-filters__chevron,
-.leads-list-filters__chevron {
+.entity-list-filters__chevron {
     transition: transform 0.2s ease;
 }
 
-.entity-list-filters__form,
-.leads-list-filters__form {
+.entity-list-filters__form {
     padding: 0.75rem;
     border: 1px solid var(--vz-border-color);
     border-radius: var(--vz-border-radius, 0.25rem);
     background: var(--vz-secondary-bg);
 }
 
-.entity-list-filters .form-label,
-.leads-list-filters .form-label {
+.entity-list-filters .form-label {
     font-size: 0.75rem;
     color: var(--vz-secondary-color);
 }
@@ -493,150 +483,6 @@ button.color-picker-trigger:hover {
 
 .unit-status-menu .dropdown-item.active {
     background: var(--vz-light);
-}
-
-.lead-report-filter-card .card-body {
-    padding: 1rem 1.25rem;
-}
-
-.lead-report-toolbar__main {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
-.lead-report-period-group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.lead-report-toolbar__label {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--vz-secondary-color);
-    margin: 0;
-}
-
-.lead-report-period-pills {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-    padding: 0.25rem;
-    border: 1px solid var(--vz-border-color);
-    border-radius: 0.5rem;
-    background: var(--vz-body-bg);
-}
-
-.lead-report-period-input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.lead-report-period-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 2.75rem;
-    padding: 0.375rem 0.75rem;
-    margin: 0;
-    border-radius: 0.375rem;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--vz-body-color);
-    background: transparent;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.lead-report-period-pill:hover {
-    background: var(--vz-light);
-}
-
-.lead-report-period-input:checked + .lead-report-period-pill {
-    color: #fff;
-    background: var(--vz-primary);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
-}
-
-.lead-report-period-input:focus-visible + .lead-report-period-pill {
-    outline: 2px solid var(--vz-primary);
-    outline-offset: 2px;
-}
-
-.lead-report-active-range {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: 2rem;
-    font-size: 0.875rem;
-    color: var(--vz-body-color);
-    background: var(--vz-light);
-    border: 1px solid var(--vz-border-color);
-}
-
-.lead-report-active-range i {
-    color: var(--vz-primary);
-    font-size: 1rem;
-}
-
-.lead-report-custom-range {
-    display: none;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--vz-border-color);
-}
-
-.lead-report-custom-range.is-visible {
-    display: block;
-}
-
-.lead-report-date-field {
-    width: 100%;
-    max-width: 11.5rem;
-}
-
-.lead-report-filters .form-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.lead-report-chart {
-    min-height: 320px;
-}
-
-.lead-report-chart--wide {
-    min-height: 340px;
-}
-
-.lead-report-summary .card-body {
-    padding: 1.25rem;
-}
-
-.lead-report-chart-tooltip {
-    padding: 0.5rem 0.75rem;
-    background: var(--vz-secondary-bg, #fff);
-    color: var(--vz-body-color);
-    border: 1px solid var(--vz-border-color);
-    border-radius: 0.375rem;
-    box-shadow: 0 0.25rem 0.75rem rgba(15, 23, 42, 0.12);
-}
-
-.lead-report-chart-tooltip__label {
-    font-weight: 600;
-    margin-bottom: 0.125rem;
-}
-
-.lead-report-chart-tooltip__value {
-    font-size: 0.875rem;
 }
 
 .apexcharts-tooltip.apexcharts-theme-light,

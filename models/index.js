@@ -8,12 +8,6 @@ const CompanySubscriptionModel = require('./CompanySubscription');
 const PipelineModel = require('./Pipeline');
 const PipelineStageModel = require('./PipelineStage');
 const PipelineLabelModel = require('./PipelineLabel');
-const SourceModel = require('./Source');
-const LeadModel = require('./Lead');
-const LeadCommunicationModel = require('./LeadCommunication');
-const LeadDiscussionModel = require('./LeadDiscussion');
-const LeadTaskModel = require('./LeadTask');
-const LeadHistoryEventModel = require('./LeadHistoryEvent');
 const ProjectModel = require('./Project');
 const ProjectPhaseModel = require('./ProjectPhase');
 const ProjectBlockModel = require('./ProjectBlock');
@@ -22,11 +16,6 @@ const ProjectUnitModel = require('./ProjectUnit');
 const ProjectReraRegistrationModel = require('./ProjectReraRegistration');
 const MediaFolderModel = require('./MediaFolder');
 const MediaFileModel = require('./MediaFile');
-const QuotationModel = require('./Quotation');
-const QuotationLineItemModel = require('./QuotationLineItem');
-const InvoiceModel = require('./Invoice');
-const InvoiceLineItemModel = require('./InvoiceLineItem');
-const ReceiptModel = require('./Receipt');
 
 const User = UserModel(sequelize, Sequelize.DataTypes);
 const Company = CompanyModel(sequelize, Sequelize.DataTypes);
@@ -37,12 +26,6 @@ const CompanySubscription = CompanySubscriptionModel(sequelize, Sequelize.DataTy
 const Pipeline = PipelineModel(sequelize, Sequelize.DataTypes);
 const PipelineStage = PipelineStageModel(sequelize, Sequelize.DataTypes);
 const PipelineLabel = PipelineLabelModel(sequelize, Sequelize.DataTypes);
-const Source = SourceModel(sequelize, Sequelize.DataTypes);
-const Lead = LeadModel(sequelize, Sequelize.DataTypes);
-const LeadCommunication = LeadCommunicationModel(sequelize, Sequelize.DataTypes);
-const LeadDiscussion = LeadDiscussionModel(sequelize, Sequelize.DataTypes);
-const LeadTask = LeadTaskModel(sequelize, Sequelize.DataTypes);
-const LeadHistoryEvent = LeadHistoryEventModel(sequelize, Sequelize.DataTypes);
 const Project = ProjectModel(sequelize, Sequelize.DataTypes);
 const ProjectPhase = ProjectPhaseModel(sequelize, Sequelize.DataTypes);
 const ProjectBlock = ProjectBlockModel(sequelize, Sequelize.DataTypes);
@@ -51,11 +34,6 @@ const ProjectUnit = ProjectUnitModel(sequelize, Sequelize.DataTypes);
 const ProjectReraRegistration = ProjectReraRegistrationModel(sequelize, Sequelize.DataTypes);
 const MediaFolder = MediaFolderModel(sequelize, Sequelize.DataTypes);
 const MediaFile = MediaFileModel(sequelize, Sequelize.DataTypes);
-const Quotation = QuotationModel(sequelize, Sequelize.DataTypes);
-const QuotationLineItem = QuotationLineItemModel(sequelize, Sequelize.DataTypes);
-const Invoice = InvoiceModel(sequelize, Sequelize.DataTypes);
-const InvoiceLineItem = InvoiceLineItemModel(sequelize, Sequelize.DataTypes);
-const Receipt = ReceiptModel(sequelize, Sequelize.DataTypes);
 
 Company.hasMany(CompanyCredential, { foreignKey: 'companyId', as: 'credentials' });
 CompanyCredential.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
@@ -80,50 +58,6 @@ PipelineStage.belongsTo(Pipeline, { foreignKey: 'pipelineId', as: 'pipeline' });
 
 Pipeline.hasMany(PipelineLabel, { foreignKey: 'pipelineId', as: 'labels' });
 PipelineLabel.belongsTo(Pipeline, { foreignKey: 'pipelineId', as: 'pipeline' });
-
-Company.hasMany(Source, { foreignKey: 'companyId', as: 'sources' });
-Source.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
-
-Company.hasMany(Lead, { foreignKey: 'companyId', as: 'leads' });
-Lead.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
-
-Lead.belongsTo(CompanyCredential, { foreignKey: 'assigneeId', as: 'assignee' });
-CompanyCredential.hasMany(Lead, { foreignKey: 'assigneeId', as: 'assignedLeads' });
-
-Lead.belongsTo(Pipeline, { foreignKey: 'pipelineId', as: 'pipeline' });
-Pipeline.hasMany(Lead, { foreignKey: 'pipelineId', as: 'leads' });
-
-Lead.belongsTo(PipelineStage, { foreignKey: 'stageId', as: 'stage' });
-PipelineStage.hasMany(Lead, { foreignKey: 'stageId', as: 'leads' });
-
-Lead.belongsToMany(Source, {
-  through: 'LeadSources',
-  foreignKey: 'leadId',
-  otherKey: 'sourceId',
-  as: 'sources',
-});
-Source.belongsToMany(Lead, {
-  through: 'LeadSources',
-  foreignKey: 'sourceId',
-  otherKey: 'leadId',
-  as: 'leads',
-});
-
-Lead.hasMany(LeadCommunication, { foreignKey: 'leadId', as: 'communications' });
-LeadCommunication.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
-
-Lead.hasMany(LeadDiscussion, { foreignKey: 'leadId', as: 'discussions' });
-LeadDiscussion.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
-LeadDiscussion.belongsTo(CompanyCredential, { foreignKey: 'userId', as: 'user' });
-CompanyCredential.hasMany(LeadDiscussion, { foreignKey: 'userId', as: 'leadDiscussions' });
-
-Lead.hasMany(LeadTask, { foreignKey: 'leadId', as: 'tasks' });
-LeadTask.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
-
-Lead.hasMany(LeadHistoryEvent, { foreignKey: 'leadId', as: 'historyEvents' });
-LeadHistoryEvent.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
-LeadHistoryEvent.belongsTo(CompanyCredential, { foreignKey: 'userId', as: 'user' });
-CompanyCredential.hasMany(LeadHistoryEvent, { foreignKey: 'userId', as: 'leadHistoryEvents' });
 
 Company.hasMany(Project, { foreignKey: 'companyId', as: 'projects' });
 Project.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
@@ -155,39 +89,6 @@ MediaFolder.hasMany(MediaFile, { foreignKey: 'folderId', as: 'files' });
 MediaFile.belongsTo(CompanyCredential, { foreignKey: 'uploadedById', as: 'uploadedBy' });
 CompanyCredential.hasMany(MediaFile, { foreignKey: 'uploadedById', as: 'uploadedMediaFiles' });
 
-Company.hasMany(Quotation, { foreignKey: 'companyId', as: 'quotations' });
-Quotation.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
-Quotation.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
-Lead.hasMany(Quotation, { foreignKey: 'leadId', as: 'quotations' });
-Quotation.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
-Project.hasMany(Quotation, { foreignKey: 'projectId', as: 'quotations' });
-Quotation.belongsTo(CompanyCredential, { foreignKey: 'assigneeId', as: 'assignee' });
-Quotation.belongsTo(CompanyCredential, { foreignKey: 'createdById', as: 'createdBy' });
-Quotation.belongsTo(Invoice, { foreignKey: 'convertedInvoiceId', as: 'convertedInvoice' });
-Quotation.hasMany(QuotationLineItem, { foreignKey: 'quotationId', as: 'lineItems' });
-QuotationLineItem.belongsTo(Quotation, { foreignKey: 'quotationId', as: 'quotation' });
-QuotationLineItem.belongsTo(ProjectUnit, { foreignKey: 'projectUnitId', as: 'projectUnit' });
-
-Company.hasMany(Invoice, { foreignKey: 'companyId', as: 'invoices' });
-Invoice.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
-Invoice.belongsTo(Quotation, { foreignKey: 'quotationId', as: 'quotation' });
-Quotation.hasOne(Invoice, { foreignKey: 'quotationId', as: 'invoiceFromQuotation' });
-Invoice.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
-Invoice.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
-Invoice.belongsTo(CompanyCredential, { foreignKey: 'assigneeId', as: 'assignee' });
-Invoice.belongsTo(CompanyCredential, { foreignKey: 'createdById', as: 'createdBy' });
-Invoice.hasMany(InvoiceLineItem, { foreignKey: 'invoiceId', as: 'lineItems' });
-InvoiceLineItem.belongsTo(Invoice, { foreignKey: 'invoiceId', as: 'invoice' });
-InvoiceLineItem.belongsTo(ProjectUnit, { foreignKey: 'projectUnitId', as: 'projectUnit' });
-
-Invoice.hasMany(Receipt, { foreignKey: 'invoiceId', as: 'receipts' });
-Receipt.belongsTo(Invoice, { foreignKey: 'invoiceId', as: 'invoice' });
-Receipt.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
-Company.hasMany(Receipt, { foreignKey: 'companyId', as: 'receipts' });
-Receipt.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
-Receipt.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
-Receipt.belongsTo(CompanyCredential, { foreignKey: 'createdById', as: 'createdBy' });
-
 module.exports = {
   sequelize,
   Sequelize,
@@ -201,12 +102,6 @@ module.exports = {
   Pipeline,
   PipelineStage,
   PipelineLabel,
-  Source,
-  Lead,
-  LeadCommunication,
-  LeadDiscussion,
-  LeadTask,
-  LeadHistoryEvent,
   Project,
   ProjectPhase,
   ProjectBlock,
@@ -215,9 +110,4 @@ module.exports = {
   ProjectReraRegistration,
   MediaFolder,
   MediaFile,
-  Quotation,
-  QuotationLineItem,
-  Invoice,
-  InvoiceLineItem,
-  Receipt,
 };

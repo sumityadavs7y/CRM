@@ -48,25 +48,6 @@
                     </li>
                 <% } %>
                 <% const canViewCrmSetup = user && user.can && user.can('crm_setup', 'view'); %>
-                <% const canViewLeads = user && user.can && user.can('leads', 'view'); %>
-                <% const isLeadsActive = activeNav === 'leads' || activeNav === 'leads-reports'; %>
-                <% if (canViewLeads) { %>
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" href="#sidebarLeads" data-bs-toggle="collapse" role="button" aria-expanded="<%= isLeadsActive ? 'true' : 'false' %>" aria-controls="sidebarLeads">
-                            <i class="ri-user-search-line"></i> <span>Leads</span>
-                        </a>
-                        <div class="collapse menu-dropdown<%= isLeadsActive ? ' show' : '' %>" id="sidebarLeads">
-                            <ul class="nav nav-sm flex-column">
-                                <li class="nav-item">
-                                    <a href="/company/leads" class="nav-link<%= activeNav === 'leads' ? ' active' : '' %>">All Leads</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/company/leads/reports" class="nav-link<%= activeNav === 'leads-reports' ? ' active' : '' %>">Reports</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                <% } %>
                 <% const canViewProjects = user && user.can && user.can('project_management', 'view'); %>
                 <% if (canViewProjects) { %>
                     <li class="nav-item">
@@ -83,25 +64,7 @@
                         </a>
                     </li>
                 <% } %>
-                <% const visibleAccountsModules = (accountsModules || []).filter((module) => user && user.can && user.can(module.key, 'view')); %>
-                <% const isAccountsActive = visibleAccountsModules.some((module) => activeNav === module.activeNav); %>
-                <% if (visibleAccountsModules.length > 0) { %>
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" href="#sidebarAccounts" data-bs-toggle="collapse" role="button" aria-expanded="<%= isAccountsActive ? 'true' : 'false' %>" aria-controls="sidebarAccounts">
-                            <i class="ri-bank-line"></i> <span>Accounts & Transactions</span>
-                        </a>
-                        <div class="collapse menu-dropdown<%= isAccountsActive ? ' show' : '' %>" id="sidebarAccounts">
-                            <ul class="nav nav-sm flex-column">
-                                <% visibleAccountsModules.forEach((module) => { %>
-                                    <li class="nav-item">
-                                        <a href="/company/accounts/<%= module.slug %>" class="nav-link<%= activeNav === module.activeNav ? ' active' : '' %>"><%= module.label %></a>
-                                    </li>
-                                <% }); %>
-                            </ul>
-                        </div>
-                    </li>
-                <% } %>
-                <% const isCrmSetupActive = activeNav === 'crm-setup-pipelines' || activeNav === 'crm-setup-sources'; %>
+                <% const isCrmSetupActive = activeNav === 'crm-setup-pipelines'; %>
                 <% if (canViewCrmSetup) { %>
                     <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarCrmSetup" data-bs-toggle="collapse" role="button" aria-expanded="<%= isCrmSetupActive ? 'true' : 'false' %>" aria-controls="sidebarCrmSetup">
@@ -111,9 +74,6 @@
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
                                     <a href="/company/crm-setup/pipelines" class="nav-link<%= activeNav === 'crm-setup-pipelines' ? ' active' : '' %>">Pipelines</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/company/crm-setup/sources" class="nav-link<%= activeNav === 'crm-setup-sources' ? ' active' : '' %>">Sources</a>
                                 </li>
                             </ul>
                         </div>

@@ -2,7 +2,7 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Sources', {
+    await queryInterface.createTable('CompanyRoles', {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -26,15 +26,24 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      sortOrder: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
+      description: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       isSystem: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: false,
+      },
+      permissions: {
+        type: Sequelize.JSON,
+        allowNull: false,
+        defaultValue: {},
+      },
+      capabilities: {
+        type: Sequelize.JSON,
+        allowNull: false,
+        defaultValue: [],
       },
       isActive: {
         type: Sequelize.BOOLEAN,
@@ -51,13 +60,13 @@ module.exports = {
       },
     });
 
-    await queryInterface.addIndex('Sources', ['companyId', 'slug'], {
+    await queryInterface.addIndex('CompanyRoles', ['companyId', 'slug'], {
       unique: true,
-      name: 'sources_company_slug_unique',
+      name: 'company_roles_company_slug_unique',
     });
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('Sources');
+    await queryInterface.dropTable('CompanyRoles');
   },
 };

@@ -16,10 +16,6 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true,
       },
-      validityDays: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
       maxUsers: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -44,10 +40,6 @@ module.exports = {
         type: Sequelize.JSON,
         allowNull: false,
         defaultValue: '[]',
-      },
-      price: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: true,
       },
       isActive: {
         type: Sequelize.BOOLEAN,

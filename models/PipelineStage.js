@@ -10,8 +10,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     stageType: {
-      type: DataTypes.ENUM('lead', 'deal'),
+      type: DataTypes.ENUM('deal'),
       allowNull: false,
+      defaultValue: 'deal',
     },
     name: {
       type: DataTypes.STRING,

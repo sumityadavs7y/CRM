@@ -1,5 +1,5 @@
 const { PROJECT_TYPES, PROJECT_STATUSES } = require('../constants/projectManagement');
-const { escapeIlikePattern } = require('./leadListFilters');
+const { escapeIlikePattern } = require('./searchHelpers');
 
 function parseOptionalSearch(value) {
   if (value === undefined || value === null) {

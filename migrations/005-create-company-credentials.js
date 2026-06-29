@@ -2,21 +2,11 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('LeadHistoryEvents', {
+    await queryInterface.createTable('CompanyCredentials', {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-      },
-      leadId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'Leads',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
       },
       companyId: {
         type: Sequelize.INTEGER,
@@ -28,48 +18,58 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      userId: {
+      companyRoleId: {
         type: Sequelize.INTEGER,
-        allowNull: true,
+        allowNull: false,
         references: {
-          model: 'CompanyCredentials',
+          model: 'CompanyRoles',
           key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
+        onDelete: 'RESTRICT',
       },
-      action: {
+      adminName: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      entityType: {
+      email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      password: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      entityId: {
-        type: Sequelize.INTEGER,
+      isActive: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
+      avatarPath: {
+        type: Sequelize.STRING,
         allowNull: true,
       },
-      summary: {
-        type: Sequelize.TEXT,
-        allowNull: false,
+      themeId: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
-      changes: {
-        type: Sequelize.JSON,
+      colorMode: {
+        type: Sequelize.STRING(10),
         allowNull: true,
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
-    });
-
-    await queryInterface.addIndex('LeadHistoryEvents', ['leadId', 'createdAt'], {
-      name: 'lead_history_events_lead_created_at',
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
     });
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('LeadHistoryEvents');
+    await queryInterface.dropTable('CompanyCredentials');
   },
 };

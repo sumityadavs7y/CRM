@@ -19,17 +19,13 @@ const {
   syncLabels,
   DEFAULT_LABEL_COLOR,
 } = require('../services/pipelineService');
-const {
-  listCompanySources,
-  syncSources,
-} = require('../services/sourceService');
 
 const router = express.Router();
 
-const VALID_TABS = ['lead', 'deal', 'labels'];
+const VALID_TABS = ['deal', 'labels'];
 
 function resolveActiveTab(tab) {
-  return VALID_TABS.includes(tab) ? tab : 'lead';
+  return VALID_TABS.includes(tab) ? tab : 'deal';
 }
 
 function pipelineEditUrl(pipelineId, { tab, success, error } = {}) {
@@ -48,36 +44,13 @@ function pipelineEditUrl(pipelineId, { tab, success, error } = {}) {
 }
 
 function groupStages(stages) {
-  const leadStages = [];
-  const dealStages = [];
-
-  (stages || []).forEach((stage) => {
-    if (stage.stageType === 'lead') {
-      leadStages.push(stage);
-    } else if (stage.stageType === 'deal') {
-      dealStages.push(stage);
-    }
-  });
-
-  return { leadStages, dealStages };
-}
-
-function countStagesByType(stages) {
-  const counts = { lead: 0, deal: 0 };
-  (stages || []).forEach((stage) => {
-    if (counts[stage.stageType] !== undefined) {
-      counts[stage.stageType] += 1;
-    }
-  });
-  return counts;
+  return (stages || []).filter((stage) => stage.stageType === 'deal');
 }
 
 function buildPipelineViewData(pipeline) {
-  const { leadStages, dealStages } = groupStages(pipeline.stages);
   return {
     pipeline,
-    leadStages,
-    dealStages,
+    dealStages: groupStages(pipeline.stages),
     labels: pipeline.labels || [],
   };
 }
@@ -86,11 +59,10 @@ router.get('/pipelines', isCompanyAuthenticated, requirePermission('crm_setup', 
   const pipelines = await listCompanyPipelines(req.session.companyId);
 
   const pipelineSummaries = pipelines.map((pipeline) => {
-    const counts = countStagesByType(pipeline.stages);
+    const dealStageCount = (pipeline.stages || []).filter((stage) => stage.stageType === 'deal').length;
     return {
       ...pipeline.toJSON(),
-      leadStageCount: counts.lead,
-      dealStageCount: counts.deal,
+      dealStageCount,
       labelCount: (pipeline.labels || []).length,
     };
   });
@@ -214,16 +186,15 @@ router.post('/pipelines/:id/delete', isCompanyAuthenticated, requirePermission('
 router.post('/pipelines/:id/stages/sync', isCompanyAuthenticated, requirePermission('crm_setup', 'edit'), async (req, res) => {
   const { stageType, stages, deletedIds } = req.body;
   const pipelineId = req.params.id;
-  const tab = stageType === 'deal' ? 'deal' : 'lead';
 
   try {
     await syncStages(req.session.companyId, pipelineId, stageType, {
       items: stages,
       deletedIds,
     });
-    res.redirect(pipelineEditUrl(pipelineId, { tab, success: 'Stages saved successfully.' }));
+    res.redirect(pipelineEditUrl(pipelineId, { tab: 'deal', success: 'Stages saved successfully.' }));
   } catch (error) {
-    res.redirect(pipelineEditUrl(pipelineId, { tab, error: error.message || 'Unable to save stages.' }));
+    res.redirect(pipelineEditUrl(pipelineId, { tab: 'deal', error: error.message || 'Unable to save stages.' }));
   }
 });
 
@@ -245,13 +216,12 @@ router.post('/pipelines/:id/labels/sync', isCompanyAuthenticated, requirePermiss
 router.post('/pipelines/:id/stages', isCompanyAuthenticated, requirePermission('crm_setup', 'edit'), async (req, res) => {
   const { stageType, name } = req.body;
   const pipelineId = req.params.id;
-  const tab = stageType === 'deal' ? 'deal' : 'lead';
 
   try {
     await createStage(req.session.companyId, pipelineId, { stageType, name });
-    res.redirect(pipelineEditUrl(pipelineId, { tab, success: 'Stage added successfully.' }));
+    res.redirect(pipelineEditUrl(pipelineId, { tab: 'deal', success: 'Stage added successfully.' }));
   } catch (error) {
-    res.redirect(pipelineEditUrl(pipelineId, { tab, error: error.message || 'Unable to add stage.' }));
+    res.redirect(pipelineEditUrl(pipelineId, { tab: 'deal', error: error.message || 'Unable to add stage.' }));
   }
 });
 
@@ -312,44 +282,6 @@ router.post('/pipelines/:id/labels/:labelId/delete', isCompanyAuthenticated, req
     res.redirect(pipelineEditUrl(pipelineId, { tab: 'labels', success: 'Label deleted successfully.' }));
   } catch (error) {
     res.redirect(pipelineEditUrl(pipelineId, { tab: 'labels', error: error.message || 'Unable to delete label.' }));
-  }
-});
-
-router.get('/sources', isCompanyAuthenticated, requirePermission('crm_setup', 'view'), async (req, res) => {
-  const sources = await listCompanySources(req.session.companyId);
-
-  res.render('crm-setup/sources/index', withTheme(req, {
-    user: buildUserContext(req),
-    sources,
-    success: req.query.success || null,
-    error: req.query.error || null,
-    activeNav: 'crm-setup-sources',
-  }));
-});
-
-router.get('/sources/edit', isCompanyAuthenticated, requirePermission('crm_setup', 'edit'), async (req, res) => {
-  const sources = await listCompanySources(req.session.companyId);
-
-  res.render('crm-setup/sources/edit', withTheme(req, {
-    user: buildUserContext(req),
-    sources,
-    success: req.query.success || null,
-    error: req.query.error || null,
-    activeNav: 'crm-setup-sources',
-  }));
-});
-
-router.post('/sources/sync', isCompanyAuthenticated, requirePermission('crm_setup', 'edit'), async (req, res) => {
-  const { sources, deletedIds } = req.body;
-
-  try {
-    await syncSources(req.session.companyId, {
-      items: sources,
-      deletedIds,
-    });
-    res.redirect('/company/crm-setup/sources?success=Sources saved successfully.');
-  } catch (error) {
-    res.redirect(`/company/crm-setup/sources/edit?error=${encodeURIComponent(error.message || 'Unable to save sources.')}`);
   }
 });
 
